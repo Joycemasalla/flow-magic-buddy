@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, Wallet, Receipt } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SummaryCardsProps {
@@ -14,84 +14,63 @@ export default function SummaryCards({
   income,
   expense,
   balance,
-  transactionCount,
-  onTransactionsClick,
 }: SummaryCardsProps) {
-  const cards = [
-    {
-      label: 'Receitas',
-      value: income,
-      icon: TrendingUp,
-      color: 'text-income',
-      bgColor: 'bg-income/10',
-      borderColor: 'border-income/20',
-    },
-    {
-      label: 'Despesas',
-      value: expense,
-      icon: TrendingDown,
-      color: 'text-expense',
-      bgColor: 'bg-expense/10',
-      borderColor: 'border-expense/20',
-    },
-    {
-      label: 'Saldo',
-      value: balance,
-      icon: Wallet,
-      color: balance >= 0 ? 'text-income' : 'text-expense',
-      bgColor: balance >= 0 ? 'bg-income/10' : 'bg-expense/10',
-      borderColor: balance >= 0 ? 'border-income/20' : 'border-expense/20',
-    },
-    {
-      label: 'Transações',
-      value: transactionCount,
-      icon: Receipt,
-      color: 'text-accent',
-      bgColor: 'bg-accent/10',
-      borderColor: 'border-accent/20',
-      isCount: true,
-      onClick: onTransactionsClick,
-    },
-  ];
-
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      {cards.map((card, index) => (
+    <div className="space-y-3">
+      {/* Main Balance Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="glass-card rounded-2xl p-5"
+      >
+        <p className="text-sm text-muted-foreground font-medium mb-1">Saldo atual</p>
+        <p className={cn(
+          'text-4xl lg:text-5xl font-bold font-display',
+          balance >= 0 ? 'text-income' : 'text-expense'
+        )}>
+          R$ {Math.abs(balance).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+        </p>
+        {balance < 0 && (
+          <p className="text-xs text-expense mt-1">Saldo negativo</p>
+        )}
+      </motion.div>
+
+      {/* Income/Expense Row */}
+      <div className="grid grid-cols-2 gap-3">
         <motion.div
-          key={card.label}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: index * 0.1 }}
-          onClick={card.onClick}
-          className={cn(
-            'glass-card rounded-xl p-4 lg:p-5 hover-lift',
-            card.onClick && 'cursor-pointer'
-          )}
+          transition={{ delay: 0.1 }}
+          className="glass-card rounded-xl p-4"
         >
-          <div className="flex items-center gap-3 mb-3">
-            <div
-              className={cn(
-                'w-10 h-10 rounded-lg flex items-center justify-center',
-                card.bgColor,
-                'border',
-                card.borderColor
-              )}
-            >
-              <card.icon className={cn('w-5 h-5', card.color)} />
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-8 h-8 rounded-lg bg-income/10 flex items-center justify-center">
+              <TrendingUp className="w-4 h-4 text-income" />
             </div>
-            <span className="text-sm text-muted-foreground font-medium">
-              {card.label}
-            </span>
+            <span className="text-xs text-muted-foreground font-medium">Receitas</span>
           </div>
-          <p className={cn('text-2xl lg:text-3xl font-bold font-display', card.color)}>
-            {card.isCount
-              ? card.value
-              : `R$ ${Math.abs(card.value).toLocaleString('pt-BR', {
-                  minimumFractionDigits: 2,
-                })}`}
+          <p className="text-xl lg:text-2xl font-bold text-income">
+            R$ {income.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
           </p>
         </motion.div>
-      ))}
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="glass-card rounded-xl p-4"
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-8 h-8 rounded-lg bg-expense/10 flex items-center justify-center">
+              <TrendingDown className="w-4 h-4 text-expense" />
+            </div>
+            <span className="text-xs text-muted-foreground font-medium">Despesas</span>
+          </div>
+          <p className="text-xl lg:text-2xl font-bold text-expense">
+            R$ {expense.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+          </p>
+        </motion.div>
+      </div>
     </div>
   );
 }

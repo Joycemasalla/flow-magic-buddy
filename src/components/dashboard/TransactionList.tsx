@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { format, isToday, isYesterday } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
@@ -19,12 +20,6 @@ import {
 import { Transaction, categoryLabels, TransactionCategory } from '@/types/transaction';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 
 const categoryIconMap: Record<TransactionCategory, React.ElementType> = {
   salary: Wallet,
@@ -44,6 +39,93 @@ interface TransactionListProps {
   transactions: Transaction[];
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
+}
+
+interface SwipeableItemProps {
+  transaction: Transaction;
+  onEdit: () => void;
+  onDelete: () => void;
+}
+
+function SwipeableItem({ transaction, onEdit, onDelete }: SwipeableItemProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const Icon = categoryIconMap[transaction.category] || MoreHorizontal;
+  const isIncome = transaction.type === 'income';
+
+  const handleDragEnd = (_: any, info: PanInfo) => {
+    if (info.offset.x < -60) {
+      setIsOpen(true);
+    } else {
+      setIsOpen(false);
+    }
+  };
+
+  return (
+    <div className="relative overflow-hidden rounded-xl">
+      {/* Actions Behind */}
+      <div className="absolute right-0 top-0 bottom-0 flex items-center gap-1 pr-2">
+        <Button
+          size="icon"
+          variant="ghost"
+          onClick={onEdit}
+          className="h-10 w-10 bg-muted hover:bg-muted"
+        >
+          <Pencil className="w-4 h-4" />
+        </Button>
+        <Button
+          size="icon"
+          variant="ghost"
+          onClick={onDelete}
+          className="h-10 w-10 bg-destructive/10 text-destructive hover:bg-destructive/20"
+        >
+          <Trash2 className="w-4 h-4" />
+        </Button>
+      </div>
+
+      {/* Main Item */}
+      <motion.div
+        drag="x"
+        dragConstraints={{ left: -100, right: 0 }}
+        dragElastic={0.1}
+        onDragEnd={handleDragEnd}
+        animate={{ x: isOpen ? -100 : 0 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        onClick={() => isOpen && setIsOpen(false)}
+        className="relative flex items-center gap-3 p-3 bg-card rounded-xl border border-border/50 cursor-grab active:cursor-grabbing"
+      >
+        <div
+          className={cn(
+            'w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0',
+            isIncome ? 'bg-income/10' : 'bg-expense/10'
+          )}
+        >
+          <Icon
+            className={cn(
+              'w-5 h-5',
+              isIncome ? 'text-income' : 'text-expense'
+            )}
+          />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-medium truncate text-[15px]">{transaction.description}</p>
+          <p className="text-xs text-muted-foreground">
+            {categoryLabels[transaction.category]}
+          </p>
+        </div>
+        <p
+          className={cn(
+            'font-bold text-base flex-shrink-0',
+            isIncome ? 'text-income' : 'text-expense'
+          )}
+        >
+          {isIncome ? '+' : '-'} R${' '}
+          {transaction.amount.toLocaleString('pt-BR', {
+            minimumFractionDigits: 2,
+          })}
+        </p>
+      </motion.div>
+    </div>
+  );
 }
 
 export default function TransactionList({
@@ -69,7 +151,7 @@ export default function TransactionList({
     const date = new Date(dateStr + 'T12:00:00');
     if (isToday(date)) return 'Hoje';
     if (isYesterday(date)) return 'Ontem';
-    return format(date, "EEEE, d 'de' MMMM", { locale: ptBR });
+    return format(date, "EEE, d 'de' MMM", { locale: ptBR });
   };
 
   if (transactions.length === 0) {
@@ -81,8 +163,8 @@ export default function TransactionList({
       >
         <Receipt className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
         <h3 className="text-lg font-semibold mb-2">Nenhuma transação</h3>
-        <p className="text-muted-foreground">
-          Use o botão + para adicionar uma transação
+        <p className="text-muted-foreground text-sm">
+          Toque no botão + para adicionar
         </p>
       </motion.div>
     );
@@ -92,91 +174,42 @@ export default function TransactionList({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="glass-card rounded-xl p-6"
+      className="space-y-5"
     >
-      <h3 className="text-lg font-semibold mb-4">Transações</h3>
-      <div className="space-y-6">
+      <h3 className="text-lg font-semibold">Transações</h3>
+      <div className="space-y-5">
         {sortedDates.map((date) => (
           <div key={date}>
-            <h4 className="text-sm font-medium text-muted-foreground mb-3 capitalize">
+            <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">
               {formatDateLabel(date)}
             </h4>
             <div className="space-y-2">
-              {grouped[date].map((transaction, index) => {
-                const Icon = categoryIconMap[transaction.category] || MoreHorizontal;
-                const isIncome = transaction.type === 'income';
-
-                return (
+              <AnimatePresence>
+                {grouped[date].map((transaction, index) => (
                   <motion.div
                     key={transaction.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    className="flex items-center gap-4 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors group"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, x: -100 }}
+                    transition={{ delay: index * 0.03 }}
                   >
-                    <div
-                      className={cn(
-                        'w-10 h-10 rounded-lg flex items-center justify-center',
-                        isIncome ? 'bg-income/10' : 'bg-expense/10'
-                      )}
-                    >
-                      <Icon
-                        className={cn(
-                          'w-5 h-5',
-                          isIncome ? 'text-income' : 'text-expense'
-                        )}
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">{transaction.description}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {categoryLabels[transaction.category]}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <p
-                        className={cn(
-                          'font-semibold',
-                          isIncome ? 'text-income' : 'text-expense'
-                        )}
-                      >
-                        {isIncome ? '+' : '-'} R${' '}
-                        {transaction.amount.toLocaleString('pt-BR', {
-                          minimumFractionDigits: 2,
-                        })}
-                      </p>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <MoreHorizontal className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => onEdit(transaction.id)}>
-                            <Pencil className="w-4 h-4 mr-2" />
-                            Editar
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => onDelete(transaction.id)}
-                            className="text-destructive"
-                          >
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Excluir
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
+                    <SwipeableItem
+                      transaction={transaction}
+                      onEdit={() => onEdit(transaction.id)}
+                      onDelete={() => onDelete(transaction.id)}
+                    />
                   </motion.div>
-                );
-              })}
+                ))}
+              </AnimatePresence>
             </div>
           </div>
         ))}
       </div>
+      
+      {/* Swipe Hint */}
+      <p className="text-center text-xs text-muted-foreground lg:hidden">
+        ← Deslize para editar ou excluir
+      </p>
     </motion.div>
   );
 }
