@@ -10,8 +10,6 @@ import {
   Moon,
   Sun,
   User,
-  Menu,
-  X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -19,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import QuickRecordModal from '@/components/modals/QuickRecordModal';
 
 const navItems = [
-  { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
+  { path: '/', icon: LayoutDashboard, label: 'Início' },
   { path: '/transacoes', icon: Receipt, label: 'Transações' },
   { path: '/lembretes', icon: Bell, label: 'Lembretes' },
   { path: '/emprestimos', icon: HandCoins, label: 'Empréstimos' },
@@ -29,10 +27,9 @@ export default function AppLayout() {
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const [isQuickRecordOpen, setIsQuickRecordOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen flex w-full">
+    <div className="min-h-screen flex w-full bg-background">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex flex-col w-64 bg-sidebar border-r border-sidebar-border">
         <div className="p-6">
@@ -94,94 +91,62 @@ export default function AppLayout() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-h-screen pb-20 lg:pb-0">
-        {/* Mobile Header */}
-        <header className="lg:hidden flex items-center justify-between p-4 border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-40">
-          <h1 className="text-xl font-display font-bold text-gradient">
+      <main className="flex-1 flex flex-col min-h-screen pb-24 lg:pb-0">
+        {/* Mobile Header - Simplified */}
+        <header className="lg:hidden flex items-center justify-between px-4 py-3 bg-background/80 backdrop-blur-md sticky top-0 z-40 border-b border-border/50">
+          <h1 className="text-lg font-display font-bold text-gradient">
             MoneyFlow
           </h1>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={toggleTheme}>
-              {theme === 'dark' ? (
-                <Sun className="w-5 h-5" />
-              ) : (
-                <Moon className="w-5 h-5" />
-              )}
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? (
-                <X className="w-5 h-5" />
-              ) : (
-                <Menu className="w-5 h-5" />
-              )}
-            </Button>
-          </div>
+          <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-9 w-9">
+            {theme === 'dark' ? (
+              <Sun className="w-5 h-5" />
+            ) : (
+              <Moon className="w-5 h-5" />
+            )}
+          </Button>
         </header>
 
-        {/* Mobile Menu Overlay */}
-        <AnimatePresence>
-          {isMobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="lg:hidden fixed inset-0 z-30 bg-background/95 backdrop-blur-sm pt-16"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              <motion.nav
-                initial={{ y: -20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: -20, opacity: 0 }}
-                className="p-4 space-y-2"
-              >
-                {navItems.map((item) => (
-                  <NavLink
-                    key={item.path}
-                    to={item.path}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={({ isActive }) =>
-                      cn(
-                        'flex items-center gap-3 px-4 py-4 rounded-xl transition-all',
-                        isActive
-                          ? 'bg-primary/10 text-primary'
-                          : 'text-muted-foreground'
-                      )
-                    }
-                  >
-                    <item.icon className="w-6 h-6" />
-                    <span className="text-lg font-medium">{item.label}</span>
-                  </NavLink>
-                ))}
-              </motion.nav>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
         {/* Page Content */}
-        <div className="flex-1 p-4 lg:p-8 overflow-auto">
+        <div className="flex-1 px-4 py-4 lg:p-8 overflow-auto">
           <Outlet />
         </div>
 
-        {/* Mobile Bottom Navigation */}
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-md border-t border-border z-40">
-          <div className="flex justify-around items-center py-2">
-            {navItems.map((item) => {
+        {/* Mobile Bottom Navigation - Optimized */}
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-card/98 backdrop-blur-lg border-t border-border z-40 safe-area-bottom">
+          <div className="flex items-center justify-around h-16">
+            {navItems.slice(0, 2).map((item) => {
               const isActive = location.pathname === item.path;
               return (
                 <NavLink
                   key={item.path}
                   to={item.path}
                   className={cn(
-                    'flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all',
+                    'flex flex-col items-center justify-center h-full px-6 transition-colors',
                     isActive ? 'text-primary' : 'text-muted-foreground'
                   )}
                 >
-                  <item.icon className={cn('w-5 h-5', isActive && 'scale-110')} />
-                  <span className="text-[10px] font-medium">{item.label}</span>
+                  <item.icon className={cn('w-6 h-6', isActive && 'scale-110')} />
+                  <span className="text-[11px] font-medium mt-1">{item.label}</span>
+                </NavLink>
+              );
+            })}
+
+            {/* Center FAB Area - Placeholder for spacing */}
+            <div className="w-16" />
+
+            {navItems.slice(2).map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={cn(
+                    'flex flex-col items-center justify-center h-full px-6 transition-colors',
+                    isActive ? 'text-primary' : 'text-muted-foreground'
+                  )}
+                >
+                  <item.icon className={cn('w-6 h-6', isActive && 'scale-110')} />
+                  <span className="text-[11px] font-medium mt-1">{item.label}</span>
                 </NavLink>
               );
             })}
@@ -189,12 +154,22 @@ export default function AppLayout() {
         </nav>
       </main>
 
-      {/* Floating Action Button */}
+      {/* Floating Action Button - Centered in nav */}
+      <motion.button
+        whileTap={{ scale: 0.9 }}
+        onClick={() => setIsQuickRecordOpen(true)}
+        className="lg:hidden fixed left-1/2 -translate-x-1/2 bottom-4 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-xl flex items-center justify-center border-4 border-background"
+        style={{ boxShadow: '0 4px 20px hsl(var(--primary) / 0.4)' }}
+      >
+        <Plus className="w-7 h-7" strokeWidth={2.5} />
+      </motion.button>
+
+      {/* Desktop FAB */}
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsQuickRecordOpen(true)}
-        className="fixed right-4 bottom-24 lg:bottom-8 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center animate-pulse-glow"
+        className="hidden lg:flex fixed right-8 bottom-8 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg items-center justify-center animate-pulse-glow"
       >
         <Plus className="w-6 h-6" />
       </motion.button>

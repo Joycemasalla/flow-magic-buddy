@@ -4,6 +4,20 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Hide scrollbar for horizontal scroll */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Safe area for mobile devices */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
 @layer base {
   :root {
     --background: 222 47% 11%;
