@@ -91,7 +91,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 sm:space-y-5 max-w-full overflow-hidden">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -119,14 +119,14 @@ export default function Dashboard() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-hide"
+        className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide"
       >
         {(Object.keys(periodLabels) as PeriodFilter[]).map((period) => (
           <button
             key={period}
             onClick={() => setPeriodFilter(period)}
             className={cn(
-              'px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all min-h-[44px] active:scale-95',
+              'px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-all min-h-[40px] sm:min-h-[44px] active:scale-95',
               periodFilter === period
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-muted text-muted-foreground'
