@@ -327,7 +327,7 @@ export default function Loans() {
 
       {/* Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-lg mx-auto">
           <DialogHeader>
             <DialogTitle>Novo Empréstimo</DialogTitle>
           </DialogHeader>
@@ -336,12 +336,12 @@ export default function Loans() {
             {/* Loan Type Selector */}
             <div className="space-y-2">
               <Label>Tipo</Label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => setLoanType('given')}
                   className={cn(
-                    'p-4 rounded-lg border-2 transition-all text-center',
+                    'p-3 rounded-lg border-2 transition-all text-center',
                     loanType === 'given'
                       ? 'border-expense bg-expense/10 text-expense'
                       : 'border-border hover:border-muted-foreground'
@@ -354,7 +354,7 @@ export default function Loans() {
                   type="button"
                   onClick={() => setLoanType('received')}
                   className={cn(
-                    'p-4 rounded-lg border-2 transition-all text-center',
+                    'p-3 rounded-lg border-2 transition-all text-center',
                     loanType === 'received'
                       ? 'border-income bg-income/10 text-income'
                       : 'border-border hover:border-muted-foreground'
@@ -404,7 +404,7 @@ export default function Loans() {
               />
             </div>
 
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full min-h-[44px]">
               Adicionar Empréstimo
             </Button>
           </form>
