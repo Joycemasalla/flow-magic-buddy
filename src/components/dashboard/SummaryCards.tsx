@@ -25,7 +25,7 @@ export default function SummaryCards({
       >
         <p className="text-sm text-muted-foreground font-medium mb-1">Saldo atual</p>
         <p className={cn(
-          'text-4xl lg:text-5xl font-bold font-display',
+          'text-2xl sm:text-3xl lg:text-5xl font-bold font-display truncate',
           balance >= 0 ? 'text-income' : 'text-expense'
         )}>
           R$ {Math.abs(balance).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
@@ -49,7 +49,7 @@ export default function SummaryCards({
             </div>
             <span className="text-xs text-muted-foreground font-medium">Receitas</span>
           </div>
-          <p className="text-xl lg:text-2xl font-bold text-income">
+          <p className="text-base sm:text-xl lg:text-2xl font-bold text-income truncate">
             R$ {income.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
           </p>
         </motion.div>
@@ -66,7 +66,7 @@ export default function SummaryCards({
             </div>
             <span className="text-xs text-muted-foreground font-medium">Despesas</span>
           </div>
-          <p className="text-xl lg:text-2xl font-bold text-expense">
+          <p className="text-base sm:text-xl lg:text-2xl font-bold text-expense truncate">
             R$ {expense.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
           </p>
         </motion.div>

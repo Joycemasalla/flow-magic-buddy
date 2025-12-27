@@ -106,15 +106,15 @@ function SwipeableItem({ transaction, onEdit, onDelete }: SwipeableItemProps) {
             )}
           />
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="font-medium truncate text-[15px]">{transaction.description}</p>
-          <p className="text-xs text-muted-foreground">
+        <div className="flex-1 min-w-0 overflow-hidden">
+          <p className="font-medium truncate text-sm sm:text-[15px]">{transaction.description}</p>
+          <p className="text-xs text-muted-foreground truncate">
             {categoryLabels[transaction.category]}
           </p>
         </div>
         <p
           className={cn(
-            'font-bold text-base flex-shrink-0',
+            'font-bold text-sm sm:text-base flex-shrink-0 ml-2',
             isIncome ? 'text-income' : 'text-expense'
           )}
         >
@@ -174,7 +174,7 @@ export default function TransactionList({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-5"
+      className="space-y-4 sm:space-y-5 max-w-full overflow-hidden"
     >
       <h3 className="text-lg font-semibold">Transações</h3>
       <div className="space-y-5">

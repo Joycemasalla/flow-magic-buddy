@@ -29,7 +29,7 @@ export default function AppLayout() {
   const [isQuickRecordOpen, setIsQuickRecordOpen] = useState(false);
 
   return (
-    <div className="min-h-screen flex w-full bg-background">
+    <div className="min-h-screen flex w-full bg-background overflow-x-hidden">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex flex-col w-64 bg-sidebar border-r border-sidebar-border">
         <div className="p-6">
@@ -113,7 +113,7 @@ export default function AppLayout() {
 
         {/* Mobile Bottom Navigation - Optimized */}
         <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-card/98 backdrop-blur-lg border-t border-border z-40 safe-area-bottom">
-          <div className="flex items-center justify-around h-16">
+          <div className="flex items-center justify-around h-16 max-w-screen-sm mx-auto">
             {navItems.slice(0, 2).map((item) => {
               const isActive = location.pathname === item.path;
               return (
@@ -121,18 +121,18 @@ export default function AppLayout() {
                   key={item.path}
                   to={item.path}
                   className={cn(
-                    'flex flex-col items-center justify-center h-full px-6 transition-colors',
+                    'flex flex-col items-center justify-center h-full px-3 sm:px-4 transition-colors min-w-[60px]',
                     isActive ? 'text-primary' : 'text-muted-foreground'
                   )}
                 >
-                  <item.icon className={cn('w-6 h-6', isActive && 'scale-110')} />
-                  <span className="text-[11px] font-medium mt-1">{item.label}</span>
+                  <item.icon className={cn('w-5 h-5 sm:w-6 sm:h-6', isActive && 'scale-110')} />
+                  <span className="text-[10px] sm:text-[11px] font-medium mt-0.5">{item.label}</span>
                 </NavLink>
               );
             })}
 
             {/* Center FAB Area - Placeholder for spacing */}
-            <div className="w-16" />
+            <div className="w-12 sm:w-16" />
 
             {navItems.slice(2).map((item) => {
               const isActive = location.pathname === item.path;
@@ -141,12 +141,12 @@ export default function AppLayout() {
                   key={item.path}
                   to={item.path}
                   className={cn(
-                    'flex flex-col items-center justify-center h-full px-6 transition-colors',
+                    'flex flex-col items-center justify-center h-full px-3 sm:px-4 transition-colors min-w-[60px]',
                     isActive ? 'text-primary' : 'text-muted-foreground'
                   )}
                 >
-                  <item.icon className={cn('w-6 h-6', isActive && 'scale-110')} />
-                  <span className="text-[11px] font-medium mt-1">{item.label}</span>
+                  <item.icon className={cn('w-5 h-5 sm:w-6 sm:h-6', isActive && 'scale-110')} />
+                  <span className="text-[10px] sm:text-[11px] font-medium mt-0.5">{item.label}</span>
                 </NavLink>
               );
             })}
@@ -156,12 +156,12 @@ export default function AppLayout() {
 
       {/* Floating Action Button - Centered in nav */}
       <motion.button
-        whileTap={{ scale: 0.9 }}
+        whileTap={{ opacity: 0.8 }}
         onClick={() => setIsQuickRecordOpen(true)}
-        className="lg:hidden fixed left-1/2 -translate-x-1/2 bottom-4 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-xl flex items-center justify-center border-4 border-background"
+        className="lg:hidden fixed left-1/2 -translate-x-1/2 bottom-4 z-50 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary text-primary-foreground shadow-xl flex items-center justify-center border-4 border-background active:bg-primary/90 transition-colors"
         style={{ boxShadow: '0 4px 20px hsl(var(--primary) / 0.4)' }}
       >
-        <Plus className="w-7 h-7" strokeWidth={2.5} />
+        <Plus className="w-6 h-6 sm:w-7 sm:h-7" strokeWidth={2.5} />
       </motion.button>
 
       {/* Desktop FAB */}
