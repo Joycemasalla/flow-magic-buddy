@@ -113,61 +113,61 @@ export default function Loans() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: index * 0.1 }}
         className={cn(
-          'glass-card rounded-xl p-5 hover-lift',
+          'glass-card rounded-xl p-4 sm:p-5 hover-lift active:scale-[0.98] transition-transform',
           !isPending && 'opacity-60'
         )}
       >
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-3">
+        <div className="flex items-start justify-between mb-2 sm:mb-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
             <div
               className={cn(
-                'w-10 h-10 rounded-lg flex items-center justify-center',
+                'w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center shrink-0',
                 isGiven ? 'bg-expense/10' : 'bg-income/10'
               )}
             >
               {isGiven ? (
-                <ArrowUpRight className="w-5 h-5 text-expense" />
+                <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5 text-expense" />
               ) : (
-                <ArrowDownLeft className="w-5 h-5 text-income" />
+                <ArrowDownLeft className="w-4 h-4 sm:w-5 sm:h-5 text-income" />
               )}
             </div>
-            <div>
-              <h3 className="font-semibold">{loan.loanPerson}</h3>
-              <p className="text-sm text-muted-foreground">
-                {isGiven ? 'Você emprestou' : 'Você pegou emprestado'}
+            <div className="min-w-0 flex-1">
+              <h3 className="font-semibold text-sm sm:text-base truncate">{loan.loanPerson}</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                {isGiven ? 'Você emprestou' : 'Você pegou'}
               </p>
             </div>
           </div>
           <div
             className={cn(
-              'px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1',
+              'px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 shrink-0',
               isPending ? 'bg-warning/10 text-warning' : 'bg-income/10 text-income'
             )}
           >
             {isPending ? (
               <>
                 <Clock className="w-3 h-3" />
-                Pendente
+                <span className="hidden sm:inline">Pendente</span>
               </>
             ) : (
               <>
                 <Check className="w-3 h-3" />
-                {isGiven ? 'Recebido' : 'Pago'}
+                <span className="hidden sm:inline">{isGiven ? 'Recebido' : 'Pago'}</span>
               </>
             )}
           </div>
         </div>
 
         {loan.description && (
-          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+          <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3 line-clamp-1 sm:line-clamp-2">
             {loan.description}
           </p>
         )}
 
-        <div className="flex items-center justify-between pt-3 border-t border-border">
+        <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-border">
           <p
             className={cn(
-              'text-xl font-bold',
+              'text-lg sm:text-xl font-bold',
               isGiven ? 'text-expense' : 'text-income'
             )}
           >
@@ -180,8 +180,9 @@ export default function Loans() {
               size="sm"
               variant="outline"
               onClick={() => handleStatusChange(loan.id, loan.type)}
+              className="min-h-[36px] sm:min-h-[40px] text-xs sm:text-sm"
             >
-              <Check className="w-4 h-4 mr-1" />
+              <Check className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
               {isGiven ? 'Recebi' : 'Paguei'}
             </Button>
           )}
@@ -191,39 +192,40 @@ export default function Loans() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
+          className="flex-1 min-w-0"
         >
-          <h1 className="text-2xl lg:text-3xl font-display font-bold">Empréstimos</h1>
-          <p className="text-muted-foreground">
-            Controle seus empréstimos dados e recebidos
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-display font-bold">Empréstimos</h1>
+          <p className="text-sm text-muted-foreground truncate">
+            Controle seus empréstimos
           </p>
         </motion.div>
 
-        <Button onClick={() => setIsModalOpen(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Novo Empréstimo
+        <Button onClick={() => setIsModalOpen(true)} className="min-h-[44px] shrink-0">
+          <Plus className="w-4 h-4 sm:mr-2" />
+          <span className="hidden sm:inline">Novo Empréstimo</span>
         </Button>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Summary Cards - Horizontal scroll on mobile */}
+      <div className="flex gap-3 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-3 scrollbar-hide">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="glass-card rounded-xl p-5"
+          className="glass-card rounded-xl p-4 min-w-[140px] sm:min-w-0 shrink-0 sm:shrink"
         >
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-lg bg-expense/10 flex items-center justify-center">
-              <ArrowUpRight className="w-5 h-5 text-expense" />
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-8 h-8 rounded-lg bg-expense/10 flex items-center justify-center">
+              <ArrowUpRight className="w-4 h-4 text-expense" />
             </div>
-            <span className="text-sm text-muted-foreground">Emprestado</span>
+            <span className="text-xs text-muted-foreground">Emprestado</span>
           </div>
-          <p className="text-2xl font-bold text-expense">
+          <p className="text-lg sm:text-2xl font-bold text-expense">
             R$ {stats.totalGiven.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
           </p>
         </motion.div>
@@ -232,15 +234,15 @@ export default function Loans() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="glass-card rounded-xl p-5"
+          className="glass-card rounded-xl p-4 min-w-[140px] sm:min-w-0 shrink-0 sm:shrink"
         >
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-lg bg-income/10 flex items-center justify-center">
-              <ArrowDownLeft className="w-5 h-5 text-income" />
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-8 h-8 rounded-lg bg-income/10 flex items-center justify-center">
+              <ArrowDownLeft className="w-4 h-4 text-income" />
             </div>
-            <span className="text-sm text-muted-foreground">A Pagar</span>
+            <span className="text-xs text-muted-foreground">A Pagar</span>
           </div>
-          <p className="text-2xl font-bold text-income">
+          <p className="text-lg sm:text-2xl font-bold text-income">
             R$ {stats.totalReceived.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
           </p>
         </motion.div>
@@ -249,17 +251,17 @@ export default function Loans() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="glass-card rounded-xl p-5"
+          className="glass-card rounded-xl p-4 min-w-[140px] sm:min-w-0 shrink-0 sm:shrink"
         >
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
-              <HandCoins className="w-5 h-5 text-accent" />
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
+              <HandCoins className="w-4 h-4 text-accent" />
             </div>
-            <span className="text-sm text-muted-foreground">Saldo</span>
+            <span className="text-xs text-muted-foreground">Saldo</span>
           </div>
           <p
             className={cn(
-              'text-2xl font-bold',
+              'text-lg sm:text-2xl font-bold',
               stats.balance >= 0 ? 'text-income' : 'text-expense'
             )}
           >
@@ -273,32 +275,32 @@ export default function Loans() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="glass-card rounded-xl p-8 text-center"
+          className="glass-card rounded-xl p-6 sm:p-8 text-center"
         >
-          <HandCoins className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Nenhum empréstimo</h3>
-          <p className="text-muted-foreground mb-4">
+          <HandCoins className="w-10 h-10 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
+          <h3 className="text-base sm:text-lg font-semibold mb-2">Nenhum empréstimo</h3>
+          <p className="text-sm text-muted-foreground mb-4">
             Registre empréstimos dados ou recebidos
           </p>
-          <Button onClick={() => setIsModalOpen(true)}>
+          <Button onClick={() => setIsModalOpen(true)} className="min-h-[44px]">
             <Plus className="w-4 h-4 mr-2" />
             Adicionar Empréstimo
           </Button>
         </motion.div>
       ) : (
-        <div className="grid lg:grid-cols-2 gap-6">
+        <div className="space-y-6 lg:grid lg:grid-cols-2 lg:gap-6 lg:space-y-0">
           {/* Given Loans */}
           <div>
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <ArrowUpRight className="w-5 h-5 text-expense" />
+            <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center gap-2">
+              <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5 text-expense" />
               Emprestado (A Receber)
             </h2>
             {givenLoans.length === 0 ? (
-              <div className="glass-card rounded-xl p-6 text-center text-muted-foreground">
+              <div className="glass-card rounded-xl p-4 sm:p-6 text-center text-muted-foreground text-sm">
                 Nenhum empréstimo dado
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {givenLoans.map((loan, index) => renderLoanCard(loan, index))}
               </div>
             )}
@@ -306,16 +308,16 @@ export default function Loans() {
 
           {/* Received Loans */}
           <div>
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <ArrowDownLeft className="w-5 h-5 text-income" />
+            <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center gap-2">
+              <ArrowDownLeft className="w-4 h-4 sm:w-5 sm:h-5 text-income" />
               Pego Emprestado (A Pagar)
             </h2>
             {receivedLoans.length === 0 ? (
-              <div className="glass-card rounded-xl p-6 text-center text-muted-foreground">
+              <div className="glass-card rounded-xl p-4 sm:p-6 text-center text-muted-foreground text-sm">
                 Nenhum empréstimo recebido
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {receivedLoans.map((loan, index) => renderLoanCard(loan, index))}
               </div>
             )}

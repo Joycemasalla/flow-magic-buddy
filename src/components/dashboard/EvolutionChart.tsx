@@ -12,12 +12,14 @@ import { Transaction } from '@/types/transaction';
 import { motion } from 'framer-motion';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 
 interface EvolutionChartProps {
   transactions: Transaction[];
+  compact?: boolean;
 }
 
-export default function EvolutionChart({ transactions }: EvolutionChartProps) {
+export default function EvolutionChart({ transactions, compact = false }: EvolutionChartProps) {
   // Get last 7 days data
   const last7Days = Array.from({ length: 7 }, (_, i) => {
     const date = subDays(new Date(), 6 - i);
@@ -49,10 +51,12 @@ export default function EvolutionChart({ transactions }: EvolutionChartProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1 }}
-      className="glass-card rounded-xl p-6"
+      className={cn('glass-card rounded-xl', compact ? 'p-4' : 'p-6')}
     >
-      <h3 className="text-lg font-semibold mb-4">Evolução Semanal</h3>
-      <div className="h-64">
+      <h3 className={cn('font-semibold', compact ? 'text-sm mb-3' : 'text-lg mb-4')}>
+        Evolução Semanal
+      </h3>
+      <div className={cn(compact ? 'h-40' : 'h-64')}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={last7Days}>
             <CartesianGrid
@@ -64,13 +68,14 @@ export default function EvolutionChart({ transactions }: EvolutionChartProps) {
               dataKey="name"
               axisLine={false}
               tickLine={false}
-              tick={{ fill: 'hsl(215 20% 65%)', fontSize: 12 }}
+              tick={{ fill: 'hsl(215 20% 65%)', fontSize: compact ? 10 : 12 }}
             />
             <YAxis
               axisLine={false}
               tickLine={false}
-              tick={{ fill: 'hsl(215 20% 65%)', fontSize: 12 }}
+              tick={{ fill: 'hsl(215 20% 65%)', fontSize: compact ? 10 : 12 }}
               tickFormatter={(value) => `${value / 1000}k`}
+              width={compact ? 30 : 40}
             />
             <Tooltip
               formatter={(value: number) =>
@@ -84,7 +89,8 @@ export default function EvolutionChart({ transactions }: EvolutionChartProps) {
               }}
             />
             <Legend
-              formatter={(value) => <span className="text-sm text-foreground">{value}</span>}
+              formatter={(value) => <span className="text-xs text-foreground">{value}</span>}
+              wrapperStyle={{ fontSize: compact ? '10px' : '12px' }}
             />
             <Bar
               dataKey="Receitas"

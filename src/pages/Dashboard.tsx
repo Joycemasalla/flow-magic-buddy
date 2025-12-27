@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { Calendar } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Download, ChevronDown, ChevronUp } from 'lucide-react';
 import { useTransactions } from '@/contexts/TransactionContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -9,6 +9,8 @@ import SummaryCards from '@/components/dashboard/SummaryCards';
 import CategoryChart from '@/components/dashboard/CategoryChart';
 import EvolutionChart from '@/components/dashboard/EvolutionChart';
 import TransactionList from '@/components/dashboard/TransactionList';
+import ReportModal from '@/components/modals/ReportModal';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 type PeriodFilter = 'today' | 'week' | 'month' | 'year' | 'all';
@@ -27,6 +29,8 @@ export default function Dashboard() {
   const { toast } = useToast();
   
   const [periodFilter, setPeriodFilter] = useState<PeriodFilter>('month');
+  const [showCharts, setShowCharts] = useState(false);
+  const [isReportOpen, setIsReportOpen] = useState(false);
 
   const filteredTransactions = useMemo(() => {
     return transactions.filter((t) => {
@@ -100,6 +104,15 @@ export default function Dashboard() {
             Suas finanças em dia
           </p>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setIsReportOpen(true)}
+          className="min-h-[44px] px-4"
+        >
+          <Download className="w-4 h-4 mr-2" />
+          <span className="hidden sm:inline">Exportar</span>
+        </Button>
       </motion.div>
 
       {/* Period Filter Pills - Horizontal Scroll */}
@@ -113,7 +126,7 @@ export default function Dashboard() {
             key={period}
             onClick={() => setPeriodFilter(period)}
             className={cn(
-              'px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all',
+              'px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all min-h-[44px] active:scale-95',
               periodFilter === period
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-muted text-muted-foreground'
@@ -132,10 +145,42 @@ export default function Dashboard() {
         transactionCount={stats.count}
       />
 
-      {/* Charts - Collapsed by default on mobile */}
-      <div className="hidden lg:grid lg:grid-cols-2 gap-6">
-        <CategoryChart transactions={filteredTransactions} />
-        <EvolutionChart transactions={transactions} />
+      {/* Charts - Collapsible on mobile */}
+      <div className="space-y-4">
+        {/* Mobile Toggle */}
+        <button
+          onClick={() => setShowCharts(!showCharts)}
+          className="lg:hidden w-full flex items-center justify-between px-4 py-3 bg-muted/50 rounded-xl text-sm font-medium min-h-[44px] active:scale-[0.98] transition-transform"
+        >
+          <span>Ver Gráficos</span>
+          {showCharts ? (
+            <ChevronUp className="w-4 h-4" />
+          ) : (
+            <ChevronDown className="w-4 h-4" />
+          )}
+        </button>
+
+        {/* Mobile Charts (Collapsible) */}
+        <AnimatePresence>
+          {showCharts && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="lg:hidden overflow-hidden space-y-4"
+            >
+              <CategoryChart transactions={filteredTransactions} compact />
+              <EvolutionChart transactions={transactions} compact />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Desktop Charts */}
+        <div className="hidden lg:grid lg:grid-cols-2 gap-6">
+          <CategoryChart transactions={filteredTransactions} />
+          <EvolutionChart transactions={transactions} />
+        </div>
       </div>
 
       {/* Transaction List */}
@@ -143,6 +188,15 @@ export default function Dashboard() {
         transactions={filteredTransactions}
         onEdit={handleEdit}
         onDelete={handleDelete}
+      />
+
+      {/* Report Modal */}
+      <ReportModal
+        isOpen={isReportOpen}
+        onClose={() => setIsReportOpen(false)}
+        transactions={filteredTransactions}
+        stats={stats}
+        period={periodLabels[periodFilter]}
       />
     </div>
   );

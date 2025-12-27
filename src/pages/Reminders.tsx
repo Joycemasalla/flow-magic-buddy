@@ -152,22 +152,23 @@ export default function Reminders() {
   const activeReminders = reminders.filter((r) => r.isActive);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
+          className="flex-1 min-w-0"
         >
-          <h1 className="text-2xl lg:text-3xl font-display font-bold">Lembretes</h1>
-          <p className="text-muted-foreground">
-            Gerencie suas contas recorrentes
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-display font-bold">Lembretes</h1>
+          <p className="text-sm text-muted-foreground truncate">
+            Gerencie suas contas
           </p>
         </motion.div>
 
-        <Button onClick={() => openModal()}>
-          <Plus className="w-4 h-4 mr-2" />
-          Novo Lembrete
+        <Button onClick={() => openModal()} className="min-h-[44px] shrink-0">
+          <Plus className="w-4 h-4 sm:mr-2" />
+          <span className="hidden sm:inline">Novo Lembrete</span>
         </Button>
       </div>
 
@@ -176,20 +177,20 @@ export default function Reminders() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="glass-card rounded-xl p-8 text-center"
+          className="glass-card rounded-xl p-6 sm:p-8 text-center"
         >
-          <Bell className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Nenhum lembrete</h3>
-          <p className="text-muted-foreground mb-4">
+          <Bell className="w-10 h-10 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
+          <h3 className="text-base sm:text-lg font-semibold mb-2">Nenhum lembrete</h3>
+          <p className="text-sm text-muted-foreground mb-4">
             Adicione lembretes para não esquecer de pagar suas contas
           </p>
-          <Button onClick={() => openModal()}>
+          <Button onClick={() => openModal()} className="min-h-[44px]">
             <Plus className="w-4 h-4 mr-2" />
             Criar Lembrete
           </Button>
         </motion.div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {activeReminders.map((reminder, index) => {
             const status = getDueStatus(reminder.dueDay);
             return (
@@ -197,36 +198,36 @@ export default function Reminders() {
                 key={reminder.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="glass-card rounded-xl p-5 hover-lift"
+                transition={{ delay: index * 0.05 }}
+                className="glass-card rounded-xl p-4 sm:p-5 hover-lift active:scale-[0.98] transition-transform"
               >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
-                      <Bell className="w-5 h-5 text-accent" />
+                <div className="flex items-start justify-between mb-2 sm:mb-3">
+                  <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
+                      <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
                     </div>
-                    <div>
-                      <h3 className="font-semibold">{reminder.title}</h3>
-                      <p className="text-sm text-muted-foreground">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-semibold text-sm sm:text-base truncate">{reminder.title}</h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground truncate">
                         {categoryLabels[reminder.category]}
                       </p>
                     </div>
                   </div>
-                  <div className={cn('px-2 py-1 rounded-full text-xs font-medium', status.bg, status.color)}>
+                  <div className={cn('px-2 py-1 rounded-full text-xs font-medium shrink-0', status.bg, status.color)}>
                     <Clock className="w-3 h-3 inline mr-1" />
                     {status.label}
                   </div>
                 </div>
 
                 {reminder.description && (
-                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3 line-clamp-1 sm:line-clamp-2">
                     {reminder.description}
                   </p>
                 )}
 
-                <div className="flex items-center justify-between pt-3 border-t border-border">
-                  <div>
-                    <p className="text-lg font-bold text-expense">
+                <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-border">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-base sm:text-lg font-bold text-expense">
                       R$ {reminder.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </p>
                     <p className="text-xs text-muted-foreground">
@@ -234,11 +235,12 @@ export default function Reminders() {
                       Dia {reminder.dueDay} • {reminder.type === 'monthly' ? 'Mensal' : 'Único'}
                     </p>
                   </div>
-                  <div className="flex gap-1">
+                  <div className="flex gap-1 shrink-0">
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => openModal(reminder)}
+                      className="min-h-[36px] min-w-[36px] sm:min-h-[40px] sm:min-w-[40px]"
                     >
                       <Pencil className="w-4 h-4" />
                     </Button>
@@ -246,7 +248,7 @@ export default function Reminders() {
                       variant="ghost"
                       size="icon"
                       onClick={() => handleDelete(reminder.id)}
-                      className="text-destructive hover:text-destructive"
+                      className="text-destructive hover:text-destructive min-h-[36px] min-w-[36px] sm:min-h-[40px] sm:min-w-[40px]"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>

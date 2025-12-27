@@ -1,12 +1,14 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { Transaction, categoryLabels, categoryColors } from '@/types/transaction';
 import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 interface CategoryChartProps {
   transactions: Transaction[];
+  compact?: boolean;
 }
 
-export default function CategoryChart({ transactions }: CategoryChartProps) {
+export default function CategoryChart({ transactions, compact = false }: CategoryChartProps) {
   const expenses = transactions.filter((t) => t.type === 'expense');
   
   const categoryTotals = expenses.reduce((acc, t) => {
@@ -28,10 +30,12 @@ export default function CategoryChart({ transactions }: CategoryChartProps) {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="glass-card rounded-xl p-6"
+        className={cn('glass-card rounded-xl p-4', compact ? 'p-4' : 'p-6')}
       >
-        <h3 className="text-lg font-semibold mb-4">Gastos por Categoria</h3>
-        <div className="h-64 flex items-center justify-center text-muted-foreground">
+        <h3 className={cn('font-semibold mb-3', compact ? 'text-sm' : 'text-lg mb-4')}>
+          Gastos por Categoria
+        </h3>
+        <div className={cn('flex items-center justify-center text-muted-foreground', compact ? 'h-32' : 'h-64')}>
           Sem despesas no período
         </div>
       </motion.div>
@@ -42,18 +46,20 @@ export default function CategoryChart({ transactions }: CategoryChartProps) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="glass-card rounded-xl p-6"
+      className={cn('glass-card rounded-xl', compact ? 'p-4' : 'p-6')}
     >
-      <h3 className="text-lg font-semibold mb-4">Gastos por Categoria</h3>
-      <div className="h-64">
+      <h3 className={cn('font-semibold', compact ? 'text-sm mb-3' : 'text-lg mb-4')}>
+        Gastos por Categoria
+      </h3>
+      <div className={cn(compact ? 'h-40' : 'h-64')}>
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
               data={data}
               cx="50%"
               cy="50%"
-              innerRadius={50}
-              outerRadius={80}
+              innerRadius={compact ? 30 : 50}
+              outerRadius={compact ? 55 : 80}
               paddingAngle={4}
               dataKey="value"
             >
@@ -73,7 +79,8 @@ export default function CategoryChart({ transactions }: CategoryChartProps) {
               }}
             />
             <Legend
-              formatter={(value) => <span className="text-sm text-foreground">{value}</span>}
+              formatter={(value) => <span className="text-xs text-foreground">{value}</span>}
+              wrapperStyle={{ fontSize: compact ? '10px' : '12px' }}
             />
           </PieChart>
         </ResponsiveContainer>
