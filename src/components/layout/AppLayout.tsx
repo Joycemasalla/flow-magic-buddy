@@ -107,7 +107,7 @@ export default function AppLayout() {
         </header>
 
         {/* Page Content */}
-        <div className="flex-1 px-4 py-4 lg:p-8 overflow-auto">
+        <div className="flex-1 px-4 py-4 lg:p-8 overflow-y-auto overflow-x-hidden">
           <Outlet />
         </div>
 

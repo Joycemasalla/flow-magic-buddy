@@ -192,7 +192,7 @@ export default function Loans() {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6 max-w-full overflow-hidden">
+    <div className="space-y-4 sm:space-y-6 max-w-full overflow-x-hidden">
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
         <motion.div
@@ -212,12 +212,12 @@ export default function Loans() {
         </Button>
       </div>
 
-      {/* Summary Cards - Horizontal scroll on mobile */}
-      <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide sm:grid sm:grid-cols-3">
+      {/* Summary Cards */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="glass-card rounded-xl p-4 min-w-[140px] sm:min-w-0 shrink-0 sm:shrink"
+          className="glass-card rounded-xl p-4"
         >
           <div className="flex items-center gap-2 mb-2">
             <div className="w-8 h-8 rounded-lg bg-expense/10 flex items-center justify-center">
@@ -225,7 +225,7 @@ export default function Loans() {
             </div>
             <span className="text-xs text-muted-foreground">Emprestado</span>
           </div>
-          <p className="text-lg sm:text-2xl font-bold text-expense">
+          <p className="text-lg sm:text-2xl font-bold text-expense truncate">
             R$ {stats.totalGiven.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
           </p>
         </motion.div>
@@ -234,7 +234,7 @@ export default function Loans() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="glass-card rounded-xl p-4 min-w-[140px] sm:min-w-0 shrink-0 sm:shrink"
+          className="glass-card rounded-xl p-4"
         >
           <div className="flex items-center gap-2 mb-2">
             <div className="w-8 h-8 rounded-lg bg-income/10 flex items-center justify-center">
@@ -242,7 +242,7 @@ export default function Loans() {
             </div>
             <span className="text-xs text-muted-foreground">A Pagar</span>
           </div>
-          <p className="text-lg sm:text-2xl font-bold text-income">
+          <p className="text-lg sm:text-2xl font-bold text-income truncate">
             R$ {stats.totalReceived.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
           </p>
         </motion.div>
@@ -251,7 +251,7 @@ export default function Loans() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="glass-card rounded-xl p-4 min-w-[140px] sm:min-w-0 shrink-0 sm:shrink"
+          className="glass-card rounded-xl p-4 col-span-2 sm:col-span-1"
         >
           <div className="flex items-center gap-2 mb-2">
             <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
@@ -261,7 +261,7 @@ export default function Loans() {
           </div>
           <p
             className={cn(
-              'text-lg sm:text-2xl font-bold',
+              'text-lg sm:text-2xl font-bold truncate',
               stats.balance >= 0 ? 'text-income' : 'text-expense'
             )}
           >
