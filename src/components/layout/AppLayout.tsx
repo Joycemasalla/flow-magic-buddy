@@ -7,6 +7,7 @@ import {
   Receipt,
   Bell,
   HandCoins,
+  TrendingUp,
   Moon,
   Sun,
   User,
@@ -19,6 +20,7 @@ import QuickRecordModal from '@/components/modals/QuickRecordModal';
 const navItems = [
   { path: '/', icon: LayoutDashboard, label: 'Início' },
   { path: '/transacoes', icon: Receipt, label: 'Transações' },
+  { path: '/investimentos', icon: TrendingUp, label: 'Investir' },
   { path: '/lembretes', icon: Bell, label: 'Lembretes' },
   { path: '/emprestimos', icon: HandCoins, label: 'Empréstimos' },
 ];
@@ -111,9 +113,9 @@ export default function AppLayout() {
           <Outlet />
         </div>
 
-        {/* Mobile Bottom Navigation - Optimized */}
+        {/* Mobile Bottom Navigation - 5 items with centered FAB */}
         <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-card/98 backdrop-blur-lg border-t border-border z-40 safe-area-bottom">
-          <div className="flex items-center justify-around h-16 max-w-screen-sm mx-auto">
+          <div className="grid grid-cols-5 h-16 max-w-screen-sm mx-auto">
             {navItems.slice(0, 2).map((item) => {
               const isActive = location.pathname === item.path;
               return (
@@ -121,32 +123,50 @@ export default function AppLayout() {
                   key={item.path}
                   to={item.path}
                   className={cn(
-                    'flex flex-col items-center justify-center h-full px-3 sm:px-4 transition-colors min-w-[60px]',
+                    'flex flex-col items-center justify-center h-full transition-colors',
                     isActive ? 'text-primary' : 'text-muted-foreground'
                   )}
                 >
-                  <item.icon className={cn('w-5 h-5 sm:w-6 sm:h-6', isActive && 'scale-110')} />
-                  <span className="text-[10px] sm:text-[11px] font-medium mt-0.5">{item.label}</span>
+                  <item.icon className={cn('w-5 h-5', isActive && 'scale-110')} />
+                  <span className="text-[9px] font-medium mt-0.5 truncate max-w-[56px] text-center">{item.label}</span>
                 </NavLink>
               );
             })}
 
             {/* Center FAB Area - Placeholder for spacing */}
-            <div className="w-12 sm:w-16" />
+            <div className="flex items-center justify-center" />
 
-            {navItems.slice(2).map((item) => {
+            {navItems.slice(2, 4).map((item) => {
               const isActive = location.pathname === item.path;
               return (
                 <NavLink
                   key={item.path}
                   to={item.path}
                   className={cn(
-                    'flex flex-col items-center justify-center h-full px-3 sm:px-4 transition-colors min-w-[60px]',
+                    'flex flex-col items-center justify-center h-full transition-colors',
                     isActive ? 'text-primary' : 'text-muted-foreground'
                   )}
                 >
-                  <item.icon className={cn('w-5 h-5 sm:w-6 sm:h-6', isActive && 'scale-110')} />
-                  <span className="text-[10px] sm:text-[11px] font-medium mt-0.5">{item.label}</span>
+                  <item.icon className={cn('w-5 h-5', isActive && 'scale-110')} />
+                  <span className="text-[9px] font-medium mt-0.5 truncate max-w-[56px] text-center">{item.label}</span>
+                </NavLink>
+              );
+            })}
+            
+            {/* 5th item (Empréstimos) as icon only on mobile */}
+            {navItems.slice(4).map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={cn(
+                    'flex flex-col items-center justify-center h-full transition-colors',
+                    isActive ? 'text-primary' : 'text-muted-foreground'
+                  )}
+                >
+                  <item.icon className={cn('w-5 h-5', isActive && 'scale-110')} />
+                  <span className="text-[9px] font-medium mt-0.5 truncate max-w-[56px] text-center">Emprést.</span>
                 </NavLink>
               );
             })}
