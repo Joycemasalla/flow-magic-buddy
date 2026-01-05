@@ -9,6 +9,7 @@ import AppLayout from "@/components/layout/AppLayout";
 import Dashboard from "@/pages/Dashboard";
 import Transactions from "@/pages/Transactions";
 import TransactionForm from "@/pages/TransactionForm";
+import Investments from "@/pages/Investments";
 import Reminders from "@/pages/Reminders";
 import Loans from "@/pages/Loans";
 import NotFound from "@/pages/NotFound";
@@ -29,6 +30,7 @@ const App = () => (
                 <Route path="/transacoes" element={<Transactions />} />
                 <Route path="/transacoes/nova" element={<TransactionForm />} />
                 <Route path="/transacoes/editar/:id" element={<TransactionForm />} />
+                <Route path="/investimentos" element={<Investments />} />
                 <Route path="/lembretes" element={<Reminders />} />
                 <Route path="/emprestimos" element={<Loans />} />
               </Route>

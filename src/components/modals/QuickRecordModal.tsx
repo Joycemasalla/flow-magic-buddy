@@ -125,7 +125,7 @@ export default function QuickRecordModal({ isOpen, onClose }: QuickRecordModalPr
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[55]"
           />
 
           {/* Modal */}
@@ -134,7 +134,7 @@ export default function QuickRecordModal({ isOpen, onClose }: QuickRecordModalPr
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: '100%', opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border rounded-t-3xl safe-area-bottom max-h-[90vh] overflow-y-auto"
+            className="fixed bottom-0 left-0 right-0 z-[60] bg-card border-t border-border rounded-t-3xl safe-area-bottom max-h-[90vh] overflow-y-auto"
           >
             {/* Handle */}
             <div className="flex justify-center pt-3 pb-2 sticky top-0 bg-card">
