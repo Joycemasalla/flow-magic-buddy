@@ -134,10 +134,10 @@ export default function QuickRecordModal({ isOpen, onClose }: QuickRecordModalPr
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: '100%', opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-[60] bg-card border-t border-border rounded-t-3xl safe-area-bottom max-h-[90vh] overflow-y-auto"
+            className="fixed bottom-0 left-0 right-0 z-[60] bg-card border-t border-border rounded-t-3xl safe-area-bottom max-h-[85vh] overflow-y-auto"
           >
             {/* Handle */}
-            <div className="flex justify-center pt-3 pb-2 sticky top-0 bg-card">
+            <div className="flex justify-center pt-3 pb-2 sticky top-0 bg-card z-10">
               <div className="w-10 h-1 bg-muted-foreground/30 rounded-full" />
             </div>
 
@@ -232,7 +232,7 @@ export default function QuickRecordModal({ isOpen, onClose }: QuickRecordModalPr
                       ) : (
                         <>
                           <ChevronDown className="w-4 h-4" />
-                          Mais opções (data retroativa)
+                          Mais opções
                         </>
                       )}
                     </button>
@@ -247,14 +247,14 @@ export default function QuickRecordModal({ isOpen, onClose }: QuickRecordModalPr
                           className="space-y-3 overflow-hidden"
                         >
                           <div className="space-y-2">
-                            <Label className="text-sm">Data da transação</Label>
+                            <Label className="text-sm font-medium">Data da transação</Label>
                             <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                               <PopoverTrigger asChild>
                                 <Button
                                   variant="outline"
                                   className={cn(
-                                    'w-full justify-start text-left font-normal h-11 sm:h-12',
-                                    !isToday && 'text-primary'
+                                    'w-full justify-start text-left font-normal h-12',
+                                    !isToday && 'text-primary border-primary/50'
                                   )}
                                 >
                                   <Calendar className="mr-2 h-4 w-4" />
@@ -263,14 +263,20 @@ export default function QuickRecordModal({ isOpen, onClose }: QuickRecordModalPr
                                     : format(selectedDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                                 </Button>
                               </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="start">
+                              <PopoverContent 
+                                className="w-auto p-0 z-[70]" 
+                                align="center"
+                                side="top"
+                                sideOffset={8}
+                              >
                                 <CalendarComponent
                                   mode="single"
                                   selected={selectedDate}
                                   onSelect={handleDateSelect}
                                   disabled={(date) => date > new Date()}
                                   initialFocus
-                                  className="pointer-events-auto"
+                                  className="pointer-events-auto p-3"
+                                  locale={ptBR}
                                 />
                               </PopoverContent>
                             </Popover>
