@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   LayoutDashboard,
   Plus,
@@ -18,11 +18,11 @@ import { Button } from '@/components/ui/button';
 import QuickRecordModal from '@/components/modals/QuickRecordModal';
 
 const navItems = [
-  { path: '/', icon: LayoutDashboard, label: 'Início' },
-  { path: '/transacoes', icon: Receipt, label: 'Transações' },
-  { path: '/investimentos', icon: TrendingUp, label: 'Investir' },
-  { path: '/lembretes', icon: Bell, label: 'Lembretes' },
-  { path: '/emprestimos', icon: HandCoins, label: 'Empréstimos' },
+  { path: '/', icon: LayoutDashboard, label: 'Início', mobileLabel: 'Início' },
+  { path: '/transacoes', icon: Receipt, label: 'Transações', mobileLabel: 'Trans.' },
+  { path: '/investimentos', icon: TrendingUp, label: 'Investimentos', mobileLabel: 'Invest.' },
+  { path: '/lembretes', icon: Bell, label: 'Lembretes', mobileLabel: 'Alertas' },
+  { path: '/emprestimos', icon: HandCoins, label: 'Empréstimos', mobileLabel: 'Emprést.' },
 ];
 
 export default function AppLayout() {
@@ -93,8 +93,8 @@ export default function AppLayout() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-h-screen pb-24 lg:pb-0">
-        {/* Mobile Header - Simplified */}
+      <main className="flex-1 flex flex-col min-h-screen pb-20 lg:pb-0">
+        {/* Mobile Header */}
         <header className="lg:hidden flex items-center justify-between px-4 py-3 bg-background/80 backdrop-blur-md sticky top-0 z-40 border-b border-border/50">
           <h1 className="text-lg font-display font-bold text-gradient">
             MoneyFlow
@@ -112,76 +112,40 @@ export default function AppLayout() {
         <div className="flex-1 px-4 py-4 lg:p-8 overflow-y-auto overflow-x-hidden">
           <Outlet />
         </div>
-
-        {/* Mobile Bottom Navigation - 5 items with centered FAB */}
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-card/98 backdrop-blur-lg border-t border-border z-40 safe-area-bottom">
-          <div className="grid grid-cols-5 h-16 max-w-screen-sm mx-auto">
-            {navItems.slice(0, 2).map((item) => {
-              const isActive = location.pathname === item.path;
-              return (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  className={cn(
-                    'flex flex-col items-center justify-center h-full transition-colors',
-                    isActive ? 'text-primary' : 'text-muted-foreground'
-                  )}
-                >
-                  <item.icon className={cn('w-5 h-5', isActive && 'scale-110')} />
-                  <span className="text-[9px] font-medium mt-0.5 truncate max-w-[56px] text-center">{item.label}</span>
-                </NavLink>
-              );
-            })}
-
-            {/* Center FAB Area - Placeholder for spacing */}
-            <div className="flex items-center justify-center" />
-
-            {navItems.slice(2, 4).map((item) => {
-              const isActive = location.pathname === item.path;
-              return (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  className={cn(
-                    'flex flex-col items-center justify-center h-full transition-colors',
-                    isActive ? 'text-primary' : 'text-muted-foreground'
-                  )}
-                >
-                  <item.icon className={cn('w-5 h-5', isActive && 'scale-110')} />
-                  <span className="text-[9px] font-medium mt-0.5 truncate max-w-[56px] text-center">{item.label}</span>
-                </NavLink>
-              );
-            })}
-            
-            {/* 5th item (Empréstimos) as icon only on mobile */}
-            {navItems.slice(4).map((item) => {
-              const isActive = location.pathname === item.path;
-              return (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  className={cn(
-                    'flex flex-col items-center justify-center h-full transition-colors',
-                    isActive ? 'text-primary' : 'text-muted-foreground'
-                  )}
-                >
-                  <item.icon className={cn('w-5 h-5', isActive && 'scale-110')} />
-                  <span className="text-[9px] font-medium mt-0.5 truncate max-w-[56px] text-center">Emprést.</span>
-                </NavLink>
-              );
-            })}
-          </div>
-        </nav>
       </main>
 
-      {/* Floating Action Button - Centered in nav */}
+      {/* Mobile Bottom Navigation - Simple 5 items */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-card/98 backdrop-blur-lg border-t border-border z-40 safe-area-bottom">
+        <div className="flex justify-around items-center h-16 max-w-md mx-auto px-1">
+          {navItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={cn(
+                  'flex flex-col items-center justify-center py-2 px-2 min-w-[56px] rounded-lg transition-colors',
+                  isActive ? 'text-primary' : 'text-muted-foreground'
+                )}
+              >
+                <item.icon className={cn('w-5 h-5 mb-0.5', isActive && 'scale-110')} />
+                <span className="text-[10px] font-medium leading-tight text-center">
+                  {item.mobileLabel}
+                </span>
+              </NavLink>
+            );
+          })}
+        </div>
+      </nav>
+
+      {/* Floating Action Button - Fixed above nav */}
       <motion.button
-        whileTap={{ opacity: 0.8 }}
+        whileTap={{ scale: 0.95 }}
         onClick={() => setIsQuickRecordOpen(true)}
-        className="lg:hidden fixed left-1/2 -translate-x-1/2 bottom-4 z-50 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary text-primary-foreground shadow-xl flex items-center justify-center border-4 border-background active:bg-primary/90 transition-colors"
+        className="lg:hidden fixed right-4 bottom-[84px] z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-xl flex items-center justify-center active:bg-primary/90 transition-colors"
         style={{ boxShadow: '0 4px 20px hsl(var(--primary) / 0.4)' }}
       >
-        <Plus className="w-6 h-6 sm:w-7 sm:h-7" strokeWidth={2.5} />
+        <Plus className="w-7 h-7" strokeWidth={2.5} />
       </motion.button>
 
       {/* Desktop FAB */}
