@@ -152,7 +152,7 @@ export default function Reminders() {
   const activeReminders = reminders.filter((r) => r.isActive);
 
   return (
-    <div className="space-y-4 sm:space-y-6 max-w-full overflow-hidden">
+    <div className="space-y-4 sm:space-y-6 max-w-full overflow-hidden pb-4">
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
         <motion.div
