@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { TransactionProvider } from "@/contexts/TransactionContext";
+import { PrivacyProvider } from "@/contexts/PrivacyContext";
 import AppLayout from "@/components/layout/AppLayout";
 import Dashboard from "@/pages/Dashboard";
 import Transactions from "@/pages/Transactions";
@@ -59,38 +60,40 @@ const App = () => (
     <ThemeProvider>
       <AuthProvider>
         <TransactionProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route
-                  path="/auth"
-                  element={
-                    <AuthRoute>
-                      <Auth />
-                    </AuthRoute>
-                  }
-                />
-                <Route
-                  element={
-                    <ProtectedRoute>
-                      <AppLayout />
-                    </ProtectedRoute>
-                  }
-                >
-                  <Route path="/" element={<Dashboard />} />
-                  <Route path="/transacoes" element={<Transactions />} />
-                  <Route path="/transacoes/nova" element={<TransactionForm />} />
-                  <Route path="/transacoes/editar/:id" element={<TransactionForm />} />
-                  <Route path="/investimentos" element={<Investments />} />
-                  <Route path="/lembretes" element={<Reminders />} />
-                  <Route path="/emprestimos" element={<Loans />} />
-                </Route>
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
+          <PrivacyProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Routes>
+                  <Route
+                    path="/auth"
+                    element={
+                      <AuthRoute>
+                        <Auth />
+                      </AuthRoute>
+                    }
+                  />
+                  <Route
+                    element={
+                      <ProtectedRoute>
+                        <AppLayout />
+                      </ProtectedRoute>
+                    }
+                  >
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/transacoes" element={<Transactions />} />
+                    <Route path="/transacoes/nova" element={<TransactionForm />} />
+                    <Route path="/transacoes/editar/:id" element={<TransactionForm />} />
+                    <Route path="/investimentos" element={<Investments />} />
+                    <Route path="/lembretes" element={<Reminders />} />
+                    <Route path="/emprestimos" element={<Loans />} />
+                  </Route>
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </TooltipProvider>
+          </PrivacyProvider>
         </TransactionProvider>
       </AuthProvider>
     </ThemeProvider>

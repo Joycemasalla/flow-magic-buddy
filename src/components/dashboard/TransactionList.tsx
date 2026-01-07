@@ -20,8 +20,21 @@ import {
 import { Transaction, categoryLabels, TransactionCategory } from '@/types/transaction';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { PrivacyValue } from '@/components/ui/PrivacyValue';
 
 const categoryIconMap: Record<TransactionCategory, React.ElementType> = {
+  salary: Wallet,
+  food: UtensilsCrossed,
+  transport: Car,
+  shopping: ShoppingBag,
+  health: Heart,
+  entertainment: Gamepad2,
+  bills: Receipt,
+  education: GraduationCap,
+  investment: TrendingUp,
+  loan: HandCoins,
+  other: MoreHorizontal,
+};
   salary: Wallet,
   food: UtensilsCrossed,
   transport: Car,
@@ -118,10 +131,8 @@ function SwipeableItem({ transaction, onEdit, onDelete }: SwipeableItemProps) {
             isIncome ? 'text-income' : 'text-expense'
           )}
         >
-          {isIncome ? '+' : '-'} R${' '}
-          {transaction.amount.toLocaleString('pt-BR', {
-            minimumFractionDigits: 2,
-          })}
+          {isIncome ? '+' : '-'}{' '}
+          <PrivacyValue value={transaction.amount} />
         </p>
       </motion.div>
     </div>
