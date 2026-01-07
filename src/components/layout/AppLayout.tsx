@@ -11,9 +11,11 @@ import {
   Moon,
   Sun,
   User,
+  LogOut,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import QuickRecordModal from '@/components/modals/QuickRecordModal';
 
@@ -27,9 +29,9 @@ const navItems = [
 
 export default function AppLayout() {
   const { theme, toggleTheme } = useTheme();
+  const { user, signOut } = useAuth();
   const location = useLocation();
   const [isQuickRecordOpen, setIsQuickRecordOpen] = useState(false);
-
   return (
     <div className="min-h-screen flex w-full bg-background overflow-x-hidden">
       {/* Desktop Sidebar */}
@@ -69,26 +71,37 @@ export default function AppLayout() {
               <User className="w-5 h-5 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">Usuário</p>
+              <p className="text-sm font-medium truncate">{user?.email?.split('@')[0] || 'Usuário'}</p>
               <p className="text-xs text-muted-foreground truncate">
-                usuario@email.com
+                {user?.email || 'usuario@email.com'}
               </p>
             </div>
           </div>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start"
-            onClick={toggleTheme}
-          >
-            {theme === 'dark' ? (
-              <Sun className="w-4 h-4 mr-2" />
-            ) : (
-              <Moon className="w-4 h-4 mr-2" />
-            )}
-            {theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}
-          </Button>
+          <div className="space-y-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start"
+              onClick={toggleTheme}
+            >
+              {theme === 'dark' ? (
+                <Sun className="w-4 h-4 mr-2" />
+              ) : (
+                <Moon className="w-4 h-4 mr-2" />
+              )}
+              {theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start text-destructive hover:text-destructive"
+              onClick={signOut}
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Sair
+            </Button>
+          </div>
         </div>
       </aside>
 
