@@ -150,6 +150,14 @@ export default function AppLayout() {
                 <Moon className="w-5 h-5" />
               )}
             </Button>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={signOut} 
+              className="h-9 w-9 text-destructive hover:text-destructive"
+            >
+              <LogOut className="w-5 h-5" />
+            </Button>
           </div>
         </header>
 
