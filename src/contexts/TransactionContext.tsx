@@ -1,295 +1,418 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Transaction, Reminder } from '@/types/transaction';
-import { Investment } from '@/types/investment';
+import { Transaction, Reminder, TransactionCategory } from '@/types/transaction';
+import { Investment, InvestmentType } from '@/types/investment';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface TransactionContextType {
   transactions: Transaction[];
   reminders: Reminder[];
   investments: Investment[];
-  addTransaction: (transaction: Omit<Transaction, 'id' | 'createdAt'>) => void;
-  updateTransaction: (id: string, transaction: Partial<Transaction>) => void;
-  deleteTransaction: (id: string) => void;
-  addReminder: (reminder: Omit<Reminder, 'id' | 'createdAt'>) => void;
-  updateReminder: (id: string, reminder: Partial<Reminder>) => void;
-  deleteReminder: (id: string) => void;
-  addInvestment: (investment: Omit<Investment, 'id' | 'createdAt'>) => void;
-  updateInvestment: (id: string, investment: Partial<Investment>) => void;
-  deleteInvestment: (id: string) => void;
-  markInvestmentAsDone: (id: string) => void;
+  loading: boolean;
+  addTransaction: (transaction: Omit<Transaction, 'id' | 'createdAt'>) => Promise<string | undefined>;
+  updateTransaction: (id: string, transaction: Partial<Transaction>) => Promise<void>;
+  deleteTransaction: (id: string) => Promise<void>;
+  addReminder: (reminder: Omit<Reminder, 'id' | 'createdAt'>) => Promise<void>;
+  updateReminder: (id: string, reminder: Partial<Reminder>) => Promise<void>;
+  deleteReminder: (id: string) => Promise<void>;
+  addInvestment: (investment: Omit<Investment, 'id' | 'createdAt'>) => Promise<void>;
+  updateInvestment: (id: string, investment: Partial<Investment>) => Promise<void>;
+  deleteInvestment: (id: string) => Promise<void>;
+  markInvestmentAsDone: (id: string) => Promise<void>;
 }
 
 const TransactionContext = createContext<TransactionContextType | undefined>(undefined);
 
-const TRANSACTIONS_KEY = 'moneyflow_transactions';
-const REMINDERS_KEY = 'moneyflow_reminders';
-const INVESTMENTS_KEY = 'moneyflow_investments';
-
-// Sample data for demo
-const sampleTransactions: Transaction[] = [
-  {
-    id: '1',
-    type: 'income',
-    category: 'salary',
-    amount: 5000,
-    description: 'Salário mensal',
-    date: new Date().toISOString().split('T')[0],
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    type: 'expense',
-    category: 'food',
-    amount: 250,
-    description: 'Supermercado',
-    date: new Date().toISOString().split('T')[0],
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '3',
-    type: 'expense',
-    category: 'transport',
-    amount: 150,
-    description: 'Combustível',
-    date: new Date(Date.now() - 86400000).toISOString().split('T')[0],
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '4',
-    type: 'expense',
-    category: 'bills',
-    amount: 180,
-    description: 'Conta de luz',
-    date: new Date(Date.now() - 86400000 * 2).toISOString().split('T')[0],
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '5',
-    type: 'income',
-    category: 'other',
-    amount: 500,
-    description: 'Freelance',
-    date: new Date(Date.now() - 86400000 * 3).toISOString().split('T')[0],
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '6',
-    type: 'expense',
-    category: 'entertainment',
-    amount: 80,
-    description: 'Cinema e jantar',
-    date: new Date(Date.now() - 86400000 * 4).toISOString().split('T')[0],
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '7',
-    type: 'expense',
-    category: 'health',
-    amount: 200,
-    description: 'Farmácia',
-    date: new Date(Date.now() - 86400000 * 5).toISOString().split('T')[0],
-    createdAt: new Date().toISOString(),
-  },
+const validCategories: TransactionCategory[] = [
+  'salary', 'food', 'transport', 'shopping', 'health', 
+  'entertainment', 'bills', 'education', 'investment', 'loan', 'other'
 ];
 
-const sampleReminders: Reminder[] = [
-  {
-    id: '1',
-    title: 'Internet',
-    description: 'Conta mensal de internet',
-    amount: 120,
-    type: 'monthly',
-    dueDay: 10,
-    category: 'bills',
-    isActive: true,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    title: 'Academia',
-    description: 'Mensalidade da academia',
-    amount: 90,
-    type: 'monthly',
-    dueDay: 5,
-    category: 'health',
-    isActive: true,
-    createdAt: new Date().toISOString(),
-  },
-];
-
-const sampleInvestments: Investment[] = [
-  {
-    id: '1',
-    nome: 'Tesouro IPCA+ 2035',
-    tipo: 'tesouro_direto',
-    valorInvestido: 1000,
-    dataInvestimento: new Date().toISOString().split('T')[0],
-    jaInvestido: false,
-    descricao: 'Aposentadoria',
-    detalhesEspecificos: {
-      titulo: 'IPCA+ 2035',
-      taxa: 6.5,
-      precoUnitario: 2850.45,
-      vencimento: '2035-05-15',
-    },
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    nome: 'PETR4',
-    tipo: 'acoes',
-    valorInvestido: 3550,
-    dataInvestimento: new Date(Date.now() - 86400000 * 2).toISOString().split('T')[0],
-    jaInvestido: true,
-    descricao: 'Ações Petrobras',
-    detalhesEspecificos: {
-      ticker: 'PETR4',
-      quantidade: 100,
-      precoMedio: 35.50,
-    },
-    createdAt: new Date().toISOString(),
-  },
+const validInvestmentTypes: InvestmentType[] = [
+  'tesouro_direto', 'renda_fixa', 'acoes', 'cripto', 'fundos', 'poupanca', 'outros'
 ];
 
 export function TransactionProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [investments, setInvestments] = useState<Investment[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  // Fetch data when user changes
   useEffect(() => {
-    const storedTransactions = localStorage.getItem(TRANSACTIONS_KEY);
-    const storedReminders = localStorage.getItem(REMINDERS_KEY);
-    const storedInvestments = localStorage.getItem(INVESTMENTS_KEY);
-    
-    if (storedTransactions) {
-      setTransactions(JSON.parse(storedTransactions));
+    if (user) {
+      fetchData();
     } else {
-      setTransactions(sampleTransactions);
-      localStorage.setItem(TRANSACTIONS_KEY, JSON.stringify(sampleTransactions));
+      setTransactions([]);
+      setReminders([]);
+      setInvestments([]);
+      setLoading(false);
     }
-    
-    if (storedReminders) {
-      setReminders(JSON.parse(storedReminders));
-    } else {
-      setReminders(sampleReminders);
-      localStorage.setItem(REMINDERS_KEY, JSON.stringify(sampleReminders));
+  }, [user]);
+
+  const fetchData = async () => {
+    if (!user) return;
+    setLoading(true);
+
+    try {
+      // Fetch transactions
+      const { data: transactionsData } = await supabase
+        .from('transactions')
+        .select('*')
+        .order('date', { ascending: false });
+
+      if (transactionsData) {
+        setTransactions(
+          transactionsData.map((t) => {
+            const category = validCategories.includes(t.category as TransactionCategory) 
+              ? (t.category as TransactionCategory) 
+              : 'other';
+            return {
+              id: t.id,
+              type: t.type as 'income' | 'expense',
+              category,
+              amount: Number(t.amount),
+              description: t.description,
+              date: t.date,
+              createdAt: t.created_at,
+            };
+          })
+        );
+      }
+
+      // Fetch reminders
+      const { data: remindersData } = await supabase
+        .from('reminders')
+        .select('*')
+        .order('due_date', { ascending: true });
+
+      if (remindersData) {
+        setReminders(
+          remindersData.map((r) => {
+            const category = validCategories.includes(r.category as TransactionCategory) 
+              ? (r.category as TransactionCategory) 
+              : 'other';
+            return {
+              id: r.id,
+              title: r.title,
+              description: r.title,
+              amount: Number(r.amount),
+              type: r.is_recurring ? 'monthly' : 'single',
+              dueDay: new Date(r.due_date).getDate(),
+              category,
+              isActive: !r.is_paid,
+              createdAt: r.created_at,
+            };
+          })
+        );
+      }
+
+      // Fetch investments
+      const { data: investmentsData } = await supabase
+        .from('investments')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (investmentsData) {
+        setInvestments(
+          investmentsData.map((i) => {
+            const tipo = validInvestmentTypes.includes(i.type as InvestmentType) 
+              ? (i.type as InvestmentType) 
+              : 'outros';
+            return {
+              id: i.id,
+              nome: i.name,
+              tipo,
+              valorInvestido: Number(i.initial_value),
+              dataInvestimento: i.start_date,
+              jaInvestido: i.status === 'completed',
+              createdAt: i.created_at,
+            };
+          })
+        );
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addTransaction = async (transaction: Omit<Transaction, 'id' | 'createdAt'>) => {
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('transactions')
+      .insert({
+        user_id: user.id,
+        description: transaction.description,
+        amount: transaction.amount,
+        type: transaction.type,
+        category: transaction.category,
+        date: transaction.date,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error adding transaction:', error);
+      return;
     }
 
-    if (storedInvestments) {
-      setInvestments(JSON.parse(storedInvestments));
-    } else {
-      setInvestments(sampleInvestments);
-      localStorage.setItem(INVESTMENTS_KEY, JSON.stringify(sampleInvestments));
+    if (data) {
+      const category = validCategories.includes(data.category as TransactionCategory) 
+        ? (data.category as TransactionCategory) 
+        : 'other';
+      const newTransaction: Transaction = {
+        id: data.id,
+        type: data.type as 'income' | 'expense',
+        category,
+        amount: Number(data.amount),
+        description: data.description,
+        date: data.date,
+        createdAt: data.created_at,
+      };
+      setTransactions((prev) => [newTransaction, ...prev]);
+      return data.id;
     }
-  }, []);
-
-  const saveTransactions = (newTransactions: Transaction[]) => {
-    setTransactions(newTransactions);
-    localStorage.setItem(TRANSACTIONS_KEY, JSON.stringify(newTransactions));
   };
 
-  const saveReminders = (newReminders: Reminder[]) => {
-    setReminders(newReminders);
-    localStorage.setItem(REMINDERS_KEY, JSON.stringify(newReminders));
-  };
+  const updateTransaction = async (id: string, updates: Partial<Transaction>) => {
+    if (!user) return;
 
-  const saveInvestments = (newInvestments: Investment[]) => {
-    setInvestments(newInvestments);
-    localStorage.setItem(INVESTMENTS_KEY, JSON.stringify(newInvestments));
-  };
+    const { error } = await supabase
+      .from('transactions')
+      .update({
+        description: updates.description,
+        amount: updates.amount,
+        type: updates.type,
+        category: updates.category,
+        date: updates.date,
+      })
+      .eq('id', id);
 
-  const addTransaction = (transaction: Omit<Transaction, 'id' | 'createdAt'>) => {
-    const newTransaction: Transaction = {
-      ...transaction,
-      id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
-    };
-    saveTransactions([newTransaction, ...transactions]);
-    return newTransaction.id;
-  };
+    if (error) {
+      console.error('Error updating transaction:', error);
+      return;
+    }
 
-  const updateTransaction = (id: string, updates: Partial<Transaction>) => {
-    const updated = transactions.map((t) =>
-      t.id === id ? { ...t, ...updates } : t
+    setTransactions((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, ...updates } : t))
     );
-    saveTransactions(updated);
   };
 
-  const deleteTransaction = (id: string) => {
-    saveTransactions(transactions.filter((t) => t.id !== id));
-  };
+  const deleteTransaction = async (id: string) => {
+    if (!user) return;
 
-  const addReminder = (reminder: Omit<Reminder, 'id' | 'createdAt'>) => {
-    const newReminder: Reminder = {
-      ...reminder,
-      id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
-    };
-    saveReminders([newReminder, ...reminders]);
-  };
+    const { error } = await supabase
+      .from('transactions')
+      .delete()
+      .eq('id', id);
 
-  const updateReminder = (id: string, updates: Partial<Reminder>) => {
-    const updated = reminders.map((r) =>
-      r.id === id ? { ...r, ...updates } : r
-    );
-    saveReminders(updated);
-  };
-
-  const deleteReminder = (id: string) => {
-    saveReminders(reminders.filter((r) => r.id !== id));
-  };
-
-  const addInvestment = (investment: Omit<Investment, 'id' | 'createdAt'>) => {
-    const newInvestment: Investment = {
-      ...investment,
-      id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
-    };
-    saveInvestments([newInvestment, ...investments]);
-  };
-
-  const updateInvestment = (id: string, updates: Partial<Investment>) => {
-    const updated = investments.map((i) =>
-      i.id === id ? { ...i, ...updates } : i
-    );
-    saveInvestments(updated);
-  };
-
-  const deleteInvestment = (id: string) => {
-    const investment = investments.find((i) => i.id === id);
-    if (investment?.transactionId) {
-      deleteTransaction(investment.transactionId);
+    if (error) {
+      console.error('Error deleting transaction:', error);
+      return;
     }
-    saveInvestments(investments.filter((i) => i.id !== id));
+
+    setTransactions((prev) => prev.filter((t) => t.id !== id));
   };
 
-  const markInvestmentAsDone = (id: string) => {
+  const addReminder = async (reminder: Omit<Reminder, 'id' | 'createdAt'>) => {
+    if (!user) return;
+
+    const dueDate = new Date();
+    dueDate.setDate(reminder.dueDay || 1);
+
+    const { data, error } = await supabase
+      .from('reminders')
+      .insert({
+        user_id: user.id,
+        title: reminder.title,
+        amount: reminder.amount,
+        due_date: dueDate.toISOString().split('T')[0],
+        category: reminder.category,
+        is_recurring: reminder.type === 'monthly',
+        is_paid: !reminder.isActive,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error adding reminder:', error);
+      return;
+    }
+
+    if (data) {
+      const category = validCategories.includes(data.category as TransactionCategory) 
+        ? (data.category as TransactionCategory) 
+        : 'other';
+      const newReminder: Reminder = {
+        id: data.id,
+        title: data.title,
+        description: data.title,
+        amount: Number(data.amount),
+        type: data.is_recurring ? 'monthly' : 'single',
+        dueDay: new Date(data.due_date).getDate(),
+        category,
+        isActive: !data.is_paid,
+        createdAt: data.created_at,
+      };
+      setReminders((prev) => [newReminder, ...prev]);
+    }
+  };
+
+  const updateReminder = async (id: string, updates: Partial<Reminder>) => {
+    if (!user) return;
+
+    const updateData: Record<string, unknown> = {};
+    if (updates.title) updateData.title = updates.title;
+    if (updates.amount) updateData.amount = updates.amount;
+    if (updates.category) updateData.category = updates.category;
+    if (updates.type) updateData.is_recurring = updates.type === 'monthly';
+    if (updates.isActive !== undefined) updateData.is_paid = !updates.isActive;
+    if (updates.dueDay) {
+      const dueDate = new Date();
+      dueDate.setDate(updates.dueDay);
+      updateData.due_date = dueDate.toISOString().split('T')[0];
+    }
+
+    const { error } = await supabase
+      .from('reminders')
+      .update(updateData)
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating reminder:', error);
+      return;
+    }
+
+    setReminders((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, ...updates } : r))
+    );
+  };
+
+  const deleteReminder = async (id: string) => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('reminders')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting reminder:', error);
+      return;
+    }
+
+    setReminders((prev) => prev.filter((r) => r.id !== id));
+  };
+
+  const addInvestment = async (investment: Omit<Investment, 'id' | 'createdAt'>) => {
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('investments')
+      .insert({
+        user_id: user.id,
+        name: investment.nome,
+        type: investment.tipo,
+        initial_value: investment.valorInvestido,
+        current_value: investment.valorInvestido,
+        start_date: investment.dataInvestimento,
+        status: investment.jaInvestido ? 'completed' : 'active',
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error adding investment:', error);
+      return;
+    }
+
+    if (data) {
+      const tipo = validInvestmentTypes.includes(data.type as InvestmentType) 
+        ? (data.type as InvestmentType) 
+        : 'outros';
+      const newInvestment: Investment = {
+        id: data.id,
+        nome: data.name,
+        tipo,
+        valorInvestido: Number(data.initial_value),
+        dataInvestimento: data.start_date,
+        jaInvestido: data.status === 'completed',
+        createdAt: data.created_at,
+      };
+      setInvestments((prev) => [newInvestment, ...prev]);
+    }
+  };
+
+  const updateInvestment = async (id: string, updates: Partial<Investment>) => {
+    if (!user) return;
+
+    const updateData: Record<string, unknown> = {};
+    if (updates.nome) updateData.name = updates.nome;
+    if (updates.tipo) updateData.type = updates.tipo;
+    if (updates.valorInvestido) {
+      updateData.initial_value = updates.valorInvestido;
+      updateData.current_value = updates.valorInvestido;
+    }
+    if (updates.dataInvestimento) updateData.start_date = updates.dataInvestimento;
+    if (updates.jaInvestido !== undefined) updateData.status = updates.jaInvestido ? 'completed' : 'active';
+
+    const { error } = await supabase
+      .from('investments')
+      .update(updateData)
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating investment:', error);
+      return;
+    }
+
+    setInvestments((prev) =>
+      prev.map((i) => (i.id === id ? { ...i, ...updates } : i))
+    );
+  };
+
+  const deleteInvestment = async (id: string) => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('investments')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting investment:', error);
+      return;
+    }
+
+    setInvestments((prev) => prev.filter((i) => i.id !== id));
+  };
+
+  const markInvestmentAsDone = async (id: string) => {
+    if (!user) return;
+
     const investment = investments.find((i) => i.id === id);
     if (!investment || investment.jaInvestido) return;
 
     // Create expense transaction
-    const newTransaction: Transaction = {
-      id: crypto.randomUUID(),
+    const transactionId = await addTransaction({
       type: 'expense',
       category: 'investment',
       amount: investment.valorInvestido,
       description: investment.nome,
       date: new Date().toISOString().split('T')[0],
-      createdAt: new Date().toISOString(),
-    };
-    saveTransactions([newTransaction, ...transactions]);
+    });
 
-    // Update investment
-    const updated = investments.map((i) =>
-      i.id === id
-        ? {
-            ...i,
-            jaInvestido: true,
-            dataInvestimento: new Date().toISOString().split('T')[0],
-            transactionId: newTransaction.id,
-          }
-        : i
-    );
-    saveInvestments(updated);
+    if (transactionId) {
+      await updateInvestment(id, {
+        jaInvestido: true,
+        dataInvestimento: new Date().toISOString().split('T')[0],
+        transactionId,
+      });
+    }
   };
 
   return (
@@ -298,6 +421,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
         transactions,
         reminders,
         investments,
+        loading,
         addTransaction,
         updateTransaction,
         deleteTransaction,
