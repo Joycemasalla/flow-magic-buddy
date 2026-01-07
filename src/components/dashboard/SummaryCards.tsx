@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, Wallet } from 'lucide-react';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { PrivacyValue } from '@/components/ui/PrivacyValue';
 
 interface SummaryCardsProps {
   income: number;
@@ -28,7 +29,7 @@ export default function SummaryCards({
           'text-2xl sm:text-3xl lg:text-5xl font-bold font-display truncate',
           balance >= 0 ? 'text-income' : 'text-expense'
         )}>
-          R$ {Math.abs(balance).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+          <PrivacyValue value={Math.abs(balance)} />
         </p>
         {balance < 0 && (
           <p className="text-xs text-expense mt-1">Saldo negativo</p>
@@ -50,7 +51,7 @@ export default function SummaryCards({
             <span className="text-xs text-muted-foreground font-medium">Receitas</span>
           </div>
           <p className="text-base sm:text-xl lg:text-2xl font-bold text-income truncate">
-            R$ {income.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            <PrivacyValue value={income} />
           </p>
         </motion.div>
 
@@ -67,7 +68,7 @@ export default function SummaryCards({
             <span className="text-xs text-muted-foreground font-medium">Despesas</span>
           </div>
           <p className="text-base sm:text-xl lg:text-2xl font-bold text-expense truncate">
-            R$ {expense.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            <PrivacyValue value={expense} />
           </p>
         </motion.div>
       </div>

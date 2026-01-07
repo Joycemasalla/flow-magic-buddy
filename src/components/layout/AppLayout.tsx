@@ -12,10 +12,13 @@ import {
   Sun,
   User,
   LogOut,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePrivacy } from '@/contexts/PrivacyContext';
 import { Button } from '@/components/ui/button';
 import QuickRecordModal from '@/components/modals/QuickRecordModal';
 
@@ -30,8 +33,10 @@ const navItems = [
 export default function AppLayout() {
   const { theme, toggleTheme } = useTheme();
   const { user, signOut } = useAuth();
+  const { isPrivacyMode, togglePrivacyMode } = usePrivacy();
   const location = useLocation();
   const [isQuickRecordOpen, setIsQuickRecordOpen] = useState(false);
+
   return (
     <div className="min-h-screen flex w-full bg-background overflow-x-hidden">
       {/* Desktop Sidebar */}
@@ -83,6 +88,19 @@ export default function AppLayout() {
               variant="ghost"
               size="sm"
               className="w-full justify-start"
+              onClick={togglePrivacyMode}
+            >
+              {isPrivacyMode ? (
+                <EyeOff className="w-4 h-4 mr-2" />
+              ) : (
+                <Eye className="w-4 h-4 mr-2" />
+              )}
+              {isPrivacyMode ? 'Mostrar valores' : 'Ocultar valores'}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start"
               onClick={toggleTheme}
             >
               {theme === 'dark' ? (
@@ -112,13 +130,27 @@ export default function AppLayout() {
           <h1 className="text-lg font-display font-bold text-gradient">
             MoneyFlow
           </h1>
-          <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-9 w-9">
-            {theme === 'dark' ? (
-              <Sun className="w-5 h-5" />
-            ) : (
-              <Moon className="w-5 h-5" />
-            )}
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={togglePrivacyMode} 
+              className="h-9 w-9"
+            >
+              {isPrivacyMode ? (
+                <EyeOff className="w-5 h-5" />
+              ) : (
+                <Eye className="w-5 h-5" />
+              )}
+            </Button>
+            <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-9 w-9">
+              {theme === 'dark' ? (
+                <Sun className="w-5 h-5" />
+              ) : (
+                <Moon className="w-5 h-5" />
+              )}
+            </Button>
+          </div>
         </header>
 
         {/* Page Content */}
