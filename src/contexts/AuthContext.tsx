@@ -20,33 +20,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
-
-    // THEN check for existing session
+    // Verifica sessão existente primeiro
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
+    // Configura listener para mudanças de autenticação
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth event:', event);
+        
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+
+        // Tratamento especial para OAuth callback
+        if (event === 'SIGNED_IN' && session) {
+          // Pequeno delay para garantir que o estado foi atualizado
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+      }
+    );
+
     return () => subscription.unsubscribe();
   }, []);
 
   const signInWithGoogle = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/`,
-      },
-    });
-    return { error };
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+      
+      if (error) {
+        console.error('Google sign in error:', error);
+      }
+      
+      return { error };
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      return { error: err as Error };
+    }
   };
 
   const signInWithEmail = async (email: string, password: string) => {
