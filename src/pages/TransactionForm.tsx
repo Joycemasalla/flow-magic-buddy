@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Check, TrendingUp, TrendingDown } from 'lucide-react';
+import { ArrowLeft, Check, TrendingUp, TrendingDown, RefreshCw } from 'lucide-react';
 import { useTransactions } from '@/contexts/TransactionContext';
 import { useToast } from '@/hooks/use-toast';
 import { TransactionCategory, TransactionType, categoryLabels } from '@/types/transaction';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 
 const categoryEmojis: Record<TransactionCategory, string> = {
@@ -36,6 +37,7 @@ export default function TransactionForm() {
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [isRecurring, setIsRecurring] = useState(false);
 
   const isEditing = !!id;
 
@@ -66,32 +68,48 @@ export default function TransactionForm() {
     }
 
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    const transactionData = {
+      type,
+      category,
+      amount: parsedAmount,
+      description: description || categoryLabels[category],
+      date,
+    };
 
     if (isEditing) {
-      updateTransaction(id!, {
-        type,
-        category,
-        amount: parsedAmount,
-        description: description || categoryLabels[category],
-        date,
-      });
+      await updateTransaction(id!, transactionData);
       toast({
         title: 'Atualizada!',
         description: 'Transação salva.',
       });
     } else {
-      addTransaction({
-        type,
-        category,
-        amount: parsedAmount,
-        description: description || categoryLabels[category],
-        date,
-      });
-      toast({
-        title: type === 'income' ? '💰 Receita!' : '💸 Despesa!',
-        description: `R$ ${parsedAmount.toFixed(2)}`,
-      });
+      // Add the main transaction
+      await addTransaction(transactionData);
+      
+      // If recurring, create transactions for the next 11 months
+      if (isRecurring) {
+        const baseDate = new Date(date);
+        for (let i = 1; i <= 11; i++) {
+          const futureDate = new Date(baseDate);
+          futureDate.setMonth(futureDate.getMonth() + i);
+          
+          await addTransaction({
+            ...transactionData,
+            date: futureDate.toISOString().split('T')[0],
+            description: `${description || categoryLabels[category]} (Recorrente)`,
+          });
+        }
+        toast({
+          title: type === 'income' ? '💰 Receita recorrente!' : '💸 Despesa recorrente!',
+          description: `12 lançamentos criados de R$ ${parsedAmount.toFixed(2)}`,
+        });
+      } else {
+        toast({
+          title: type === 'income' ? '💰 Receita!' : '💸 Despesa!',
+          description: `R$ ${parsedAmount.toFixed(2)}`,
+        });
+      }
     }
 
     setIsLoading(false);
@@ -215,6 +233,29 @@ export default function TransactionForm() {
             className="h-12"
           />
         </div>
+
+        {/* Recurring Checkbox - Only for new transactions */}
+        {!isEditing && (
+          <div className="flex items-center space-x-3 p-4 bg-muted/50 rounded-xl">
+            <Checkbox
+              id="recurring"
+              checked={isRecurring}
+              onCheckedChange={(checked) => setIsRecurring(checked as boolean)}
+            />
+            <div className="flex-1">
+              <label
+                htmlFor="recurring"
+                className="text-sm font-medium leading-none cursor-pointer flex items-center gap-2"
+              >
+                <RefreshCw className="w-4 h-4 text-primary" />
+                Repetir mensalmente
+              </label>
+              <p className="text-xs text-muted-foreground mt-1">
+                Cria automaticamente nos próximos 12 meses
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Submit Button */}
         <Button

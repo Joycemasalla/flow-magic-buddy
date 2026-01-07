@@ -35,18 +35,6 @@ const categoryIconMap: Record<TransactionCategory, React.ElementType> = {
   loan: HandCoins,
   other: MoreHorizontal,
 };
-  salary: Wallet,
-  food: UtensilsCrossed,
-  transport: Car,
-  shopping: ShoppingBag,
-  health: Heart,
-  entertainment: Gamepad2,
-  bills: Receipt,
-  education: GraduationCap,
-  investment: TrendingUp,
-  loan: HandCoins,
-  other: MoreHorizontal,
-};
 
 interface TransactionListProps {
   transactions: Transaction[];
@@ -65,7 +53,7 @@ function SwipeableItem({ transaction, onEdit, onDelete }: SwipeableItemProps) {
   const Icon = categoryIconMap[transaction.category] || MoreHorizontal;
   const isIncome = transaction.type === 'income';
 
-  const handleDragEnd = (_: any, info: PanInfo) => {
+  const handleDragEnd = (_: unknown, info: PanInfo) => {
     if (info.offset.x < -60) {
       setIsOpen(true);
     } else {
