@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Download, ChevronDown, ChevronUp } from 'lucide-react';
 import { useTransactions } from '@/contexts/TransactionContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { isToday, isYesterday, subDays, startOfMonth, startOfYear, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
@@ -25,6 +26,7 @@ const periodLabels: Record<PeriodFilter, string> = {
 
 export default function Dashboard() {
   const { transactions, deleteTransaction } = useTransactions();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -99,7 +101,9 @@ export default function Dashboard() {
         className="flex items-center justify-between"
       >
         <div>
-          <h1 className="text-xl lg:text-2xl font-display font-bold">Olá! 👋</h1>
+          <h1 className="text-xl lg:text-2xl font-display font-bold">
+            Olá{user?.user_metadata?.full_name ? `, ${user.user_metadata.full_name.split(' ')[0]}` : ''}! 👋
+          </h1>
           <p className="text-sm text-muted-foreground">
             Suas finanças em dia
           </p>
