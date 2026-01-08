@@ -103,6 +103,9 @@ export type Database = {
           date: string
           description: string
           id: string
+          is_loan: boolean | null
+          loan_person: string | null
+          loan_status: string | null
           type: string
           updated_at: string
           user_id: string
@@ -114,6 +117,9 @@ export type Database = {
           date?: string
           description: string
           id?: string
+          is_loan?: boolean | null
+          loan_person?: string | null
+          loan_status?: string | null
           type: string
           updated_at?: string
           user_id: string
@@ -125,6 +131,9 @@ export type Database = {
           date?: string
           description?: string
           id?: string
+          is_loan?: boolean | null
+          loan_person?: string | null
+          loan_status?: string | null
           type?: string
           updated_at?: string
           user_id?: string
