@@ -453,9 +453,9 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useTransactions() {
+export function useTransactions(): TransactionContextType {
   const context = useContext(TransactionContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useTransactions must be used within TransactionProvider');
   }
   return context;
