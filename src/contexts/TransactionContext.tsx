@@ -64,7 +64,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
 
       if (transactionsData) {
         setTransactions(
-          transactionsData.map((t) => {
+          transactionsData.map((t: any) => {
             const category = validCategories.includes(t.category as TransactionCategory) 
               ? (t.category as TransactionCategory) 
               : 'other';
@@ -76,6 +76,9 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
               description: t.description,
               date: t.date,
               createdAt: t.created_at,
+              isLoan: t.is_loan || false,
+              loanPerson: t.loan_person || undefined,
+              loanStatus: t.loan_status || undefined,
             };
           })
         );
@@ -151,6 +154,9 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
         type: transaction.type,
         category: transaction.category,
         date: transaction.date,
+        is_loan: transaction.isLoan || false,
+        loan_person: transaction.loanPerson || null,
+        loan_status: transaction.loanStatus || null,
       })
       .select()
       .single();
@@ -161,35 +167,43 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     }
 
     if (data) {
-      const category = validCategories.includes(data.category as TransactionCategory) 
-        ? (data.category as TransactionCategory) 
+      const d = data as any;
+      const category = validCategories.includes(d.category as TransactionCategory) 
+        ? (d.category as TransactionCategory) 
         : 'other';
       const newTransaction: Transaction = {
-        id: data.id,
-        type: data.type as 'income' | 'expense',
+        id: d.id,
+        type: d.type as 'income' | 'expense',
         category,
-        amount: Number(data.amount),
-        description: data.description,
-        date: data.date,
-        createdAt: data.created_at,
+        amount: Number(d.amount),
+        description: d.description,
+        date: d.date,
+        createdAt: d.created_at,
+        isLoan: d.is_loan || false,
+        loanPerson: d.loan_person || undefined,
+        loanStatus: d.loan_status || undefined,
       };
       setTransactions((prev) => [newTransaction, ...prev]);
-      return data.id;
+      return d.id;
     }
   };
 
   const updateTransaction = async (id: string, updates: Partial<Transaction>) => {
     if (!user) return;
 
+    const updateData: Record<string, unknown> = {};
+    if (updates.description !== undefined) updateData.description = updates.description;
+    if (updates.amount !== undefined) updateData.amount = updates.amount;
+    if (updates.type !== undefined) updateData.type = updates.type;
+    if (updates.category !== undefined) updateData.category = updates.category;
+    if (updates.date !== undefined) updateData.date = updates.date;
+    if (updates.isLoan !== undefined) updateData.is_loan = updates.isLoan;
+    if (updates.loanPerson !== undefined) updateData.loan_person = updates.loanPerson;
+    if (updates.loanStatus !== undefined) updateData.loan_status = updates.loanStatus;
+
     const { error } = await supabase
       .from('transactions')
-      .update({
-        description: updates.description,
-        amount: updates.amount,
-        type: updates.type,
-        category: updates.category,
-        date: updates.date,
-      })
+      .update(updateData)
       .eq('id', id);
 
     if (error) {

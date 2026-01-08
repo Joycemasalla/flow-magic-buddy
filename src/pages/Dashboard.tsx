@@ -102,7 +102,10 @@ export default function Dashboard() {
       >
         <div>
           <h1 className="text-xl lg:text-2xl font-display font-bold">
-            Olá{user?.user_metadata?.full_name ? `, ${user.user_metadata.full_name.split(' ')[0]}` : ''}! 👋
+            Olá{(() => {
+              const name = user?.user_metadata?.full_name || user?.user_metadata?.name || '';
+              return name ? `, ${name.split(' ')[0]}` : '';
+            })()}! 👋
           </h1>
           <p className="text-sm text-muted-foreground">
             Suas finanças em dia
