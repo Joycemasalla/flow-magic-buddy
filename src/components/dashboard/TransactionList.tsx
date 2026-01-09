@@ -71,7 +71,7 @@ function SwipeableItem({ transaction, onEdit, onDelete }: SwipeableItemProps) {
   return (
     <div className="relative overflow-hidden rounded-xl">
       {/* Actions Behind */}
-      <div className="absolute right-0 top-0 bottom-0 flex items-center gap-1 pr-2">
+      <div className="absolute right-0 top-0 bottom-0 flex items-center gap-1 pr-2 z-0">
         <Button
           size="icon"
           variant="ghost"
@@ -100,9 +100,9 @@ function SwipeableItem({ transaction, onEdit, onDelete }: SwipeableItemProps) {
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         onClick={() => isOpen && setIsOpen(false)}
         className={cn(
-          'relative flex items-center gap-3 p-3 rounded-xl border cursor-grab active:cursor-grabbing',
+          'relative z-10 flex items-center gap-3 p-3 rounded-xl border cursor-grab active:cursor-grabbing',
           isSettledLoan 
-            ? 'bg-income/5 border-income/20' 
+            ? 'bg-income/10 border-income/30' 
             : 'bg-card border-border/50'
         )}
       >
@@ -125,7 +125,7 @@ function SwipeableItem({ transaction, onEdit, onDelete }: SwipeableItemProps) {
             />
           )}
         </div>
-        <div className="flex-1 min-w-0 overflow-hidden">
+        <div className="flex-1 min-w-0">
           <p className={cn(
             'font-medium truncate text-sm sm:text-[15px]',
             isSettledLoan && 'text-muted-foreground'
@@ -141,7 +141,7 @@ function SwipeableItem({ transaction, onEdit, onDelete }: SwipeableItemProps) {
         </div>
         <p
           className={cn(
-            'font-bold text-sm sm:text-base flex-shrink-0 ml-2',
+            'font-bold text-sm sm:text-base flex-shrink-0',
             isSettledLoan && 'text-income line-through decoration-2',
             !isSettledLoan && isIncome && 'text-income',
             !isSettledLoan && !isIncome && 'text-expense'
