@@ -16,6 +16,7 @@ import {
   MoreHorizontal,
   Pencil,
   Trash2,
+  Check,
 } from 'lucide-react';
 import { Transaction, categoryLabels, TransactionCategory } from '@/types/transaction';
 import { cn } from '@/lib/utils';
@@ -52,6 +53,12 @@ function SwipeableItem({ transaction, onEdit, onDelete }: SwipeableItemProps) {
   const [isOpen, setIsOpen] = useState(false);
   const Icon = categoryIconMap[transaction.category] || MoreHorizontal;
   const isIncome = transaction.type === 'income';
+  
+  // Verificar se é um empréstimo quitado
+  const isSettledLoan = transaction.isLoan && (
+    (transaction.type === 'expense' && transaction.loanStatus === 'received') ||
+    (transaction.type === 'income' && transaction.loanStatus === 'paid')
+  );
 
   const handleDragEnd = (_: unknown, info: PanInfo) => {
     if (info.offset.x < -60) {
@@ -92,34 +99,55 @@ function SwipeableItem({ transaction, onEdit, onDelete }: SwipeableItemProps) {
         animate={{ x: isOpen ? -100 : 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         onClick={() => isOpen && setIsOpen(false)}
-        className="relative flex items-center gap-3 p-3 bg-card rounded-xl border border-border/50 cursor-grab active:cursor-grabbing"
+        className={cn(
+          'relative flex items-center gap-3 p-3 rounded-xl border cursor-grab active:cursor-grabbing',
+          isSettledLoan 
+            ? 'bg-income/5 border-income/20' 
+            : 'bg-card border-border/50'
+        )}
       >
         <div
           className={cn(
             'w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0',
-            isIncome ? 'bg-income/10' : 'bg-expense/10'
+            isSettledLoan && 'bg-income/20',
+            !isSettledLoan && isIncome && 'bg-income/10',
+            !isSettledLoan && !isIncome && 'bg-expense/10'
           )}
         >
-          <Icon
-            className={cn(
-              'w-5 h-5',
-              isIncome ? 'text-income' : 'text-expense'
-            )}
-          />
+          {isSettledLoan ? (
+            <Check className="w-5 h-5 text-income" />
+          ) : (
+            <Icon
+              className={cn(
+                'w-5 h-5',
+                isIncome ? 'text-income' : 'text-expense'
+              )}
+            />
+          )}
         </div>
         <div className="flex-1 min-w-0 overflow-hidden">
-          <p className="font-medium truncate text-sm sm:text-[15px]">{transaction.description}</p>
+          <p className={cn(
+            'font-medium truncate text-sm sm:text-[15px]',
+            isSettledLoan && 'text-muted-foreground'
+          )}>
+            {transaction.description}
+          </p>
           <p className="text-xs text-muted-foreground truncate">
-            {categoryLabels[transaction.category]}
+            {isSettledLoan 
+              ? (transaction.type === 'expense' ? '✓ Recebido de volta' : '✓ Pago')
+              : categoryLabels[transaction.category]
+            }
           </p>
         </div>
         <p
           className={cn(
             'font-bold text-sm sm:text-base flex-shrink-0 ml-2',
-            isIncome ? 'text-income' : 'text-expense'
+            isSettledLoan && 'text-income line-through decoration-2',
+            !isSettledLoan && isIncome && 'text-income',
+            !isSettledLoan && !isIncome && 'text-expense'
           )}
         >
-          {isIncome ? '+' : '-'}{' '}
+          {isSettledLoan ? '✓' : (isIncome ? '+' : '-')}{' '}
           <PrivacyValue value={transaction.amount} />
         </p>
       </motion.div>
