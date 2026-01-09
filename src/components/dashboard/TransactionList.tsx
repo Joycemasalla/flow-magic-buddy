@@ -71,7 +71,7 @@ function SwipeableItem({ transaction, onEdit, onDelete }: SwipeableItemProps) {
   return (
     <div className="relative overflow-hidden rounded-xl">
       {/* Actions Behind */}
-    <div className="absolute right-0 top-0 bottom-0 flex items-center gap-1 pr-2 z-0 bg-background">
+    <div className="absolute right-0 top-0 bottom-0 flex items-center gap-1 pr-2 z-[1]">
         <Button
           size="icon"
           variant="ghost"
@@ -99,11 +99,11 @@ function SwipeableItem({ transaction, onEdit, onDelete }: SwipeableItemProps) {
         animate={{ x: isOpen ? -100 : 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         onClick={() => isOpen && setIsOpen(false)}
-        className={cn(
-          'relative flex items-center gap-3 p-3 rounded-xl border cursor-grab active:cursor-grabbing',
+       className={cn(
+          'relative z-[2] flex items-center gap-3 p-3 rounded-xl border cursor-grab active:cursor-grabbing backdrop-blur-xl',
           isSettledLoan 
-            ? 'bg-income/10 border-income/30 z-20' 
-            : 'bg-card border-border/50 z-10'
+            ? 'bg-income/10 border-income/30' 
+            : 'bg-card border-border/50'
         )}
       >
         <div
