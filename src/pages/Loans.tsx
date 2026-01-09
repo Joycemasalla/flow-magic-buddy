@@ -93,18 +93,24 @@ export default function Loans() {
     setDescription('');
   };
 
-  const handleStatusChange = (id: string, type: TransactionType) => {
+  const handleStatusChange = (id: string, type: TransactionType, amount: number) => {
     const newStatus = type === 'expense' ? 'received' : 'paid';
     updateTransaction(id, { loanStatus: newStatus });
+    
+    const formattedAmount = amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+    
     toast({
-      title: type === 'expense' ? '✅ Recebido!' : '✅ Pago!',
-      description: 'Status do empréstimo atualizado.',
+      title: type === 'expense' ? '✅ Empréstimo Recebido!' : '✅ Empréstimo Pago!',
+      description: type === 'expense' 
+        ? `+R$ ${formattedAmount} voltou para seu saldo` 
+        : `-R$ ${formattedAmount} removido do seu saldo`,
     });
   };
 
   const renderLoanCard = (loan: typeof loans[0], index: number) => {
     const isGiven = loan.type === 'expense';
     const isPending = loan.loanStatus === 'pending';
+    const isSettled = !isPending;
 
     return (
       <motion.div
@@ -113,35 +119,48 @@ export default function Loans() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: index * 0.1 }}
         className={cn(
-          'glass-card rounded-xl p-4 sm:p-5 hover-lift active:scale-[0.98] transition-transform',
-          !isPending && 'opacity-60'
+          'rounded-xl p-4 sm:p-5 transition-all border-2',
+          isPending && 'glass-card border-transparent hover-lift active:scale-[0.98]',
+          isSettled && 'bg-income/5 border-income/20'
         )}
       >
         <div className="flex items-start justify-between mb-2 sm:mb-3">
           <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
             <div
               className={cn(
-                'w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center shrink-0',
-                isGiven ? 'bg-expense/10' : 'bg-income/10'
+                'w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors',
+                isPending && isGiven && 'bg-expense/10',
+                isPending && !isGiven && 'bg-income/10',
+                isSettled && 'bg-income/20'
               )}
             >
-              {isGiven ? (
+              {isSettled ? (
+                <Check className="w-4 h-4 sm:w-5 sm:h-5 text-income" />
+              ) : isGiven ? (
                 <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5 text-expense" />
               ) : (
                 <ArrowDownLeft className="w-4 h-4 sm:w-5 sm:h-5 text-income" />
               )}
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className="font-semibold text-sm sm:text-base truncate">{loan.loanPerson}</h3>
+              <h3 className={cn(
+                'font-semibold text-sm sm:text-base truncate',
+                isSettled && 'text-muted-foreground'
+              )}>
+                {loan.loanPerson}
+              </h3>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                {isGiven ? 'Você emprestou' : 'Você pegou'}
+                {isSettled 
+                  ? (isGiven ? 'Recebido de volta' : 'Pago')
+                  : (isGiven ? 'Você emprestou' : 'Você pegou')
+                }
               </p>
             </div>
           </div>
           <div
             className={cn(
               'px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 shrink-0',
-              isPending ? 'bg-warning/10 text-warning' : 'bg-income/10 text-income'
+              isPending ? 'bg-warning/10 text-warning' : 'bg-income/20 text-income'
             )}
           >
             {isPending ? (
@@ -152,7 +171,7 @@ export default function Loans() {
             ) : (
               <>
                 <Check className="w-3 h-3" />
-                <span className="hidden sm:inline">{isGiven ? 'Recebido' : 'Pago'}</span>
+                <span>{isGiven ? 'Recebido' : 'Pago'}</span>
               </>
             )}
           </div>
@@ -164,14 +183,16 @@ export default function Loans() {
           </p>
         )}
 
-        <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-border">
+        <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-border/50">
           <p
             className={cn(
-              'text-lg sm:text-xl font-bold',
-              isGiven ? 'text-expense' : 'text-income'
+              'text-lg sm:text-xl font-bold transition-colors',
+              isPending && isGiven && 'text-expense',
+              isPending && !isGiven && 'text-income',
+              isSettled && 'text-income line-through decoration-2'
             )}
           >
-            {isGiven ? '-' : '+'} R${' '}
+            {isPending ? (isGiven ? '-' : '+') : '✓'} R${' '}
             {loan.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
           </p>
 
@@ -179,7 +200,7 @@ export default function Loans() {
             <Button
               size="sm"
               variant="outline"
-              onClick={() => handleStatusChange(loan.id, loan.type)}
+              onClick={() => handleStatusChange(loan.id, loan.type, loan.amount)}
               className="min-h-[36px] sm:min-h-[40px] text-xs sm:text-sm"
             >
               <Check className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
