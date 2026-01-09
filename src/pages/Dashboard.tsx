@@ -64,12 +64,25 @@ export default function Dashboard() {
   }, [transactions, periodFilter]);
 
   const stats = useMemo(() => {
+    // Exclui empréstimos quitados do cálculo:
+    // - Empréstimo dado (expense) com status 'received' = você recebeu de volta, não é mais despesa
+    // - Empréstimo recebido (income) com status 'paid' = você pagou, não é mais receita
     const income = filteredTransactions
-      .filter((t) => t.type === 'income')
+      .filter((t) => {
+        if (t.type !== 'income') return false;
+        // Exclui empréstimos que você pegou e já pagou
+        if (t.isLoan && t.loanStatus === 'paid') return false;
+        return true;
+      })
       .reduce((sum, t) => sum + t.amount, 0);
 
     const expense = filteredTransactions
-      .filter((t) => t.type === 'expense')
+      .filter((t) => {
+        if (t.type !== 'expense') return false;
+        // Exclui empréstimos que você deu e já recebeu de volta
+        if (t.isLoan && t.loanStatus === 'received') return false;
+        return true;
+      })
       .reduce((sum, t) => sum + t.amount, 0);
 
     return {
