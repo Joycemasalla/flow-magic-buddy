@@ -273,7 +273,8 @@ export default function NewInvestmentModal({ isOpen, onClose }: NewInvestmentMod
       </div>
 
       <div className="space-y-2">
-        <Label>Data planejada</Label>
+        <Label>Data do aporte</Label>
+        <p className="text-xs text-muted-foreground -mt-1">Pode ser uma data futura para investimentos planejados</p>
         <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
           <PopoverTrigger asChild>
             <Button variant="outline" className="w-full justify-start text-left font-normal">
