@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 type PeriodFilter = 'today' | 'week' | 'month' | 'year' | 'all';
+type TypeFilter = 'all' | 'income' | 'expense';
 
 const periodLabels: Record<PeriodFilter, string> = {
   today: 'Hoje',
@@ -24,6 +25,12 @@ const periodLabels: Record<PeriodFilter, string> = {
   all: 'Tudo',
 };
 
+const typeLabels: Record<TypeFilter, string> = {
+  all: 'Todos',
+  income: 'Receitas',
+  expense: 'Despesas',
+};
+
 export default function Dashboard() {
   const { transactions, deleteTransaction } = useTransactions();
   const { user } = useAuth();
@@ -31,6 +38,7 @@ export default function Dashboard() {
   const { toast } = useToast();
   
   const [periodFilter, setPeriodFilter] = useState<PeriodFilter>('month');
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
   const [showCharts, setShowCharts] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
 
@@ -39,6 +47,12 @@ export default function Dashboard() {
       const tDate = new Date(t.date);
       const now = new Date();
 
+      // Filtro por tipo
+      if (typeFilter !== 'all' && t.type !== typeFilter) {
+        return false;
+      }
+
+      // Filtro por período
       switch (periodFilter) {
         case 'today':
           return isToday(tDate);
@@ -61,7 +75,7 @@ export default function Dashboard() {
           return true;
       }
     });
-  }, [transactions, periodFilter]);
+  }, [transactions, periodFilter, typeFilter]);
 
   const stats = useMemo(() => {
     // Exclui empréstimos quitados do cálculo:
@@ -153,6 +167,33 @@ export default function Dashboard() {
             )}
           >
             {periodLabels[period]}
+          </button>
+        ))}
+      </motion.div>
+
+      {/* Type Filter Pills */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.05 }}
+        className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide"
+      >
+        {(Object.keys(typeLabels) as TypeFilter[]).map((type) => (
+          <button
+            key={type}
+            onClick={() => setTypeFilter(type)}
+            className={cn(
+              'px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-all min-h-[40px] sm:min-h-[44px] active:scale-95',
+              typeFilter === type
+                ? type === 'income' 
+                  ? 'bg-income text-income-foreground'
+                  : type === 'expense'
+                    ? 'bg-expense text-expense-foreground'
+                    : 'bg-primary text-primary-foreground'
+                : 'bg-muted text-muted-foreground'
+            )}
+          >
+            {typeLabels[type]}
           </button>
         ))}
       </motion.div>
