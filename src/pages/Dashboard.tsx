@@ -5,11 +5,12 @@ import { useTransactions } from '@/contexts/TransactionContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { isToday, isYesterday, subDays, startOfMonth, startOfYear, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
+import { isToday, subDays, startOfMonth, startOfYear, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import SummaryCards from '@/components/dashboard/SummaryCards';
 import CategoryChart from '@/components/dashboard/CategoryChart';
 import EvolutionChart from '@/components/dashboard/EvolutionChart';
 import TransactionList from '@/components/dashboard/TransactionList';
+import InvestmentSummary from '@/components/dashboard/InvestmentSummary';
 import ReportModal from '@/components/modals/ReportModal';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -32,7 +33,7 @@ const typeLabels: Record<TypeFilter, string> = {
 };
 
 export default function Dashboard() {
-  const { transactions, deleteTransaction } = useTransactions();
+  const { transactions, investments, deleteTransaction } = useTransactions();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -205,6 +206,9 @@ export default function Dashboard() {
         balance={stats.balance}
         transactionCount={stats.count}
       />
+
+      {/* Investment Summary - Compact */}
+      <InvestmentSummary investments={investments} />
 
       {/* Charts - Collapsible on mobile */}
       <div className="space-y-4">
