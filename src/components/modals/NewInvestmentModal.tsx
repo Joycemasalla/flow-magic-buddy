@@ -98,7 +98,7 @@ export default function NewInvestmentModal({ isOpen, onClose }: NewInvestmentMod
     taxaAdministracao: 0,
   });
 
-  const { addInvestment, markInvestmentAsDone } = useTransactions();
+  const { addInvestment, addTransaction } = useTransactions();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -169,22 +169,38 @@ export default function NewInvestmentModal({ isOpen, onClose }: NewInvestmentMod
     setIsProcessing(true);
 
     const parsedValor = parseFloat(valor.replace(',', '.'));
+    const investmentDate = selectedDate.toISOString().split('T')[0];
+
+    // Se já investido, criar a transação de despesa primeiro
+    let transactionId: string | undefined;
+    if (jaInvestido) {
+      transactionId = await addTransaction({
+        type: 'expense',
+        category: 'investment',
+        amount: parsedValor,
+        description: nome,
+        date: investmentDate,
+      });
+    }
 
     const investment: Omit<Investment, 'id' | 'createdAt'> = {
       nome,
       tipo: selectedType,
       valorInvestido: parsedValor,
-      dataInvestimento: selectedDate.toISOString().split('T')[0],
+      dataInvestimento: investmentDate,
       jaInvestido,
       descricao: descricao || undefined,
       detalhesEspecificos: getSpecificDetails(),
+      transactionId,
     };
 
-    addInvestment(investment);
+    await addInvestment(investment);
 
     toast({
       title: jaInvestido ? '✅ Investimento registrado!' : '📋 Investimento planejado!',
-      description: `${nome} - R$ ${parsedValor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+      description: jaInvestido 
+        ? `${nome} - R$ ${parsedValor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} debitado do saldo`
+        : `${nome} - R$ ${parsedValor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
     });
 
     setIsProcessing(false);
