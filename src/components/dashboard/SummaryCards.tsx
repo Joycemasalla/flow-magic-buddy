@@ -9,12 +9,16 @@ interface SummaryCardsProps {
   balance: number;
   transactionCount: number;
   onTransactionsClick?: () => void;
+  onIncomeClick?: () => void;
+  onExpenseClick?: () => void;
 }
 
 export default function SummaryCards({
   income,
   expense,
   balance,
+  onIncomeClick,
+  onExpenseClick,
 }: SummaryCardsProps) {
   return (
     <div className="space-y-3">
@@ -38,11 +42,12 @@ export default function SummaryCards({
 
       {/* Income/Expense Row */}
       <div className="grid grid-cols-2 gap-3">
-        <motion.div
+        <motion.button
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="glass-card rounded-xl p-4"
+          onClick={onIncomeClick}
+          className="glass-card rounded-xl p-4 text-left cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-transform"
         >
           <div className="flex items-center gap-2 mb-2">
             <div className="w-8 h-8 rounded-lg bg-income/10 flex items-center justify-center">
@@ -53,13 +58,14 @@ export default function SummaryCards({
           <p className="text-base sm:text-xl lg:text-2xl font-bold text-income truncate">
             <PrivacyValue value={income} />
           </p>
-        </motion.div>
+        </motion.button>
 
-        <motion.div
+        <motion.button
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          className="glass-card rounded-xl p-4"
+          onClick={onExpenseClick}
+          className="glass-card rounded-xl p-4 text-left cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-transform"
         >
           <div className="flex items-center gap-2 mb-2">
             <div className="w-8 h-8 rounded-lg bg-expense/10 flex items-center justify-center">
@@ -70,7 +76,7 @@ export default function SummaryCards({
           <p className="text-base sm:text-xl lg:text-2xl font-bold text-expense truncate">
             <PrivacyValue value={expense} />
           </p>
-        </motion.div>
+        </motion.button>
       </div>
     </div>
   );

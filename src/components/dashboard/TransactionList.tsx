@@ -22,6 +22,7 @@ import { Transaction, categoryLabels, TransactionCategory } from '@/types/transa
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { PrivacyValue } from '@/components/ui/PrivacyValue';
+import TransactionDetailsModal from './TransactionDetailsModal';
 
 const categoryIconMap: Record<TransactionCategory, React.ElementType> = {
   salary: Wallet,
@@ -47,10 +48,12 @@ interface SwipeableItemProps {
   transaction: Transaction;
   onEdit: () => void;
   onDelete: () => void;
+  onViewDetails: () => void;
 }
 
-function SwipeableItem({ transaction, onEdit, onDelete }: SwipeableItemProps) {
+function SwipeableItem({ transaction, onEdit, onDelete, onViewDetails }: SwipeableItemProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [hasDragged, setHasDragged] = useState(false);
   const Icon = categoryIconMap[transaction.category] || MoreHorizontal;
   const isIncome = transaction.type === 'income';
   
@@ -60,11 +63,25 @@ function SwipeableItem({ transaction, onEdit, onDelete }: SwipeableItemProps) {
     (transaction.type === 'income' && transaction.loanStatus === 'paid')
   );
 
+  const handleDragStart = () => {
+    setHasDragged(false);
+  };
+
+  const handleDrag = () => {
+    setHasDragged(true);
+  };
+
   const handleDragEnd = (_: unknown, info: PanInfo) => {
     if (info.offset.x < -60) {
       setIsOpen(true);
     } else {
       setIsOpen(false);
+    }
+  };
+
+  const handleClick = () => {
+    if (!hasDragged && !isOpen) {
+      onViewDetails();
     }
   };
 
@@ -95,10 +112,18 @@ function SwipeableItem({ transaction, onEdit, onDelete }: SwipeableItemProps) {
         drag="x"
         dragConstraints={{ left: -100, right: 0 }}
         dragElastic={0.1}
+        onDragStart={handleDragStart}
+        onDrag={handleDrag}
         onDragEnd={handleDragEnd}
         animate={{ x: isOpen ? -100 : 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-        onClick={() => isOpen && setIsOpen(false)}
+        onClick={() => {
+          if (isOpen) {
+            setIsOpen(false);
+          } else {
+            handleClick();
+          }
+        }}
        className={cn(
           'relative z-[2] flex items-center gap-3 p-3 rounded-xl border cursor-grab active:cursor-grabbing backdrop-blur-xl',
           isSettledLoan 
@@ -160,6 +185,8 @@ export default function TransactionList({
   onEdit,
   onDelete,
 }: TransactionListProps) {
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+
   // Group transactions by date
   const grouped = transactions.reduce((acc, transaction) => {
     const date = transaction.date;
@@ -198,45 +225,54 @@ export default function TransactionList({
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="space-y-4 sm:space-y-5 max-w-full overflow-hidden"
-    >
-      <h3 className="text-lg font-semibold">Transações</h3>
-      <div className="space-y-5">
-        {sortedDates.map((date) => (
-          <div key={date}>
-            <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">
-              {formatDateLabel(date)}
-            </h4>
-            <div className="space-y-2">
-              <AnimatePresence>
-                {grouped[date].map((transaction, index) => (
-                  <motion.div
-                    key={transaction.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, x: -100 }}
-                    transition={{ delay: index * 0.03 }}
-                  >
-                    <SwipeableItem
-                      transaction={transaction}
-                      onEdit={() => onEdit(transaction.id)}
-                      onDelete={() => onDelete(transaction.id)}
-                    />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-4 sm:space-y-5 max-w-full overflow-hidden"
+      >
+        <h3 className="text-lg font-semibold">Transações</h3>
+        <div className="space-y-5">
+          {sortedDates.map((date) => (
+            <div key={date}>
+              <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">
+                {formatDateLabel(date)}
+              </h4>
+              <div className="space-y-2">
+                <AnimatePresence>
+                  {grouped[date].map((transaction, index) => (
+                    <motion.div
+                      key={transaction.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, x: -100 }}
+                      transition={{ delay: index * 0.03 }}
+                    >
+                      <SwipeableItem
+                        transaction={transaction}
+                        onEdit={() => onEdit(transaction.id)}
+                        onDelete={() => onDelete(transaction.id)}
+                        onViewDetails={() => setSelectedTransaction(transaction)}
+                      />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
-      
-      {/* Swipe Hint */}
-      <p className="text-center text-xs text-muted-foreground lg:hidden">
-        ← Deslize para editar ou excluir
-      </p>
-    </motion.div>
+          ))}
+        </div>
+        
+        {/* Swipe Hint */}
+        <p className="text-center text-xs text-muted-foreground lg:hidden">
+          ← Deslize para editar ou excluir
+        </p>
+      </motion.div>
+
+      {/* Transaction Details Modal */}
+      <TransactionDetailsModal
+        transaction={selectedTransaction}
+        onClose={() => setSelectedTransaction(null)}
+      />
+    </>
   );
 }
