@@ -205,6 +205,8 @@ export default function Dashboard() {
         expense={stats.expense}
         balance={stats.balance}
         transactionCount={stats.count}
+        onIncomeClick={() => setTypeFilter('income')}
+        onExpenseClick={() => setTypeFilter('expense')}
       />
 
       {/* Investment Summary - Compact */}
