@@ -35,6 +35,7 @@ import { cn } from '@/lib/utils';
 import { format, parseISO, isThisMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import NewInvestmentModal from '@/components/modals/NewInvestmentModal';
+import InvestmentDetailsModal from '@/components/dashboard/InvestmentDetailsModal';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -66,6 +67,7 @@ export default function Investments() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
   const [investmentToDelete, setInvestmentToDelete] = useState<Investment | null>(null);
+  const [selectedInvestment, setSelectedInvestment] = useState<Investment | null>(null);
 
   const stats = useMemo(() => {
     const total = investments
@@ -317,7 +319,8 @@ export default function Investments() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ delay: index * 0.05 }}
-                  className="glass-card rounded-xl p-3 sm:p-4"
+                  onClick={() => setSelectedInvestment(investment)}
+                  className="glass-card rounded-xl p-3 sm:p-4 cursor-pointer hover:scale-[1.01] active:scale-[0.99] transition-transform"
                 >
                   <div className="flex items-start gap-3">
                     <div
@@ -377,7 +380,10 @@ export default function Investments() {
                               size="sm"
                               variant="outline"
                               className="gap-1 text-income border-income/30 hover:bg-income/10 h-7 sm:h-8 text-xs px-2 sm:px-3"
-                              onClick={() => handleMarkAsDone(investment)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMarkAsDone(investment);
+                              }}
                             >
                               <Check className="w-3 h-3" />
                               <span className="hidden sm:inline">Marcar Feito</span>
@@ -389,7 +395,10 @@ export default function Investments() {
                             size="icon"
                             variant="ghost"
                             className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-destructive"
-                            onClick={() => setInvestmentToDelete(investment)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setInvestmentToDelete(investment);
+                            }}
                           >
                             <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                           </Button>
@@ -432,6 +441,12 @@ export default function Investments() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Investment Details Modal */}
+      <InvestmentDetailsModal
+        investment={selectedInvestment}
+        onClose={() => setSelectedInvestment(null)}
+      />
     </div>
   );
 }
