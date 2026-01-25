@@ -119,7 +119,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
 
       if (investmentsData) {
         setInvestments(
-          investmentsData.map((i) => {
+          investmentsData.map((i: any) => {
             const tipo = validInvestmentTypes.includes(i.type as InvestmentType) 
               ? (i.type as InvestmentType) 
               : 'outros';
@@ -130,6 +130,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
               valorInvestido: Number(i.initial_value),
               dataInvestimento: i.start_date,
               jaInvestido: i.status === 'completed',
+              descricao: i.description || undefined,
               createdAt: i.created_at,
             };
           })
@@ -335,6 +336,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
         current_value: investment.valorInvestido,
         start_date: investment.dataInvestimento,
         status: investment.jaInvestido ? 'completed' : 'active',
+        description: investment.descricao || null,
       })
       .select()
       .single();
@@ -345,17 +347,19 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     }
 
     if (data) {
-      const tipo = validInvestmentTypes.includes(data.type as InvestmentType) 
-        ? (data.type as InvestmentType) 
+      const d = data as any;
+      const tipo = validInvestmentTypes.includes(d.type as InvestmentType) 
+        ? (d.type as InvestmentType) 
         : 'outros';
       const newInvestment: Investment = {
-        id: data.id,
-        nome: data.name,
+        id: d.id,
+        nome: d.name,
         tipo,
-        valorInvestido: Number(data.initial_value),
-        dataInvestimento: data.start_date,
-        jaInvestido: data.status === 'completed',
-        createdAt: data.created_at,
+        valorInvestido: Number(d.initial_value),
+        dataInvestimento: d.start_date,
+        jaInvestido: d.status === 'completed',
+        descricao: d.description || undefined,
+        createdAt: d.created_at,
       };
       setInvestments((prev) => [newInvestment, ...prev]);
     }
@@ -373,6 +377,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     }
     if (updates.dataInvestimento) updateData.start_date = updates.dataInvestimento;
     if (updates.jaInvestido !== undefined) updateData.status = updates.jaInvestido ? 'completed' : 'active';
+    if (updates.descricao !== undefined) updateData.description = updates.descricao || null;
 
     const { error } = await supabase
       .from('investments')
