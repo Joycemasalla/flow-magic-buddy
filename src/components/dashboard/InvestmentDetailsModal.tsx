@@ -189,44 +189,44 @@ export default function InvestmentDetailsModal({ investment, onClose }: Investme
             </p>
           </div>
 
-          {/* Details */}
-          <div className="mt-4 space-y-3">
-            <DetailRow
-              label="Data"
-              value={format(parseISO(investment.dataInvestimento), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-              icon={<Calendar className="w-4 h-4" />}
-            />
-            
-            <DetailRow
-              label="Criado em"
-              value={format(parseISO(investment.createdAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
-              icon={<Clock className="w-4 h-4" />}
-            />
+        {/* Details */}
+        <div className="mt-4 space-y-3">
+          <DetailRow
+            label="Data"
+            value={format(parseISO(investment.dataInvestimento), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+            icon={<Calendar className="w-4 h-4" />}
+          />
+          
+          <DetailRow
+            label="Criado em"
+            value={format(parseISO(investment.createdAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+            icon={<Clock className="w-4 h-4" />}
+          />
 
-            {/* Description */}
-            {investment.descricao && (
-              <div className="pt-3 border-t border-border/50">
-                <div className="flex items-start gap-3">
-                  <FileText className="w-4 h-4 text-muted-foreground mt-0.5" />
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Descrição</p>
-                    <p className="text-sm">{investment.descricao}</p>
-                  </div>
+          {/* Description - Always show section if description exists */}
+          {investment.descricao && investment.descricao.trim() !== '' && (
+            <div className="pt-3 border-t border-border/50">
+              <div className="flex items-start gap-3">
+                <FileText className="w-4 h-4 text-muted-foreground mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-muted-foreground mb-1">Descrição</p>
+                  <p className="text-sm whitespace-pre-wrap break-words">{investment.descricao}</p>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Specific Details */}
-            {investment.detalhesEspecificos && (
-              <div className="pt-3 border-t border-border/50">
-                <p className="text-xs text-muted-foreground mb-3 flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4" />
-                  Detalhes do Investimento
-                </p>
-                {renderSpecificDetails()}
-              </div>
-            )}
-          </div>
+          {/* Specific Details */}
+          {investment.detalhesEspecificos && (
+            <div className="pt-3 border-t border-border/50">
+              <p className="text-xs text-muted-foreground mb-3 flex items-center gap-2">
+                <TrendingUp className="w-4 h-4" />
+                Detalhes do Investimento
+              </p>
+              {renderSpecificDetails()}
+            </div>
+          )}
+        </div>
         </div>
       </motion.div>
     </AnimatePresence>
