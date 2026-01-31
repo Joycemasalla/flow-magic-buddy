@@ -36,6 +36,7 @@ import { format, parseISO, isThisMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import NewInvestmentModal from '@/components/modals/NewInvestmentModal';
 import InvestmentDetailsModal from '@/components/dashboard/InvestmentDetailsModal';
+import InvestmentDistributionChart from '@/components/dashboard/InvestmentDistributionChart';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -247,6 +248,9 @@ export default function Investments() {
           </p>
         </motion.div>
       </div>
+
+      {/* Distribution Chart */}
+      <InvestmentDistributionChart investments={investments} />
 
       {/* Filters */}
       <div className="flex flex-wrap gap-2 items-center">
