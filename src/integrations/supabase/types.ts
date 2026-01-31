@@ -23,6 +23,7 @@ export type Database = {
           id: string
           initial_value: number
           name: string
+          specific_details: Json | null
           start_date: string
           status: string
           type: string
@@ -37,6 +38,7 @@ export type Database = {
           id?: string
           initial_value: number
           name: string
+          specific_details?: Json | null
           start_date: string
           status?: string
           type: string
@@ -51,6 +53,7 @@ export type Database = {
           id?: string
           initial_value?: number
           name?: string
+          specific_details?: Json | null
           start_date?: string
           status?: string
           type?: string

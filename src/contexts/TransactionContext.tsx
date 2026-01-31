@@ -131,6 +131,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
               dataInvestimento: i.start_date,
               jaInvestido: i.status === 'completed',
               descricao: i.description || undefined,
+              detalhesEspecificos: i.specific_details || undefined,
               createdAt: i.created_at,
             };
           })
@@ -337,7 +338,8 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
         start_date: investment.dataInvestimento,
         status: investment.jaInvestido ? 'completed' : 'active',
         description: investment.descricao || null,
-      })
+        specific_details: investment.detalhesEspecificos as unknown || null,
+      } as any)
       .select()
       .single();
 
@@ -359,6 +361,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
         dataInvestimento: d.start_date,
         jaInvestido: d.status === 'completed',
         descricao: d.description || undefined,
+        detalhesEspecificos: d.specific_details || undefined,
         createdAt: d.created_at,
       };
       setInvestments((prev) => [newInvestment, ...prev]);
