@@ -22,6 +22,7 @@ import { usePrivacy } from '@/contexts/PrivacyContext';
 import { Button } from '@/components/ui/button';
 import QuickRecordModal from '@/components/modals/QuickRecordModal';
 import NewInvestmentModal from '@/components/modals/NewInvestmentModal';
+import NewLoanModal from '@/components/modals/NewLoanModal';
 
 const navItems = [
   { path: '/', icon: LayoutDashboard, label: 'Início', mobileLabel: 'Início' },
@@ -38,6 +39,7 @@ export default function AppLayout() {
   const location = useLocation();
   const [isQuickRecordOpen, setIsQuickRecordOpen] = useState(false);
   const [isInvestmentModalOpen, setIsInvestmentModalOpen] = useState(false);
+  const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);
 
   // Determine which modal to open based on current route
   const handleFabClick = () => {
@@ -46,8 +48,7 @@ export default function AppLayout() {
     if (path === '/investimentos') {
       setIsInvestmentModalOpen(true);
     } else if (path === '/emprestimos') {
-      // For loans, open QuickRecordModal with loan preset (handled inside the modal)
-      setIsQuickRecordOpen(true);
+      setIsLoanModalOpen(true);
     } else {
       // Default: Dashboard, Transactions, Reminders → Transaction modal
       setIsQuickRecordOpen(true);
@@ -238,6 +239,12 @@ export default function AppLayout() {
       <NewInvestmentModal
         isOpen={isInvestmentModalOpen}
         onClose={() => setIsInvestmentModalOpen(false)}
+      />
+
+      {/* New Loan Modal */}
+      <NewLoanModal
+        isOpen={isLoanModalOpen}
+        onClose={() => setIsLoanModalOpen(false)}
       />
     </div>
   );
