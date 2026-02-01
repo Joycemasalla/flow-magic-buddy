@@ -21,6 +21,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usePrivacy } from '@/contexts/PrivacyContext';
 import { Button } from '@/components/ui/button';
 import QuickRecordModal from '@/components/modals/QuickRecordModal';
+import NewInvestmentModal from '@/components/modals/NewInvestmentModal';
 
 const navItems = [
   { path: '/', icon: LayoutDashboard, label: 'Início', mobileLabel: 'Início' },
@@ -36,6 +37,22 @@ export default function AppLayout() {
   const { isPrivacyMode, togglePrivacyMode } = usePrivacy();
   const location = useLocation();
   const [isQuickRecordOpen, setIsQuickRecordOpen] = useState(false);
+  const [isInvestmentModalOpen, setIsInvestmentModalOpen] = useState(false);
+
+  // Determine which modal to open based on current route
+  const handleFabClick = () => {
+    const path = location.pathname;
+    
+    if (path === '/investimentos') {
+      setIsInvestmentModalOpen(true);
+    } else if (path === '/emprestimos') {
+      // For loans, open QuickRecordModal with loan preset (handled inside the modal)
+      setIsQuickRecordOpen(true);
+    } else {
+      // Default: Dashboard, Transactions, Reminders → Transaction modal
+      setIsQuickRecordOpen(true);
+    }
+  };
 
   return (
     <div className="min-h-screen flex w-full bg-background overflow-x-hidden">
@@ -194,7 +211,7 @@ export default function AppLayout() {
       {/* Floating Action Button - Fixed above nav */}
       <motion.button
         whileTap={{ scale: 0.95 }}
-        onClick={() => setIsQuickRecordOpen(true)}
+        onClick={handleFabClick}
         className="lg:hidden fixed right-4 bottom-[84px] z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-xl flex items-center justify-center active:bg-primary/90 transition-colors"
         style={{ boxShadow: '0 4px 20px hsl(var(--primary) / 0.4)' }}
       >
@@ -205,7 +222,7 @@ export default function AppLayout() {
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        onClick={() => setIsQuickRecordOpen(true)}
+        onClick={handleFabClick}
         className="hidden lg:flex fixed right-8 bottom-8 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg items-center justify-center animate-pulse-glow"
       >
         <Plus className="w-6 h-6" />
@@ -215,6 +232,12 @@ export default function AppLayout() {
       <QuickRecordModal
         isOpen={isQuickRecordOpen}
         onClose={() => setIsQuickRecordOpen(false)}
+      />
+
+      {/* New Investment Modal */}
+      <NewInvestmentModal
+        isOpen={isInvestmentModalOpen}
+        onClose={() => setIsInvestmentModalOpen(false)}
       />
     </div>
   );
