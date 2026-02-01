@@ -118,6 +118,17 @@ export default function Investments() {
     setInvestmentToDelete(null);
   };
 
+  const formatDate = (dateStr: string | undefined): string => {
+    if (!dateStr) return '-';
+    try {
+      const date = parseISO(dateStr);
+      if (isNaN(date.getTime())) return '-';
+      return format(date, 'MM/yyyy');
+    } catch {
+      return '-';
+    }
+  };
+
   const renderDetails = (investment: Investment) => {
     const details = investment.detalhesEspecificos;
     if (!details) return null;
@@ -125,38 +136,43 @@ export default function Investments() {
     switch (investment.tipo) {
       case 'tesouro_direto': {
         const d = details as TesouroDiretoDetails;
+        if (!d.titulo && !d.taxa && !d.vencimento) return null;
         return (
           <p className="text-xs text-muted-foreground mt-1 truncate">
-            {d.titulo} | Taxa: {d.taxa}% | Venc: {format(parseISO(d.vencimento), 'MM/yyyy')}
+            {d.titulo || '-'} | Taxa: {d.taxa ?? '-'}% | Venc: {formatDate(d.vencimento)}
           </p>
         );
       }
       case 'acoes': {
         const d = details as AcoesDetails;
+        if (!d.quantidade && !d.precoMedio) return null;
         return (
           <p className="text-xs text-muted-foreground mt-1">
-            {d.quantidade} ações @ R$ {d.precoMedio.toFixed(2)}
+            {d.quantidade ?? 0} ações @ R$ {(d.precoMedio ?? 0).toFixed(2)}
           </p>
         );
       }
       case 'cripto': {
         const d = details as CriptoDetails;
+        if (!d.quantidade && !d.moeda) return null;
         return (
           <p className="text-xs text-muted-foreground mt-1">
-            {d.quantidade} {d.moeda} @ R$ {d.precoMedio.toFixed(2)}
+            {d.quantidade ?? 0} {d.moeda || '-'} @ R$ {(d.precoMedio ?? 0).toFixed(2)}
           </p>
         );
       }
       case 'renda_fixa': {
         const d = details as RendaFixaDetails;
+        if (!d.instituicao && !d.taxa && !d.vencimento) return null;
         return (
           <p className="text-xs text-muted-foreground mt-1 truncate">
-            {d.instituicao} | {d.taxa}% {d.tipoTaxa.toUpperCase()} | Venc: {format(parseISO(d.vencimento), 'MM/yyyy')}
+            {d.instituicao || '-'} | {d.taxa ?? '-'}% {(d.tipoTaxa || 'cdi').toUpperCase()} | Venc: {formatDate(d.vencimento)}
           </p>
         );
       }
       case 'poupanca': {
         const d = details as PoupancaDetails;
+        if (!d.instituicao) return null;
         return (
           <p className="text-xs text-muted-foreground mt-1 truncate">
             {d.instituicao} {d.objetivo && `- ${d.objetivo}`}
