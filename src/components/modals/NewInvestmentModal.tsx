@@ -591,6 +591,12 @@ export default function NewInvestmentModal({ isOpen, onClose }: NewInvestmentMod
               {format(selectedDate, 'dd/MM/yyyy')}
             </span>
           </div>
+          {descricao && (
+            <div className="pt-2 border-t border-border/50">
+              <span className="text-muted-foreground text-sm">Descrição:</span>
+              <p className="text-sm mt-1 whitespace-pre-wrap">{descricao}</p>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center justify-between p-4 bg-income/5 border border-income/20 rounded-xl">
