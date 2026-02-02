@@ -138,7 +138,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
         );
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
+      if (import.meta.env.DEV) console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
     }
@@ -164,7 +164,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       .single();
 
     if (error) {
-      console.error('Error adding transaction:', error);
+      if (import.meta.env.DEV) console.error('Error adding transaction:', error);
       return;
     }
 
@@ -209,7 +209,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       .eq('id', id);
 
     if (error) {
-      console.error('Error updating transaction:', error);
+      if (import.meta.env.DEV) console.error('Error updating transaction:', error);
       return;
     }
 
@@ -227,7 +227,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       .eq('id', id);
 
     if (error) {
-      console.error('Error deleting transaction:', error);
+      if (import.meta.env.DEV) console.error('Error deleting transaction:', error);
       return;
     }
 
@@ -255,7 +255,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       .single();
 
     if (error) {
-      console.error('Error adding reminder:', error);
+      if (import.meta.env.DEV) console.error('Error adding reminder:', error);
       return;
     }
 
@@ -299,7 +299,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       .eq('id', id);
 
     if (error) {
-      console.error('Error updating reminder:', error);
+      if (import.meta.env.DEV) console.error('Error updating reminder:', error);
       return;
     }
 
@@ -317,7 +317,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       .eq('id', id);
 
     if (error) {
-      console.error('Error deleting reminder:', error);
+      if (import.meta.env.DEV) console.error('Error deleting reminder:', error);
       return;
     }
 
@@ -344,7 +344,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       .single();
 
     if (error) {
-      console.error('Error adding investment:', error);
+      if (import.meta.env.DEV) console.error('Error adding investment:', error);
       return;
     }
 
@@ -388,7 +388,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       .eq('id', id);
 
     if (error) {
-      console.error('Error updating investment:', error);
+      if (import.meta.env.DEV) console.error('Error updating investment:', error);
       return;
     }
 
@@ -406,7 +406,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       .eq('id', id);
 
     if (error) {
-      console.error('Error deleting investment:', error);
+      if (import.meta.env.DEV) console.error('Error deleting investment:', error);
       return;
     }
 
