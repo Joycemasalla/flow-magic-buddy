@@ -30,7 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Configura listener para mudanças de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth event:', event);
+        if (import.meta.env.DEV) console.log('Auth event:', event);
         
         setSession(session);
         setUser(session?.user ?? null);
@@ -61,12 +61,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       
       if (error) {
-        console.error('Google sign in error:', error);
+        if (import.meta.env.DEV) console.error('Google sign in error:', error);
       }
       
       return { error };
     } catch (err) {
-      console.error('Unexpected error:', err);
+      if (import.meta.env.DEV) console.error('Unexpected error:', err);
       return { error: err as Error };
     }
   };
