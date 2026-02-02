@@ -55,47 +55,53 @@ function AuthRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function AppRoutes() {
+  return (
+    <Routes>
+      <Route
+        path="/auth"
+        element={
+          <AuthRoute>
+            <Auth />
+          </AuthRoute>
+        }
+      />
+      <Route
+        element={
+          <ProtectedRoute>
+            <AppLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/transacoes" element={<Transactions />} />
+        <Route path="/transacoes/nova" element={<TransactionForm />} />
+        <Route path="/transacoes/editar/:id" element={<TransactionForm />} />
+        <Route path="/investimentos" element={<Investments />} />
+        <Route path="/lembretes" element={<Reminders />} />
+        <Route path="/emprestimos" element={<Loans />} />
+      </Route>
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
-      <AuthProvider>
-        <TransactionProvider>
-          <PrivacyProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <Routes>
-                  <Route
-                    path="/auth"
-                    element={
-                      <AuthRoute>
-                        <Auth />
-                      </AuthRoute>
-                    }
-                  />
-                  <Route
-                    element={
-                      <ProtectedRoute>
-                        <AppLayout />
-                      </ProtectedRoute>
-                    }
-                  >
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/transacoes" element={<Transactions />} />
-                    <Route path="/transacoes/nova" element={<TransactionForm />} />
-                    <Route path="/transacoes/editar/:id" element={<TransactionForm />} />
-                    <Route path="/investimentos" element={<Investments />} />
-                    <Route path="/lembretes" element={<Reminders />} />
-                    <Route path="/emprestimos" element={<Loans />} />
-                  </Route>
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </BrowserRouter>
-            </TooltipProvider>
-          </PrivacyProvider>
-        </TransactionProvider>
-      </AuthProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <TransactionProvider>
+            <PrivacyProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <AppRoutes />
+              </TooltipProvider>
+            </PrivacyProvider>
+          </TransactionProvider>
+        </AuthProvider>
+      </BrowserRouter>
     </ThemeProvider>
   </QueryClientProvider>
 );
