@@ -1,15 +1,19 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { Transaction, Reminder, TransactionCategory } from '@/types/transaction';
 import { Investment, InvestmentType } from '@/types/investment';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOnlineStatus, setOfflineCache, getOfflineCache } from '@/hooks/useOffline';
+import { useOfflineQueue, generateTempId, OfflineOperation } from '@/hooks/useOfflineQueue';
+import { toast } from '@/hooks/use-toast';
 
 interface TransactionContextType {
   transactions: Transaction[];
   reminders: Reminder[];
   investments: Investment[];
   loading: boolean;
+  pendingOpsCount: number;
+  isSyncing: boolean;
   addTransaction: (transaction: Omit<Transaction, 'id' | 'createdAt'>) => Promise<string | undefined>;
   updateTransaction: (id: string, transaction: Partial<Transaction>) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
@@ -36,6 +40,7 @@ const validInvestmentTypes: InvestmentType[] = [
 export function TransactionProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const isOnline = useOnlineStatus();
+  const { queue, pendingCount, enqueue, clearQueue, isSyncing, setIsSyncing, syncingRef } = useOfflineQueue();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [investments, setInvestments] = useState<Investment[]>([]);
@@ -56,6 +61,13 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     }
   }, [user, isOnline]);
+
+  // Sync queue when coming back online
+  useEffect(() => {
+    if (isOnline && user && pendingCount > 0 && !syncingRef.current) {
+      syncQueue();
+    }
+  }, [isOnline, user, pendingCount]);
 
   const loadFromCache = () => {
     const cachedTransactions = getOfflineCache<Transaction[]>('transactions');
@@ -80,12 +92,94 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     if (user && investments.length > 0) setOfflineCache('investments', investments);
   }, [investments, user]);
 
+  // --- Sync queue ---
+  const syncQueue = async () => {
+    if (!user || syncingRef.current) return;
+    syncingRef.current = true;
+    setIsSyncing(true);
+
+    const currentQueue = [...queue];
+    let successCount = 0;
+
+    for (const op of currentQueue) {
+      try {
+        await processOperation(op);
+        successCount++;
+      } catch (err) {
+        if (import.meta.env.DEV) console.error('Sync error for op:', op.id, err);
+        // Stop on first error to maintain order
+        break;
+      }
+    }
+
+    if (successCount > 0) {
+      clearQueue();
+      // Refresh data from server after sync
+      await fetchData();
+      toast({
+        title: 'Sincronizado!',
+        description: `${successCount} operação(ões) sincronizada(s) com sucesso.`,
+      });
+    }
+
+    syncingRef.current = false;
+    setIsSyncing(false);
+  };
+
+  const processOperation = async (op: OfflineOperation) => {
+    if (!user) return;
+
+    if (op.table === 'transactions') {
+      if (op.action === 'insert') {
+        const { error } = await supabase.from('transactions').insert({
+          user_id: user.id,
+          ...op.payload,
+        } as any);
+        if (error) throw error;
+      } else if (op.action === 'update' && op.entityId) {
+        const { error } = await supabase.from('transactions').update(op.payload as any).eq('id', op.entityId);
+        if (error) throw error;
+      } else if (op.action === 'delete' && op.entityId) {
+        const { error } = await supabase.from('transactions').delete().eq('id', op.entityId);
+        if (error) throw error;
+      }
+    } else if (op.table === 'reminders') {
+      if (op.action === 'insert') {
+        const { error } = await supabase.from('reminders').insert({
+          user_id: user.id,
+          ...op.payload,
+        } as any);
+        if (error) throw error;
+      } else if (op.action === 'update' && op.entityId) {
+        const { error } = await supabase.from('reminders').update(op.payload as any).eq('id', op.entityId);
+        if (error) throw error;
+      } else if (op.action === 'delete' && op.entityId) {
+        const { error } = await supabase.from('reminders').delete().eq('id', op.entityId);
+        if (error) throw error;
+      }
+    } else if (op.table === 'investments') {
+      if (op.action === 'insert') {
+        const { error } = await supabase.from('investments').insert({
+          user_id: user.id,
+          ...op.payload,
+        } as any);
+        if (error) throw error;
+      } else if (op.action === 'update' && op.entityId) {
+        const { error } = await supabase.from('investments').update(op.payload as any).eq('id', op.entityId);
+        if (error) throw error;
+      } else if (op.action === 'delete' && op.entityId) {
+        const { error } = await supabase.from('investments').delete().eq('id', op.entityId);
+        if (error) throw error;
+      }
+    }
+  };
+
+  // --- Fetch data ---
   const fetchData = async () => {
     if (!user) return;
     setLoading(true);
 
     try {
-      // Fetch transactions
       const { data: transactionsData } = await supabase
         .from('transactions')
         .select('*')
@@ -113,7 +207,6 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
         );
       }
 
-      // Fetch reminders
       const { data: remindersData } = await supabase
         .from('reminders')
         .select('*')
@@ -140,7 +233,6 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
         );
       }
 
-      // Fetch investments
       const { data: investmentsData } = await supabase
         .from('investments')
         .select('*')
@@ -168,29 +260,44 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       if (import.meta.env.DEV) console.error('Error fetching data:', error);
-      // Fallback to cache on error
       loadFromCache();
     } finally {
       setLoading(false);
     }
   };
 
+  // --- CRUD with offline support ---
+
   const addTransaction = async (transaction: Omit<Transaction, 'id' | 'createdAt'>) => {
     if (!user) return;
 
+    const dbPayload = {
+      description: transaction.description,
+      amount: transaction.amount,
+      type: transaction.type,
+      category: transaction.category,
+      date: transaction.date,
+      is_loan: transaction.isLoan || false,
+      loan_person: transaction.loanPerson || null,
+      loan_status: transaction.loanStatus || null,
+    };
+
+    if (!isOnline) {
+      const tempId = generateTempId();
+      const newTransaction: Transaction = {
+        id: tempId,
+        ...transaction,
+        createdAt: new Date().toISOString(),
+      };
+      setTransactions((prev) => [newTransaction, ...prev]);
+      enqueue({ table: 'transactions', action: 'insert', payload: dbPayload, tempId });
+      toast({ title: 'Salvo offline', description: 'Será sincronizado quando voltar online.' });
+      return tempId;
+    }
+
     const { data, error } = await supabase
       .from('transactions')
-      .insert({
-        user_id: user.id,
-        description: transaction.description,
-        amount: transaction.amount,
-        type: transaction.type,
-        category: transaction.category,
-        date: transaction.date,
-        is_loan: transaction.isLoan || false,
-        loan_person: transaction.loanPerson || null,
-        loan_status: transaction.loanStatus || null,
-      })
+      .insert({ user_id: user.id, ...dbPayload })
       .select()
       .single();
 
@@ -202,19 +309,12 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     if (data) {
       const d = data as any;
       const category = validCategories.includes(d.category as TransactionCategory) 
-        ? (d.category as TransactionCategory) 
-        : 'other';
+        ? (d.category as TransactionCategory) : 'other';
       const newTransaction: Transaction = {
-        id: d.id,
-        type: d.type as 'income' | 'expense',
-        category,
-        amount: Number(d.amount),
-        description: d.description,
-        date: d.date,
-        createdAt: d.created_at,
-        isLoan: d.is_loan || false,
-        loanPerson: d.loan_person || undefined,
-        loanStatus: d.loan_status || undefined,
+        id: d.id, type: d.type as 'income' | 'expense', category,
+        amount: Number(d.amount), description: d.description, date: d.date,
+        createdAt: d.created_at, isLoan: d.is_loan || false,
+        loanPerson: d.loan_person || undefined, loanStatus: d.loan_status || undefined,
       };
       setTransactions((prev) => [newTransaction, ...prev]);
       return d.id;
@@ -234,35 +334,35 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     if (updates.loanPerson !== undefined) updateData.loan_person = updates.loanPerson;
     if (updates.loanStatus !== undefined) updateData.loan_status = updates.loanStatus;
 
-    const { error } = await supabase
-      .from('transactions')
-      .update(updateData)
-      .eq('id', id);
+    // Optimistic update
+    setTransactions((prev) => prev.map((t) => (t.id === id ? { ...t, ...updates } : t)));
 
-    if (error) {
-      if (import.meta.env.DEV) console.error('Error updating transaction:', error);
+    if (!isOnline) {
+      if (!id.startsWith('temp_')) {
+        enqueue({ table: 'transactions', action: 'update', payload: updateData, entityId: id });
+      }
       return;
     }
 
-    setTransactions((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, ...updates } : t))
-    );
+    const { error } = await supabase.from('transactions').update(updateData).eq('id', id);
+    if (error && import.meta.env.DEV) console.error('Error updating transaction:', error);
   };
 
   const deleteTransaction = async (id: string) => {
     if (!user) return;
 
-    const { error } = await supabase
-      .from('transactions')
-      .delete()
-      .eq('id', id);
+    // Optimistic delete
+    setTransactions((prev) => prev.filter((t) => t.id !== id));
 
-    if (error) {
-      if (import.meta.env.DEV) console.error('Error deleting transaction:', error);
+    if (!isOnline) {
+      if (!id.startsWith('temp_')) {
+        enqueue({ table: 'transactions', action: 'delete', entityId: id });
+      }
       return;
     }
 
-    setTransactions((prev) => prev.filter((t) => t.id !== id));
+    const { error } = await supabase.from('transactions').delete().eq('id', id);
+    if (error && import.meta.env.DEV) console.error('Error deleting transaction:', error);
   };
 
   const addReminder = async (reminder: Omit<Reminder, 'id' | 'createdAt'>) => {
@@ -271,17 +371,29 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     const dueDate = new Date();
     dueDate.setDate(reminder.dueDay || 1);
 
+    const dbPayload = {
+      title: reminder.title,
+      amount: reminder.amount,
+      due_date: dueDate.toISOString().split('T')[0],
+      category: reminder.category,
+      is_recurring: reminder.type === 'monthly',
+      is_paid: !reminder.isActive,
+    };
+
+    if (!isOnline) {
+      const tempId = generateTempId();
+      const newReminder: Reminder = {
+        id: tempId, ...reminder, description: reminder.title, createdAt: new Date().toISOString(),
+      };
+      setReminders((prev) => [newReminder, ...prev]);
+      enqueue({ table: 'reminders', action: 'insert', payload: dbPayload, tempId });
+      toast({ title: 'Salvo offline', description: 'Será sincronizado quando voltar online.' });
+      return;
+    }
+
     const { data, error } = await supabase
       .from('reminders')
-      .insert({
-        user_id: user.id,
-        title: reminder.title,
-        amount: reminder.amount,
-        due_date: dueDate.toISOString().split('T')[0],
-        category: reminder.category,
-        is_recurring: reminder.type === 'monthly',
-        is_paid: !reminder.isActive,
-      })
+      .insert({ user_id: user.id, ...dbPayload })
       .select()
       .single();
 
@@ -292,18 +404,12 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
 
     if (data) {
       const category = validCategories.includes(data.category as TransactionCategory) 
-        ? (data.category as TransactionCategory) 
-        : 'other';
+        ? (data.category as TransactionCategory) : 'other';
       const newReminder: Reminder = {
-        id: data.id,
-        title: data.title,
-        description: data.title,
-        amount: Number(data.amount),
-        type: data.is_recurring ? 'monthly' : 'single',
-        dueDay: new Date(data.due_date).getDate(),
-        category,
-        isActive: !data.is_paid,
-        createdAt: data.created_at,
+        id: data.id, title: data.title, description: data.title,
+        amount: Number(data.amount), type: data.is_recurring ? 'monthly' : 'single',
+        dueDay: new Date(data.due_date).getDate(), category,
+        isActive: !data.is_paid, createdAt: data.created_at,
       };
       setReminders((prev) => [newReminder, ...prev]);
     }
@@ -324,53 +430,63 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       updateData.due_date = dueDate.toISOString().split('T')[0];
     }
 
-    const { error } = await supabase
-      .from('reminders')
-      .update(updateData)
-      .eq('id', id);
+    setReminders((prev) => prev.map((r) => (r.id === id ? { ...r, ...updates } : r)));
 
-    if (error) {
-      if (import.meta.env.DEV) console.error('Error updating reminder:', error);
+    if (!isOnline) {
+      if (!id.startsWith('temp_')) {
+        enqueue({ table: 'reminders', action: 'update', payload: updateData, entityId: id });
+      }
       return;
     }
 
-    setReminders((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, ...updates } : r))
-    );
+    const { error } = await supabase.from('reminders').update(updateData).eq('id', id);
+    if (error && import.meta.env.DEV) console.error('Error updating reminder:', error);
   };
 
   const deleteReminder = async (id: string) => {
     if (!user) return;
 
-    const { error } = await supabase
-      .from('reminders')
-      .delete()
-      .eq('id', id);
+    setReminders((prev) => prev.filter((r) => r.id !== id));
 
-    if (error) {
-      if (import.meta.env.DEV) console.error('Error deleting reminder:', error);
+    if (!isOnline) {
+      if (!id.startsWith('temp_')) {
+        enqueue({ table: 'reminders', action: 'delete', entityId: id });
+      }
       return;
     }
 
-    setReminders((prev) => prev.filter((r) => r.id !== id));
+    const { error } = await supabase.from('reminders').delete().eq('id', id);
+    if (error && import.meta.env.DEV) console.error('Error deleting reminder:', error);
   };
 
   const addInvestment = async (investment: Omit<Investment, 'id' | 'createdAt'>) => {
     if (!user) return;
 
+    const dbPayload = {
+      name: investment.nome,
+      type: investment.tipo,
+      initial_value: investment.valorInvestido,
+      current_value: investment.valorInvestido,
+      start_date: investment.dataInvestimento,
+      status: investment.jaInvestido ? 'completed' : 'active',
+      description: investment.descricao || null,
+      specific_details: investment.detalhesEspecificos as unknown || null,
+    };
+
+    if (!isOnline) {
+      const tempId = generateTempId();
+      const newInvestment: Investment = {
+        id: tempId, ...investment, createdAt: new Date().toISOString(),
+      };
+      setInvestments((prev) => [newInvestment, ...prev]);
+      enqueue({ table: 'investments', action: 'insert', payload: dbPayload, tempId });
+      toast({ title: 'Salvo offline', description: 'Será sincronizado quando voltar online.' });
+      return;
+    }
+
     const { data, error } = await supabase
       .from('investments')
-      .insert({
-        user_id: user.id,
-        name: investment.nome,
-        type: investment.tipo,
-        initial_value: investment.valorInvestido,
-        current_value: investment.valorInvestido,
-        start_date: investment.dataInvestimento,
-        status: investment.jaInvestido ? 'completed' : 'active',
-        description: investment.descricao || null,
-        specific_details: investment.detalhesEspecificos as unknown || null,
-      } as any)
+      .insert({ user_id: user.id, ...dbPayload } as any)
       .select()
       .single();
 
@@ -382,18 +498,12 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     if (data) {
       const d = data as any;
       const tipo = validInvestmentTypes.includes(d.type as InvestmentType) 
-        ? (d.type as InvestmentType) 
-        : 'outros';
+        ? (d.type as InvestmentType) : 'outros';
       const newInvestment: Investment = {
-        id: d.id,
-        nome: d.name,
-        tipo,
-        valorInvestido: Number(d.initial_value),
-        dataInvestimento: d.start_date,
-        jaInvestido: d.status === 'completed',
-        descricao: d.description || undefined,
-        detalhesEspecificos: d.specific_details || undefined,
-        createdAt: d.created_at,
+        id: d.id, nome: d.name, tipo,
+        valorInvestido: Number(d.initial_value), dataInvestimento: d.start_date,
+        jaInvestido: d.status === 'completed', descricao: d.description || undefined,
+        detalhesEspecificos: d.specific_details || undefined, createdAt: d.created_at,
       };
       setInvestments((prev) => [newInvestment, ...prev]);
     }
@@ -413,35 +523,33 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     if (updates.jaInvestido !== undefined) updateData.status = updates.jaInvestido ? 'completed' : 'active';
     if (updates.descricao !== undefined) updateData.description = updates.descricao || null;
 
-    const { error } = await supabase
-      .from('investments')
-      .update(updateData)
-      .eq('id', id);
+    setInvestments((prev) => prev.map((i) => (i.id === id ? { ...i, ...updates } : i)));
 
-    if (error) {
-      if (import.meta.env.DEV) console.error('Error updating investment:', error);
+    if (!isOnline) {
+      if (!id.startsWith('temp_')) {
+        enqueue({ table: 'investments', action: 'update', payload: updateData, entityId: id });
+      }
       return;
     }
 
-    setInvestments((prev) =>
-      prev.map((i) => (i.id === id ? { ...i, ...updates } : i))
-    );
+    const { error } = await supabase.from('investments').update(updateData).eq('id', id);
+    if (error && import.meta.env.DEV) console.error('Error updating investment:', error);
   };
 
   const deleteInvestment = async (id: string) => {
     if (!user) return;
 
-    const { error } = await supabase
-      .from('investments')
-      .delete()
-      .eq('id', id);
+    setInvestments((prev) => prev.filter((i) => i.id !== id));
 
-    if (error) {
-      if (import.meta.env.DEV) console.error('Error deleting investment:', error);
+    if (!isOnline) {
+      if (!id.startsWith('temp_')) {
+        enqueue({ table: 'investments', action: 'delete', entityId: id });
+      }
       return;
     }
 
-    setInvestments((prev) => prev.filter((i) => i.id !== id));
+    const { error } = await supabase.from('investments').delete().eq('id', id);
+    if (error && import.meta.env.DEV) console.error('Error deleting investment:', error);
   };
 
   const markInvestmentAsDone = async (id: string) => {
@@ -450,7 +558,6 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     const investment = investments.find((i) => i.id === id);
     if (!investment || investment.jaInvestido) return;
 
-    // Create expense transaction
     const transactionId = await addTransaction({
       type: 'expense',
       category: 'investment',
@@ -471,19 +578,11 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
   return (
     <TransactionContext.Provider
       value={{
-        transactions,
-        reminders,
-        investments,
-        loading,
-        addTransaction,
-        updateTransaction,
-        deleteTransaction,
-        addReminder,
-        updateReminder,
-        deleteReminder,
-        addInvestment,
-        updateInvestment,
-        deleteInvestment,
+        transactions, reminders, investments, loading,
+        pendingOpsCount: pendingCount, isSyncing,
+        addTransaction, updateTransaction, deleteTransaction,
+        addReminder, updateReminder, deleteReminder,
+        addInvestment, updateInvestment, deleteInvestment,
         markInvestmentAsDone,
       }}
     >
