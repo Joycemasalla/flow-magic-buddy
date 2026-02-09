@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/button';
 import QuickRecordModal from '@/components/modals/QuickRecordModal';
 import NewInvestmentModal from '@/components/modals/NewInvestmentModal';
 import NewLoanModal from '@/components/modals/NewLoanModal';
+import { OfflineBanner } from '@/components/OfflineBanner';
 
 const navItems = [
   { path: '/', icon: LayoutDashboard, label: 'Início', mobileLabel: 'Início' },
@@ -56,7 +57,9 @@ export default function AppLayout() {
   };
 
   return (
-    <div className="min-h-screen flex w-full bg-background overflow-x-hidden">
+    <div className="min-h-screen flex flex-col w-full bg-background overflow-x-hidden">
+      <OfflineBanner />
+      <div className="flex flex-1">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex flex-col w-64 bg-sidebar border-r border-sidebar-border">
         <div className="p-6">
@@ -246,6 +249,7 @@ export default function AppLayout() {
         isOpen={isLoanModalOpen}
         onClose={() => setIsLoanModalOpen(false)}
       />
+      </div>
     </div>
   );
 }
