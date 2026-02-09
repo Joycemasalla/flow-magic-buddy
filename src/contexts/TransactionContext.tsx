@@ -3,6 +3,7 @@ import { Transaction, Reminder, TransactionCategory } from '@/types/transaction'
 import { Investment, InvestmentType } from '@/types/investment';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useOnlineStatus, setOfflineCache, getOfflineCache } from '@/hooks/useOffline';
 
 interface TransactionContextType {
   transactions: Transaction[];
@@ -34,22 +35,50 @@ const validInvestmentTypes: InvestmentType[] = [
 
 export function TransactionProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
+  const isOnline = useOnlineStatus();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch data when user changes
+  // Fetch data when user changes or comes back online
   useEffect(() => {
     if (user) {
-      fetchData();
+      if (isOnline) {
+        fetchData();
+      } else {
+        loadFromCache();
+      }
     } else {
       setTransactions([]);
       setReminders([]);
       setInvestments([]);
       setLoading(false);
     }
-  }, [user]);
+  }, [user, isOnline]);
+
+  const loadFromCache = () => {
+    const cachedTransactions = getOfflineCache<Transaction[]>('transactions');
+    const cachedReminders = getOfflineCache<Reminder[]>('reminders');
+    const cachedInvestments = getOfflineCache<Investment[]>('investments');
+    if (cachedTransactions) setTransactions(cachedTransactions);
+    if (cachedReminders) setReminders(cachedReminders);
+    if (cachedInvestments) setInvestments(cachedInvestments);
+    setLoading(false);
+  };
+
+  // Cache data for offline use whenever it changes
+  useEffect(() => {
+    if (user && transactions.length > 0) setOfflineCache('transactions', transactions);
+  }, [transactions, user]);
+
+  useEffect(() => {
+    if (user && reminders.length > 0) setOfflineCache('reminders', reminders);
+  }, [reminders, user]);
+
+  useEffect(() => {
+    if (user && investments.length > 0) setOfflineCache('investments', investments);
+  }, [investments, user]);
 
   const fetchData = async () => {
     if (!user) return;
@@ -139,6 +168,8 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       if (import.meta.env.DEV) console.error('Error fetching data:', error);
+      // Fallback to cache on error
+      loadFromCache();
     } finally {
       setLoading(false);
     }
