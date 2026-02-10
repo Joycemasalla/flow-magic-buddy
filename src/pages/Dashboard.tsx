@@ -45,7 +45,7 @@ export default function Dashboard() {
 
   const filteredTransactions = useMemo(() => {
     return transactions.filter((t) => {
-      const tDate = new Date(t.date);
+      const tDate = new Date(t.date + 'T12:00:00');
       const now = new Date();
 
       // Filtro por tipo
