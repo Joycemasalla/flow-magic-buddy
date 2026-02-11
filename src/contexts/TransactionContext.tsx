@@ -14,6 +14,7 @@ interface TransactionContextType {
   loading: boolean;
   pendingOpsCount: number;
   isSyncing: boolean;
+  pendingTransactionIds: Set<string>;
   addTransaction: (transaction: Omit<Transaction, 'id' | 'createdAt'>) => Promise<string | undefined>;
   updateTransaction: (id: string, transaction: Partial<Transaction>) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
@@ -575,11 +576,27 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Derive pending transaction IDs from queue + temp IDs
+  const pendingTransactionIds = React.useMemo(() => {
+    const ids = new Set<string>();
+    // Temp IDs are always pending (offline inserts)
+    transactions.forEach(t => {
+      if (t.id.startsWith('temp_')) ids.add(t.id);
+    });
+    // Queue operations on existing entities
+    queue.forEach(op => {
+      if (op.table === 'transactions' && op.entityId) ids.add(op.entityId);
+      if (op.table === 'transactions' && op.tempId) ids.add(op.tempId);
+    });
+    return ids;
+  }, [transactions, queue]);
+
   return (
     <TransactionContext.Provider
       value={{
         transactions, reminders, investments, loading,
         pendingOpsCount: pendingCount, isSyncing,
+        pendingTransactionIds,
         addTransaction, updateTransaction, deleteTransaction,
         addReminder, updateReminder, deleteReminder,
         addInvestment, updateInvestment, deleteInvestment,

@@ -3,6 +3,7 @@ import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { format, isToday, isYesterday } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
+  CloudUpload,
   Wallet,
   UtensilsCrossed,
   Car,
@@ -42,6 +43,7 @@ interface TransactionListProps {
   transactions: Transaction[];
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
+  pendingIds?: Set<string>;
 }
 
 interface SwipeableItemProps {
@@ -49,9 +51,10 @@ interface SwipeableItemProps {
   onEdit: () => void;
   onDelete: () => void;
   onViewDetails: () => void;
+  isPending?: boolean;
 }
 
-function SwipeableItem({ transaction, onEdit, onDelete, onViewDetails }: SwipeableItemProps) {
+function SwipeableItem({ transaction, onEdit, onDelete, onViewDetails, isPending }: SwipeableItemProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [hasDragged, setHasDragged] = useState(false);
   const Icon = categoryIconMap[transaction.category] || MoreHorizontal;
@@ -164,17 +167,22 @@ function SwipeableItem({ transaction, onEdit, onDelete, onViewDetails }: Swipeab
             }
           </p>
         </div>
-        <p
-          className={cn(
-            'font-bold text-sm sm:text-base flex-shrink-0',
-            isSettledLoan && 'text-income line-through decoration-2',
-            !isSettledLoan && isIncome && 'text-income',
-            !isSettledLoan && !isIncome && 'text-expense'
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {isPending && (
+            <CloudUpload className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
           )}
-        >
-          {isSettledLoan ? '✓' : (isIncome ? '+' : '-')}{' '}
-          <PrivacyValue value={transaction.amount} />
-        </p>
+          <p
+            className={cn(
+              'font-bold text-sm sm:text-base',
+              isSettledLoan && 'text-income line-through decoration-2',
+              !isSettledLoan && isIncome && 'text-income',
+              !isSettledLoan && !isIncome && 'text-expense'
+            )}
+          >
+            {isSettledLoan ? '✓' : (isIncome ? '+' : '-')}{' '}
+            <PrivacyValue value={transaction.amount} />
+          </p>
+        </div>
       </motion.div>
     </div>
   );
@@ -184,6 +192,7 @@ export default function TransactionList({
   transactions,
   onEdit,
   onDelete,
+  pendingIds,
 }: TransactionListProps) {
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
 
@@ -253,6 +262,7 @@ export default function TransactionList({
                         onEdit={() => onEdit(transaction.id)}
                         onDelete={() => onDelete(transaction.id)}
                         onViewDetails={() => setSelectedTransaction(transaction)}
+                        isPending={pendingIds?.has(transaction.id)}
                       />
                     </motion.div>
                   ))}
