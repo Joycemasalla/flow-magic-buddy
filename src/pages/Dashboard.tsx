@@ -33,7 +33,7 @@ const typeLabels: Record<TypeFilter, string> = {
 };
 
 export default function Dashboard() {
-  const { transactions, investments, deleteTransaction } = useTransactions();
+  const { transactions, investments, deleteTransaction, pendingTransactionIds } = useTransactions();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -255,6 +255,7 @@ export default function Dashboard() {
         transactions={filteredTransactions}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        pendingIds={pendingTransactionIds}
       />
 
       {/* Report Modal */}

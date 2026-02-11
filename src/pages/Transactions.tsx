@@ -15,7 +15,7 @@ const filterLabels: Record<FilterType, string> = {
 };
 
 export default function Transactions() {
-  const { transactions, deleteTransaction } = useTransactions();
+  const { transactions, deleteTransaction, pendingTransactionIds } = useTransactions();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
@@ -79,6 +79,7 @@ export default function Transactions() {
         transactions={filteredTransactions}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        pendingIds={pendingTransactionIds}
       />
     </div>
   );
