@@ -72,10 +72,10 @@ export default function CategoryChart({ transactions, compact = false }: Categor
                 `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
               }
               contentStyle={{
-                backgroundColor: 'hsl(222 47% 14%)',
-                border: '1px solid hsl(217 33% 22%)',
+                backgroundColor: 'hsl(var(--card))',
+                border: '1px solid hsl(var(--border))',
                 borderRadius: '8px',
-                color: 'hsl(210 40% 98%)',
+                color: 'hsl(var(--foreground))',
               }}
             />
             <Legend
