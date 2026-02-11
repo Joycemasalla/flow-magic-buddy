@@ -85,8 +85,10 @@ export default function EvolutionChart({ transactions, compact = false }: Evolut
                 backgroundColor: 'hsl(var(--card))',
                 border: '1px solid hsl(var(--border))',
                 borderRadius: '8px',
-                color: 'hsl(var(--foreground))',
+                color: 'hsl(var(--card-foreground))',
               }}
+              itemStyle={{ color: 'hsl(var(--card-foreground))' }}
+              labelStyle={{ color: 'hsl(var(--card-foreground))' }}
             />
             <Legend
               formatter={(value) => <span className="text-xs text-foreground">{value}</span>}

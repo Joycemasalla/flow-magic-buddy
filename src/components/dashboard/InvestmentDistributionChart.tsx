@@ -80,9 +80,11 @@ export default function InvestmentDistributionChart({ investments }: InvestmentD
                 backgroundColor: 'hsl(var(--card))',
                 border: '1px solid hsl(var(--border))',
                 borderRadius: '8px',
-                color: 'hsl(var(--foreground))',
+                color: 'hsl(var(--card-foreground))',
                 fontSize: '12px',
               }}
+              itemStyle={{ color: 'hsl(var(--card-foreground))' }}
+              labelStyle={{ color: 'hsl(var(--card-foreground))' }}
             />
             <Legend
               formatter={(value) => (
