@@ -44,6 +44,8 @@ export interface FundosDetails {
   nomeGestor: string;
   tipoFundo: string;
   taxaAdministracao: number;
+  precoMedio?: number;
+  quantidade?: number;
 }
 
 export type InvestmentDetails = 
