@@ -101,6 +101,8 @@ export default function InvestmentDetailsModal({ investment, onClose, onEdit }: 
             <DetailRow label="Gestor" value={d.nomeGestor} />
             <DetailRow label="Tipo do Fundo" value={d.tipoFundo} />
             <DetailRow label="Taxa Admin." value={`${d.taxaAdministracao}% a.a.`} />
+            {d.quantidade && <DetailRow label="Quantidade" value={`${d.quantidade} cotas`} />}
+            {d.precoMedio && <DetailRow label="Preço Médio" value={`R$ ${d.precoMedio.toFixed(2)}`} />}
           </div>
         );
       }

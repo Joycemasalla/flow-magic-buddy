@@ -97,6 +97,8 @@ export default function NewInvestmentModal({ isOpen, onClose, editingInvestment 
     nomeGestor: '',
     tipoFundo: '',
     taxaAdministracao: 0,
+    precoMedio: 0,
+    quantidade: 0,
   });
 
   const { addInvestment, addTransaction, updateInvestment } = useTransactions();
@@ -153,7 +155,7 @@ export default function NewInvestmentModal({ isOpen, onClose, editingInvestment 
         setCripto({ moeda: '', quantidade: 0, precoMedio: 0 });
         setRendaFixa({ instituicao: '', taxa: 0, tipoTaxa: 'cdi', vencimento: '' });
         setPoupanca({ instituicao: '', objetivo: '' });
-        setFundos({ nomeGestor: '', tipoFundo: '', taxaAdministracao: 0 });
+        setFundos({ nomeGestor: '', tipoFundo: '', taxaAdministracao: 0, precoMedio: 0, quantidade: 0 });
       }
     }
   }, [isOpen, editingInvestment]);
@@ -359,7 +361,7 @@ export default function NewInvestmentModal({ isOpen, onClose, editingInvestment 
               {format(selectedDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
+          <PopoverContent className="w-auto p-0 z-[70]" align="start">
             <CalendarComponent
               mode="single"
               selected={selectedDate}
@@ -596,7 +598,7 @@ export default function NewInvestmentModal({ isOpen, onClose, editingInvestment 
                 <Input
                   value={fundos.tipoFundo}
                   onChange={(e) => setFundos({ ...fundos, tipoFundo: e.target.value })}
-                  placeholder="Multimercado"
+                  placeholder="FII, Multimercado..."
                 />
               </div>
               <div className="space-y-2">
@@ -607,6 +609,28 @@ export default function NewInvestmentModal({ isOpen, onClose, editingInvestment 
                   value={fundos.taxaAdministracao || ''}
                   onChange={(e) => setFundos({ ...fundos, taxaAdministracao: parseFloat(e.target.value) || 0 })}
                   placeholder="2.0"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>Quantidade de cotas</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={fundos.quantidade || ''}
+                  onChange={(e) => setFundos({ ...fundos, quantidade: parseFloat(e.target.value) || 0 })}
+                  placeholder="10"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Preço Médio</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={fundos.precoMedio || ''}
+                  onChange={(e) => setFundos({ ...fundos, precoMedio: parseFloat(e.target.value) || 0 })}
+                  placeholder="95.50"
                 />
               </div>
             </div>
