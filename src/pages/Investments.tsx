@@ -69,6 +69,7 @@ export default function Investments() {
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
   const [investmentToDelete, setInvestmentToDelete] = useState<Investment | null>(null);
   const [selectedInvestment, setSelectedInvestment] = useState<Investment | null>(null);
+  const [editingInvestment, setEditingInvestment] = useState<Investment | null>(null);
 
   const stats = useMemo(() => {
     const total = investments
@@ -435,8 +436,9 @@ export default function Investments() {
 
       {/* New Investment Modal */}
       <NewInvestmentModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isModalOpen || !!editingInvestment}
+        onClose={() => { setIsModalOpen(false); setEditingInvestment(null); }}
+        editingInvestment={editingInvestment}
       />
 
       {/* Delete Confirmation Dialog */}
@@ -466,6 +468,10 @@ export default function Investments() {
       <InvestmentDetailsModal
         investment={selectedInvestment}
         onClose={() => setSelectedInvestment(null)}
+        onEdit={(inv) => {
+          setSelectedInvestment(null);
+          setEditingInvestment(inv);
+        }}
       />
     </div>
   );

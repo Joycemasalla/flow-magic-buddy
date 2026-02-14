@@ -514,15 +514,16 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     if (!user) return;
 
     const updateData: Record<string, unknown> = {};
-    if (updates.nome) updateData.name = updates.nome;
-    if (updates.tipo) updateData.type = updates.tipo;
-    if (updates.valorInvestido) {
+    if (updates.nome !== undefined) updateData.name = updates.nome;
+    if (updates.tipo !== undefined) updateData.type = updates.tipo;
+    if (updates.valorInvestido !== undefined) {
       updateData.initial_value = updates.valorInvestido;
       updateData.current_value = updates.valorInvestido;
     }
-    if (updates.dataInvestimento) updateData.start_date = updates.dataInvestimento;
+    if (updates.dataInvestimento !== undefined) updateData.start_date = updates.dataInvestimento;
     if (updates.jaInvestido !== undefined) updateData.status = updates.jaInvestido ? 'completed' : 'active';
     if (updates.descricao !== undefined) updateData.description = updates.descricao || null;
+    if (updates.detalhesEspecificos !== undefined) updateData.specific_details = updates.detalhesEspecificos as unknown || null;
 
     setInvestments((prev) => prev.map((i) => (i.id === id ? { ...i, ...updates } : i)));
 

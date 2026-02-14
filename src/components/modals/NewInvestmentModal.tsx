@@ -40,6 +40,7 @@ import { ptBR } from 'date-fns/locale';
 interface NewInvestmentModalProps {
   isOpen: boolean;
   onClose: () => void;
+  editingInvestment?: Investment | null;
 }
 
 const iconMap: Record<InvestmentType, React.ElementType> = {
@@ -54,7 +55,7 @@ const iconMap: Record<InvestmentType, React.ElementType> = {
 
 type Step = 'type' | 'basic' | 'details' | 'confirm';
 
-export default function NewInvestmentModal({ isOpen, onClose }: NewInvestmentModalProps) {
+export default function NewInvestmentModal({ isOpen, onClose, editingInvestment }: NewInvestmentModalProps) {
   const [step, setStep] = useState<Step>('type');
   const [selectedType, setSelectedType] = useState<InvestmentType | null>(null);
   const [nome, setNome] = useState('');
@@ -98,26 +99,64 @@ export default function NewInvestmentModal({ isOpen, onClose }: NewInvestmentMod
     taxaAdministracao: 0,
   });
 
-  const { addInvestment, addTransaction } = useTransactions();
+  const { addInvestment, addTransaction, updateInvestment } = useTransactions();
   const { toast } = useToast();
+
+  const isEditing = !!editingInvestment;
 
   useEffect(() => {
     if (isOpen) {
-      setStep('type');
-      setSelectedType(null);
-      setNome('');
-      setValor('');
-      setDescricao('');
-      setSelectedDate(new Date());
-      setJaInvestido(false);
-      setTesouroDireto({ titulo: '', taxa: 0, precoUnitario: 0, vencimento: '' });
-      setAcoes({ ticker: '', quantidade: 0, precoMedio: 0 });
-      setCripto({ moeda: '', quantidade: 0, precoMedio: 0 });
-      setRendaFixa({ instituicao: '', taxa: 0, tipoTaxa: 'cdi', vencimento: '' });
-      setPoupanca({ instituicao: '', objetivo: '' });
-      setFundos({ nomeGestor: '', tipoFundo: '', taxaAdministracao: 0 });
+      if (editingInvestment) {
+        // Populate fields from existing investment
+        setSelectedType(editingInvestment.tipo);
+        setNome(editingInvestment.nome);
+        setValor(editingInvestment.valorInvestido.toString().replace('.', ','));
+        setDescricao(editingInvestment.descricao || '');
+        setSelectedDate(new Date(editingInvestment.dataInvestimento));
+        setJaInvestido(editingInvestment.jaInvestido);
+        setStep('basic');
+
+        // Populate specific details
+        const details = editingInvestment.detalhesEspecificos;
+        if (details) {
+          switch (editingInvestment.tipo) {
+            case 'tesouro_direto':
+              setTesouroDireto(details as TesouroDiretoDetails);
+              break;
+            case 'acoes':
+              setAcoes(details as AcoesDetails);
+              break;
+            case 'cripto':
+              setCripto(details as CriptoDetails);
+              break;
+            case 'renda_fixa':
+              setRendaFixa(details as RendaFixaDetails);
+              break;
+            case 'poupanca':
+              setPoupanca(details as PoupancaDetails);
+              break;
+            case 'fundos':
+              setFundos(details as FundosDetails);
+              break;
+          }
+        }
+      } else {
+        setStep('type');
+        setSelectedType(null);
+        setNome('');
+        setValor('');
+        setDescricao('');
+        setSelectedDate(new Date());
+        setJaInvestido(false);
+        setTesouroDireto({ titulo: '', taxa: 0, precoUnitario: 0, vencimento: '' });
+        setAcoes({ ticker: '', quantidade: 0, precoMedio: 0 });
+        setCripto({ moeda: '', quantidade: 0, precoMedio: 0 });
+        setRendaFixa({ instituicao: '', taxa: 0, tipoTaxa: 'cdi', vencimento: '' });
+        setPoupanca({ instituicao: '', objetivo: '' });
+        setFundos({ nomeGestor: '', tipoFundo: '', taxaAdministracao: 0 });
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, editingInvestment]);
 
   const handleTypeSelect = (type: InvestmentType) => {
     setSelectedType(type);
@@ -171,45 +210,67 @@ export default function NewInvestmentModal({ isOpen, onClose }: NewInvestmentMod
     const parsedValor = parseFloat(valor.replace(',', '.'));
     const investmentDate = selectedDate.toISOString().split('T')[0];
 
-    // Se já investido, criar a transação de despesa primeiro
-    let transactionId: string | undefined;
-    if (jaInvestido) {
-      transactionId = await addTransaction({
-        type: 'expense',
-        category: 'investment',
-        amount: parsedValor,
-        description: nome,
-        date: investmentDate,
+    if (isEditing && editingInvestment) {
+      // Update existing investment
+      await updateInvestment(editingInvestment.id, {
+        nome,
+        tipo: selectedType,
+        valorInvestido: parsedValor,
+        dataInvestimento: investmentDate,
+        descricao: descricao || undefined,
+        detalhesEspecificos: getSpecificDetails(),
+      });
+
+      toast({
+        title: '✏️ Investimento atualizado!',
+        description: `${nome} foi atualizado com sucesso.`,
+      });
+    } else {
+      // Create new investment
+      let transactionId: string | undefined;
+      if (jaInvestido) {
+        transactionId = await addTransaction({
+          type: 'expense',
+          category: 'investment',
+          amount: parsedValor,
+          description: nome,
+          date: investmentDate,
+        });
+      }
+
+      const investment: Omit<Investment, 'id' | 'createdAt'> = {
+        nome,
+        tipo: selectedType,
+        valorInvestido: parsedValor,
+        dataInvestimento: investmentDate,
+        jaInvestido,
+        descricao: descricao || undefined,
+        detalhesEspecificos: getSpecificDetails(),
+        transactionId,
+      };
+
+      await addInvestment(investment);
+
+      toast({
+        title: jaInvestido ? '✅ Investimento registrado!' : '📋 Investimento planejado!',
+        description: jaInvestido 
+          ? `${nome} - R$ ${parsedValor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} debitado do saldo`
+          : `${nome} - R$ ${parsedValor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
       });
     }
-
-    const investment: Omit<Investment, 'id' | 'createdAt'> = {
-      nome,
-      tipo: selectedType,
-      valorInvestido: parsedValor,
-      dataInvestimento: investmentDate,
-      jaInvestido,
-      descricao: descricao || undefined,
-      detalhesEspecificos: getSpecificDetails(),
-      transactionId,
-    };
-
-    await addInvestment(investment);
-
-    toast({
-      title: jaInvestido ? '✅ Investimento registrado!' : '📋 Investimento planejado!',
-      description: jaInvestido 
-        ? `${nome} - R$ ${parsedValor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} debitado do saldo`
-        : `${nome} - R$ ${parsedValor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
-    });
 
     setIsProcessing(false);
     onClose();
   };
 
   const handleBack = () => {
-    if (step === 'basic') setStep('type');
-    else if (step === 'details') setStep('basic');
+    if (step === 'basic') {
+      if (isEditing) {
+        onClose();
+      } else {
+        setStep('type');
+      }
+    } else if (step === 'details') setStep('basic');
     else if (step === 'confirm') {
       if (selectedType === 'outros') {
         setStep('basic');
@@ -599,18 +660,20 @@ export default function NewInvestmentModal({ isOpen, onClose }: NewInvestmentMod
           )}
         </div>
 
-        <div className="flex items-center justify-between p-4 bg-income/5 border border-income/20 rounded-xl">
-          <div>
-            <p className="font-medium">Já realizei este investimento</p>
-            <p className="text-xs text-muted-foreground">
-              Registra como investido e cria a despesa
-            </p>
+        {!isEditing && (
+          <div className="flex items-center justify-between p-4 bg-income/5 border border-income/20 rounded-xl">
+            <div>
+              <p className="font-medium">Já realizei este investimento</p>
+              <p className="text-xs text-muted-foreground">
+                Registra como investido e cria a despesa
+              </p>
+            </div>
+            <Switch
+              checked={jaInvestido}
+              onCheckedChange={setJaInvestido}
+            />
           </div>
-          <Switch
-            checked={jaInvestido}
-            onCheckedChange={setJaInvestido}
-          />
-        </div>
+        )}
 
         <Button
           onClick={handleSubmit}
@@ -618,7 +681,7 @@ export default function NewInvestmentModal({ isOpen, onClose }: NewInvestmentMod
           className="w-full gap-2"
         >
           <Check className="w-4 h-4" />
-          {jaInvestido ? 'Registrar Investimento' : 'Planejar Investimento'}
+          {isEditing ? 'Salvar Alterações' : jaInvestido ? 'Registrar Investimento' : 'Planejar Investimento'}
         </Button>
       </motion.div>
     );
@@ -661,9 +724,9 @@ export default function NewInvestmentModal({ isOpen, onClose }: NewInvestmentMod
                   )}
                   <h2 className="text-lg sm:text-xl font-bold">
                     {step === 'type' && 'Novo Investimento'}
-                    {step === 'basic' && 'Informações'}
+                    {step === 'basic' && (isEditing ? 'Editar Investimento' : 'Informações')}
                     {step === 'details' && 'Detalhes'}
-                    {step === 'confirm' && 'Confirmar'}
+                    {step === 'confirm' && (isEditing ? 'Confirmar Edição' : 'Confirmar')}
                   </h2>
                 </div>
                 <Button variant="ghost" size="icon" onClick={onClose} className="h-9 w-9">
