@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { Transaction, Reminder, TransactionCategory } from '@/types/transaction';
 import { Investment, InvestmentType } from '@/types/investment';
+import { validateInvestmentDetails } from '@/lib/investmentValidation';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOnlineStatus, setOfflineCache, getOfflineCache } from '@/hooks/useOffline';
@@ -471,7 +472,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       start_date: investment.dataInvestimento,
       status: investment.jaInvestido ? 'completed' : 'active',
       description: investment.descricao || null,
-      specific_details: investment.detalhesEspecificos as unknown || null,
+      specific_details: validateInvestmentDetails(investment.tipo, investment.detalhesEspecificos) || null,
     };
 
     if (!isOnline) {
@@ -523,7 +524,10 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     if (updates.dataInvestimento !== undefined) updateData.start_date = updates.dataInvestimento;
     if (updates.jaInvestido !== undefined) updateData.status = updates.jaInvestido ? 'completed' : 'active';
     if (updates.descricao !== undefined) updateData.description = updates.descricao || null;
-    if (updates.detalhesEspecificos !== undefined) updateData.specific_details = updates.detalhesEspecificos as unknown || null;
+    if (updates.detalhesEspecificos !== undefined) {
+      const tipo = updates.tipo || investments.find(i => i.id === id)?.tipo || 'outros';
+      updateData.specific_details = validateInvestmentDetails(tipo, updates.detalhesEspecificos) || null;
+    }
 
     setInvestments((prev) => prev.map((i) => (i.id === id ? { ...i, ...updates } : i)));
 
