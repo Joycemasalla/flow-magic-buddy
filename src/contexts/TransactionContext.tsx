@@ -204,6 +204,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
               isLoan: t.is_loan || false,
               loanPerson: t.loan_person || undefined,
               loanStatus: t.loan_status || undefined,
+              loanSettledDate: t.loan_settled_date || undefined,
             };
           })
         );
@@ -282,6 +283,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       is_loan: transaction.isLoan || false,
       loan_person: transaction.loanPerson || null,
       loan_status: transaction.loanStatus || null,
+      loan_settled_date: transaction.loanSettledDate || null,
     };
 
     if (!isOnline) {
@@ -317,6 +319,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
         amount: Number(d.amount), description: d.description, date: d.date,
         createdAt: d.created_at, isLoan: d.is_loan || false,
         loanPerson: d.loan_person || undefined, loanStatus: d.loan_status || undefined,
+        loanSettledDate: d.loan_settled_date || undefined,
       };
       setTransactions((prev) => [newTransaction, ...prev]);
       return d.id;
@@ -335,6 +338,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     if (updates.isLoan !== undefined) updateData.is_loan = updates.isLoan;
     if (updates.loanPerson !== undefined) updateData.loan_person = updates.loanPerson;
     if (updates.loanStatus !== undefined) updateData.loan_status = updates.loanStatus;
+    if (updates.loanSettledDate !== undefined) updateData.loan_settled_date = updates.loanSettledDate;
 
     // Optimistic update
     setTransactions((prev) => prev.map((t) => (t.id === id ? { ...t, ...updates } : t)));

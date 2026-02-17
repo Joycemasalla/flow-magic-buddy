@@ -1,15 +1,20 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import {
   X,
   ArrowUpRight,
   ArrowDownLeft,
   Check,
+  CalendarIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 import { useTransactions } from '@/contexts/TransactionContext';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -25,6 +30,7 @@ export default function NewLoanModal({ isOpen, onClose }: NewLoanModalProps) {
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [loanDate, setLoanDate] = useState<Date>(new Date());
 
   const { addTransaction } = useTransactions();
   const { toast } = useToast();
@@ -35,6 +41,7 @@ export default function NewLoanModal({ isOpen, onClose }: NewLoanModalProps) {
       setPerson('');
       setAmount('');
       setDescription('');
+      setLoanDate(new Date());
     }
   }, [isOpen]);
 
@@ -67,7 +74,7 @@ export default function NewLoanModal({ isOpen, onClose }: NewLoanModalProps) {
       category: 'loan',
       amount: parsedAmount,
       description: description || `Empréstimo - ${person}`,
-      date: new Date().toISOString().split('T')[0],
+      date: loanDate.toISOString().split('T')[0],
       isLoan: true,
       loanPerson: person,
       loanStatus: 'pending',
@@ -181,6 +188,27 @@ export default function NewLoanModal({ isOpen, onClose }: NewLoanModalProps) {
                       required
                     />
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Data do empréstimo</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-full justify-start text-left font-normal">
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {format(loanDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 z-[70]" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={loanDate}
+                        onSelect={(date) => date && setLoanDate(date)}
+                        locale={ptBR}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
 
                 <div className="space-y-2">

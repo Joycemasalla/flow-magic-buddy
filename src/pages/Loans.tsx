@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, HandCoins, ArrowUpRight, ArrowDownLeft, Check, Clock } from 'lucide-react';
+import { Plus, HandCoins, ArrowUpRight, ArrowDownLeft, Check, Clock, CalendarIcon } from 'lucide-react';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { useTransactions } from '@/contexts/TransactionContext';
 import { useToast } from '@/hooks/use-toast';
 import { TransactionType } from '@/types/transaction';
@@ -8,6 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 import {
   Dialog,
   DialogContent,
@@ -25,6 +29,7 @@ export default function Loans() {
   const [person, setPerson] = useState('');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
+  const [loanDate, setLoanDate] = useState<Date>(new Date());
 
   const loans = useMemo(() => {
     return transactions.filter((t) => t.isLoan);
@@ -76,7 +81,7 @@ export default function Loans() {
       category: 'loan',
       amount: parsedAmount,
       description: description || `Empréstimo - ${person}`,
-      date: new Date().toISOString().split('T')[0],
+      date: loanDate.toISOString().split('T')[0],
       isLoan: true,
       loanPerson: person,
       loanStatus: 'pending',
@@ -91,11 +96,15 @@ export default function Loans() {
     setPerson('');
     setAmount('');
     setDescription('');
+    setLoanDate(new Date());
   };
 
   const handleStatusChange = (id: string, type: TransactionType, amount: number) => {
     const newStatus = type === 'expense' ? 'received' : 'paid';
-    updateTransaction(id, { loanStatus: newStatus });
+    updateTransaction(id, { 
+      loanStatus: newStatus,
+      loanSettledDate: new Date().toISOString().split('T')[0],
+    });
     
     const formattedAmount = amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
     
@@ -175,6 +184,20 @@ export default function Loans() {
               </>
             )}
           </div>
+        </div>
+
+        {/* Dates */}
+        <div className="text-xs text-muted-foreground mb-2 space-y-0.5">
+          <p className="flex items-center gap-1">
+            <CalendarIcon className="w-3 h-3" />
+            {isGiven ? 'Emprestado' : 'Pego'} em: {format(new Date(loan.date + 'T12:00:00'), "dd/MM/yyyy")}
+          </p>
+          {isSettled && loan.loanSettledDate && (
+            <p className="flex items-center gap-1 text-income">
+              <Check className="w-3 h-3" />
+              {isGiven ? 'Recebido' : 'Pago'} em: {format(new Date(loan.loanSettledDate + 'T12:00:00'), "dd/MM/yyyy")}
+            </p>
+          )}
         </div>
 
         {loan.description && (
@@ -413,6 +436,27 @@ export default function Loans() {
                   required
                 />
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Data</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full justify-start text-left font-normal">
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {format(loanDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 z-[70]" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={loanDate}
+                    onSelect={(date) => date && setLoanDate(date)}
+                    locale={ptBR}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
 
             <div className="space-y-2">
