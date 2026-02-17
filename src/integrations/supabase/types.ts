@@ -111,6 +111,7 @@ export type Database = {
           id: string
           is_loan: boolean | null
           loan_person: string | null
+          loan_settled_date: string | null
           loan_status: string | null
           type: string
           updated_at: string
@@ -125,6 +126,7 @@ export type Database = {
           id?: string
           is_loan?: boolean | null
           loan_person?: string | null
+          loan_settled_date?: string | null
           loan_status?: string | null
           type: string
           updated_at?: string
@@ -139,6 +141,7 @@ export type Database = {
           id?: string
           is_loan?: boolean | null
           loan_person?: string | null
+          loan_settled_date?: string | null
           loan_status?: string | null
           type?: string
           updated_at?: string

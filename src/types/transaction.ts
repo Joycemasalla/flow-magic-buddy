@@ -23,6 +23,7 @@ export interface Transaction {
   isLoan?: boolean;
   loanPerson?: string;
   loanStatus?: 'pending' | 'paid' | 'received';
+  loanSettledDate?: string;
   createdAt: string;
 }
 
