@@ -70,8 +70,10 @@ function SwipeableItem({ transaction, onEdit, onDelete, onViewDetails, isPending
     setHasDragged(false);
   };
 
-  const handleDrag = () => {
-    setHasDragged(true);
+  const handleDrag = (_: unknown, info: PanInfo) => {
+    if (Math.abs(info.offset.x) > 5 || Math.abs(info.offset.y) > 5) {
+      setHasDragged(true);
+    }
   };
 
   const handleDragEnd = (_: unknown, info: PanInfo) => {
