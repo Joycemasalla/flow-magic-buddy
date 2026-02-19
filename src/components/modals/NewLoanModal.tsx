@@ -74,7 +74,7 @@ export default function NewLoanModal({ isOpen, onClose }: NewLoanModalProps) {
       category: 'loan',
       amount: parsedAmount,
       description: description || `Empréstimo - ${person}`,
-      date: loanDate.toISOString().split('T')[0],
+      date: `${loanDate.getFullYear()}-${String(loanDate.getMonth() + 1).padStart(2, '0')}-${String(loanDate.getDate()).padStart(2, '0')}`,
       isLoan: true,
       loanPerson: person,
       loanStatus: 'pending',

@@ -81,7 +81,7 @@ export default function Loans() {
       category: 'loan',
       amount: parsedAmount,
       description: description || `Empréstimo - ${person}`,
-      date: loanDate.toISOString().split('T')[0],
+      date: `${loanDate.getFullYear()}-${String(loanDate.getMonth() + 1).padStart(2, '0')}-${String(loanDate.getDate()).padStart(2, '0')}`,
       isLoan: true,
       loanPerson: person,
       loanStatus: 'pending',
@@ -103,7 +103,7 @@ export default function Loans() {
     const newStatus = type === 'expense' ? 'received' : 'paid';
     updateTransaction(id, { 
       loanStatus: newStatus,
-      loanSettledDate: new Date().toISOString().split('T')[0],
+      loanSettledDate: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`,
     });
     
     const formattedAmount = amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
