@@ -19,12 +19,15 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
+import TransactionDetailsModal from '@/components/dashboard/TransactionDetailsModal';
+import { Transaction } from '@/types/transaction';
 
 export default function Loans() {
   const { transactions, addTransaction, updateTransaction } = useTransactions();
   const { toast } = useToast();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedLoan, setSelectedLoan] = useState<Transaction | null>(null);
   const [loanType, setLoanType] = useState<'given' | 'received'>('given');
   const [person, setPerson] = useState('');
   const [amount, setAmount] = useState('');
@@ -127,8 +130,9 @@ export default function Loans() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: index * 0.1 }}
+        onClick={() => setSelectedLoan(loan)}
         className={cn(
-          'rounded-xl p-4 sm:p-5 transition-all border-2',
+          'rounded-xl p-4 sm:p-5 transition-all border-2 cursor-pointer',
           isPending && 'glass-card border-transparent hover-lift active:scale-[0.98]',
           isSettled && 'bg-income/5 border-income/20'
         )}
@@ -223,7 +227,7 @@ export default function Loans() {
             <Button
               size="sm"
               variant="outline"
-              onClick={() => handleStatusChange(loan.id, loan.type, loan.amount)}
+              onClick={(e) => { e.stopPropagation(); handleStatusChange(loan.id, loan.type, loan.amount); }}
               className="min-h-[36px] sm:min-h-[40px] text-xs sm:text-sm"
             >
               <Check className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
@@ -475,6 +479,12 @@ export default function Loans() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Loan Details Modal */}
+      <TransactionDetailsModal
+        transaction={selectedLoan}
+        onClose={() => setSelectedLoan(null)}
+      />
     </div>
   );
 }
