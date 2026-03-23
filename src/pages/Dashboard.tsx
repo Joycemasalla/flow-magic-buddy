@@ -225,6 +225,46 @@ export default function Dashboard() {
         onExpenseClick={() => setTypeFilter('expense')}
       />
 
+      {/* Filtros de visualização */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.1 }}
+        className="flex gap-2 flex-wrap"
+      >
+        <button
+          onClick={() => setIncludeInvestments(!includeInvestments)}
+          className={cn(
+            'flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium transition-all min-h-[36px] active:scale-95 border',
+            includeInvestments
+              ? 'bg-primary/10 text-primary border-primary/30'
+              : 'bg-muted text-muted-foreground border-transparent'
+          )}
+        >
+          {includeInvestments ? <Check className="w-3 h-3" /> : <Landmark className="w-3 h-3" />}
+          Investimentos
+        </button>
+        <button
+          onClick={() => setIncludeLoans(!includeLoans)}
+          className={cn(
+            'flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium transition-all min-h-[36px] active:scale-95 border',
+            includeLoans
+              ? 'bg-primary/10 text-primary border-primary/30'
+              : 'bg-muted text-muted-foreground border-transparent'
+          )}
+        >
+          {includeLoans ? <Check className="w-3 h-3" /> : <Handshake className="w-3 h-3" />}
+          Empréstimos
+        </button>
+        {(!includeInvestments || !includeLoans) && (
+          <span className="text-[10px] text-muted-foreground self-center ml-1">
+            {!includeInvestments && stats.excludedInvestments > 0 && `-R$ ${stats.excludedInvestments.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} invest.`}
+            {!includeInvestments && !includeLoans && stats.excludedInvestments > 0 && stats.excludedLoans > 0 && ' | '}
+            {!includeLoans && stats.excludedLoans > 0 && `-R$ ${stats.excludedLoans.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} emprést.`}
+          </span>
+        )}
+      </motion.div>
+
       {/* Investment Summary - Compact */}
       <InvestmentSummary investments={investments} />
 
