@@ -42,6 +42,8 @@ export default function Dashboard() {
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
   const [showCharts, setShowCharts] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
+  const [includeInvestments, setIncludeInvestments] = useState(true);
+  const [includeLoans, setIncludeLoans] = useState(true);
 
   const filteredTransactions = useMemo(() => {
     return transactions.filter((t) => {
