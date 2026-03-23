@@ -14,6 +14,7 @@ import InvestmentSummary from '@/components/dashboard/InvestmentSummary';
 import ReportModal from '@/components/modals/ReportModal';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { Check, Landmark, Handshake } from 'lucide-react';
 
 type PeriodFilter = 'today' | 'week' | 'month' | 'year' | 'all';
 type TypeFilter = 'all' | 'income' | 'expense';
