@@ -81,14 +81,11 @@ export default function Dashboard() {
   }, [transactions, periodFilter, typeFilter]);
 
   const stats = useMemo(() => {
-    // Exclui empréstimos quitados do cálculo:
-    // - Empréstimo dado (expense) com status 'received' = você recebeu de volta, não é mais despesa
-    // - Empréstimo recebido (income) com status 'paid' = você pagou, não é mais receita
     const income = filteredTransactions
       .filter((t) => {
         if (t.type !== 'income') return false;
-        // Exclui empréstimos que você pegou e já pagou
         if (t.isLoan && t.loanStatus === 'paid') return false;
+        if (!includeLoans && t.isLoan) return false;
         return true;
       })
       .reduce((sum, t) => sum + t.amount, 0);
@@ -96,19 +93,35 @@ export default function Dashboard() {
     const expense = filteredTransactions
       .filter((t) => {
         if (t.type !== 'expense') return false;
-        // Exclui empréstimos que você deu e já recebeu de volta
         if (t.isLoan && t.loanStatus === 'received') return false;
+        if (!includeInvestments && t.category === 'investment') return false;
+        if (!includeLoans && t.isLoan) return false;
         return true;
       })
       .reduce((sum, t) => sum + t.amount, 0);
+
+    // Calcula valores excluídos para exibir info
+    const excludedInvestments = !includeInvestments
+      ? filteredTransactions
+          .filter((t) => t.type === 'expense' && t.category === 'investment' && !(t.isLoan && t.loanStatus === 'received'))
+          .reduce((sum, t) => sum + t.amount, 0)
+      : 0;
+
+    const excludedLoans = !includeLoans
+      ? filteredTransactions
+          .filter((t) => t.isLoan && !(t.type === 'expense' && t.loanStatus === 'received') && !(t.type === 'income' && t.loanStatus === 'paid'))
+          .reduce((sum, t) => sum + t.amount, 0)
+      : 0;
 
     return {
       income,
       expense,
       balance: income - expense,
       count: filteredTransactions.length,
+      excludedInvestments,
+      excludedLoans,
     };
-  }, [filteredTransactions]);
+  }, [filteredTransactions, includeInvestments, includeLoans]);
 
   const handleEdit = (id: string) => {
     navigate(`/transacoes/editar/${id}`);
