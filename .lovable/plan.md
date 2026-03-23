@@ -1,116 +1,37 @@
 
-# Plano: Gráfico de Distribuição da Carteira de Investimentos
 
-## Objetivo
-Adicionar um gráfico de pizza (donut) na página de investimentos mostrando a distribuição percentual da carteira por tipo de investimento.
+# Filtros de Visualização no Dashboard: Investimentos e Empréstimos
 
----
+## Problema
+Investimentos e empréstimos saem do saldo mas não são gastos reais. O usuário quer poder ver o saldo/despesas com ou sem esses itens para ter uma visão mais precisa dos gastos reais.
 
-## Componente a Criar
+## Solução
+Adicionar toggle chips abaixo dos cards de resumo que permitem excluir investimentos e/ou empréstimos do cálculo de despesas e saldo.
 
-### `src/components/dashboard/InvestmentDistributionChart.tsx`
+```text
+[Saldo atual: R$ 2.500,00]
 
-Novo componente seguindo o padrão do `CategoryChart.tsx` existente.
+[Receitas: R$ 5.000]  [Despesas: R$ 2.500]
 
-**Props:**
-```typescript
-interface InvestmentDistributionChartProps {
-  investments: Investment[];
-}
+  [✓ Incluir investimentos]  [✓ Incluir empréstimos]
 ```
 
-**Estrutura visual:**
-```
-┌─────────────────────────────────────────────┐
-│  Distribuição da Carteira                   │
-│                                             │
-│           ┌──────────────┐                  │
-│          ╱                ╲                 │
-│         │   [Gráfico      │                 │
-│         │    de Pizza]    │                 │
-│          ╲                ╱                 │
-│           └──────────────┘                  │
-│                                             │
-│  ● Ações 45%    ● Cripto 25%               │
-│  ● Renda Fixa 20%  ● Tesouro 10%           │
-└─────────────────────────────────────────────┘
-```
+Quando desmarcados, as transações com `category === 'investment'` ou `isLoan === true` são excluídas do cálculo de despesas (e consequentemente do saldo), dando uma visão dos gastos reais.
 
-**Lógica:**
-1. Filtrar apenas investimentos com `jaInvestido === true`
-2. Agrupar por tipo e somar valores
-3. Calcular percentual de cada tipo
-4. Usar cores de `investmentTypeColors`
-5. Exibir legenda com labels de `investmentTypeLabels`
+## Alterações
 
-**Recursos visuais:**
-- Gráfico donut (pizza com centro vazio) usando Recharts
-- Animação de entrada com framer-motion
-- Tooltip mostrando valor em R$ e percentual
-- Estado vazio: "Nenhum investimento realizado"
-- Design glass-card consistente com o app
+### 1. `src/pages/Dashboard.tsx`
+- Adicionar dois estados: `includeInvestments` (default: true) e `includeLoans` (default: true)
+- No `useMemo` de `stats`, filtrar transações de investimento e empréstimo conforme os toggles antes de calcular income/expense
+- Renderizar dois chips/toggles clicáveis entre os SummaryCards e o InvestmentSummary
 
----
+### 2. `src/components/dashboard/SummaryCards.tsx`
+- Adicionar props opcionais `investmentAmount` e `loanAmount` para exibir um subtexto informativo no card de despesas quando filtros estiverem ativos (ex: "sem R$ 500 de investimentos")
+- Alternativamente, manter simples e apenas mostrar o valor já filtrado sem subtexto adicional
 
-## Alteração na Página de Investimentos
+### Comportamento
+- Por padrão, tudo é incluído (visão completa)
+- Ao desmarcar "Investimentos", transações com `category === 'investment'` são excluídas das despesas
+- Ao desmarcar "Empréstimos", transações com `isLoan === true` são excluídas das despesas
+- Os toggles são visuais (chips com ícone de check), consistentes com o design existente de pills/filtros
 
-### `src/pages/Investments.tsx`
-
-**Importar o novo componente:**
-```typescript
-import InvestmentDistributionChart from '@/components/dashboard/InvestmentDistributionChart';
-```
-
-**Posicionar após os Summary Cards e antes dos Filters:**
-```
-┌─ Header ─────────────────────────────────────┐
-│  Investimentos                          [+]  │
-├──────────────────────────────────────────────┤
-│ [Total R$X] [Pendente R$Y] [Este Mês R$Z]   │ ← Summary Cards
-├──────────────────────────────────────────────┤
-│         [GRÁFICO DE DISTRIBUIÇÃO]            │ ← NOVO
-├──────────────────────────────────────────────┤
-│ [Todos] [Pendentes] [Investidos] [Filtro ▼] │ ← Filters
-├──────────────────────────────────────────────┤
-│         Lista de Investimentos               │
-└──────────────────────────────────────────────┘
-```
-
----
-
-## Seção Técnica
-
-### Dependências utilizadas (já instaladas):
-- `recharts` - biblioteca de gráficos
-- `framer-motion` - animações
-
-### Código do gráfico (baseado em CategoryChart):
-```typescript
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import { Investment, investmentTypeLabels, investmentTypeColors, InvestmentType } from '@/types/investment';
-import { motion } from 'framer-motion';
-
-// Filtrar investimentos realizados
-const invested = investments.filter(i => i.jaInvestido);
-
-// Agrupar por tipo
-const byType = invested.reduce((acc, inv) => {
-  acc[inv.tipo] = (acc[inv.tipo] || 0) + inv.valorInvestido;
-  return acc;
-}, {} as Record<InvestmentType, number>);
-
-// Converter para formato do gráfico
-const data = Object.entries(byType).map(([type, value]) => ({
-  name: investmentTypeLabels[type as InvestmentType],
-  value,
-  color: investmentTypeColors[type as InvestmentType],
-}));
-```
-
-### Tooltip customizado:
-- Exibe: "Ações: R$ 5.000,00 (45%)"
-- Estilo escuro consistente com o tema
-
-### Responsividade:
-- Mobile: altura de 200px, legenda abaixo
-- Desktop: altura de 250px
