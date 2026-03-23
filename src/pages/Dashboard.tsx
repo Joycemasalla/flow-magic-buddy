@@ -14,6 +14,7 @@ import InvestmentSummary from '@/components/dashboard/InvestmentSummary';
 import ReportModal from '@/components/modals/ReportModal';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { Check, Landmark, Handshake } from 'lucide-react';
 
 type PeriodFilter = 'today' | 'week' | 'month' | 'year' | 'all';
 type TypeFilter = 'all' | 'income' | 'expense';
@@ -42,6 +43,8 @@ export default function Dashboard() {
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
   const [showCharts, setShowCharts] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
+  const [includeInvestments, setIncludeInvestments] = useState(true);
+  const [includeLoans, setIncludeLoans] = useState(true);
 
   const filteredTransactions = useMemo(() => {
     return transactions.filter((t) => {
@@ -79,14 +82,11 @@ export default function Dashboard() {
   }, [transactions, periodFilter, typeFilter]);
 
   const stats = useMemo(() => {
-    // Exclui empréstimos quitados do cálculo:
-    // - Empréstimo dado (expense) com status 'received' = você recebeu de volta, não é mais despesa
-    // - Empréstimo recebido (income) com status 'paid' = você pagou, não é mais receita
     const income = filteredTransactions
       .filter((t) => {
         if (t.type !== 'income') return false;
-        // Exclui empréstimos que você pegou e já pagou
         if (t.isLoan && t.loanStatus === 'paid') return false;
+        if (!includeLoans && t.isLoan) return false;
         return true;
       })
       .reduce((sum, t) => sum + t.amount, 0);
@@ -94,19 +94,35 @@ export default function Dashboard() {
     const expense = filteredTransactions
       .filter((t) => {
         if (t.type !== 'expense') return false;
-        // Exclui empréstimos que você deu e já recebeu de volta
         if (t.isLoan && t.loanStatus === 'received') return false;
+        if (!includeInvestments && t.category === 'investment') return false;
+        if (!includeLoans && t.isLoan) return false;
         return true;
       })
       .reduce((sum, t) => sum + t.amount, 0);
+
+    // Calcula valores excluídos para exibir info
+    const excludedInvestments = !includeInvestments
+      ? filteredTransactions
+          .filter((t) => t.type === 'expense' && t.category === 'investment' && !(t.isLoan && t.loanStatus === 'received'))
+          .reduce((sum, t) => sum + t.amount, 0)
+      : 0;
+
+    const excludedLoans = !includeLoans
+      ? filteredTransactions
+          .filter((t) => t.isLoan && !(t.type === 'expense' && t.loanStatus === 'received') && !(t.type === 'income' && t.loanStatus === 'paid'))
+          .reduce((sum, t) => sum + t.amount, 0)
+      : 0;
 
     return {
       income,
       expense,
       balance: income - expense,
       count: filteredTransactions.length,
+      excludedInvestments,
+      excludedLoans,
     };
-  }, [filteredTransactions]);
+  }, [filteredTransactions, includeInvestments, includeLoans]);
 
   const handleEdit = (id: string) => {
     navigate(`/transacoes/editar/${id}`);
@@ -208,6 +224,46 @@ export default function Dashboard() {
         onIncomeClick={() => setTypeFilter('income')}
         onExpenseClick={() => setTypeFilter('expense')}
       />
+
+      {/* Filtros de visualização */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.1 }}
+        className="flex gap-2 flex-wrap"
+      >
+        <button
+          onClick={() => setIncludeInvestments(!includeInvestments)}
+          className={cn(
+            'flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium transition-all min-h-[36px] active:scale-95 border',
+            includeInvestments
+              ? 'bg-primary/10 text-primary border-primary/30'
+              : 'bg-muted text-muted-foreground border-transparent'
+          )}
+        >
+          {includeInvestments ? <Check className="w-3 h-3" /> : <Landmark className="w-3 h-3" />}
+          Investimentos
+        </button>
+        <button
+          onClick={() => setIncludeLoans(!includeLoans)}
+          className={cn(
+            'flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium transition-all min-h-[36px] active:scale-95 border',
+            includeLoans
+              ? 'bg-primary/10 text-primary border-primary/30'
+              : 'bg-muted text-muted-foreground border-transparent'
+          )}
+        >
+          {includeLoans ? <Check className="w-3 h-3" /> : <Handshake className="w-3 h-3" />}
+          Empréstimos
+        </button>
+        {(!includeInvestments || !includeLoans) && (
+          <span className="text-[10px] text-muted-foreground self-center ml-1">
+            {!includeInvestments && stats.excludedInvestments > 0 && `-R$ ${stats.excludedInvestments.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} invest.`}
+            {!includeInvestments && !includeLoans && stats.excludedInvestments > 0 && stats.excludedLoans > 0 && ' | '}
+            {!includeLoans && stats.excludedLoans > 0 && `-R$ ${stats.excludedLoans.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} emprést.`}
+          </span>
+        )}
+      </motion.div>
 
       {/* Investment Summary - Compact */}
       <InvestmentSummary investments={investments} />
