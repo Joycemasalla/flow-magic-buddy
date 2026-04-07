@@ -9,7 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useTransactions } from '@/contexts/TransactionContext';
 import { useToast } from '@/hooks/use-toast';
 import { TransactionCategory, TransactionType, categoryLabels } from '@/types/transaction';
-import { cn } from '@/lib/utils';
+import { cn, toLocalDateString } from '@/lib/utils';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -82,7 +82,7 @@ export default function QuickRecordModal({ isOpen, onClose }: QuickRecordModalPr
       amount: parsedAmount,
       category: selectedCategory,
       description: description || categoryLabel,
-      date: selectedDate.toISOString().split('T')[0],
+      date: toLocalDateString(selectedDate),
     });
 
     const isToday = selectedDate.toDateString() === new Date().toDateString();

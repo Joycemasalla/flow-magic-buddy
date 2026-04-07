@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { cn } from '@/lib/utils';
+import { cn, toLocalDateString } from '@/lib/utils';
 
 const categoryEmojis: Record<TransactionCategory, string> = {
   salary: '💰',
@@ -36,7 +36,7 @@ export default function TransactionForm() {
   const [category, setCategory] = useState<TransactionCategory>('other');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(toLocalDateString());
   const [isRecurring, setIsRecurring] = useState(false);
 
   const isEditing = !!id;
@@ -96,7 +96,7 @@ export default function TransactionForm() {
           
           await addTransaction({
             ...transactionData,
-            date: futureDate.toISOString().split('T')[0],
+            date: toLocalDateString(futureDate),
             description: `${description || categoryLabels[category]} (Recorrente)`,
           });
         }
