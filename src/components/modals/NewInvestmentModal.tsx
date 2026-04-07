@@ -33,7 +33,7 @@ import {
   PoupancaDetails,
   FundosDetails,
 } from '@/types/investment';
-import { cn } from '@/lib/utils';
+import { cn, toLocalDateString } from '@/lib/utils';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
