@@ -210,7 +210,7 @@ export default function NewInvestmentModal({ isOpen, onClose, editingInvestment 
     setIsProcessing(true);
 
     const parsedValor = parseFloat(valor.replace(',', '.'));
-    const investmentDate = selectedDate.toISOString().split('T')[0];
+    const investmentDate = toLocalDateString(selectedDate);
 
     if (isEditing && editingInvestment) {
       // Update existing investment

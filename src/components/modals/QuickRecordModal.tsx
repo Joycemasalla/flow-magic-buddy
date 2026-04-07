@@ -82,7 +82,7 @@ export default function QuickRecordModal({ isOpen, onClose }: QuickRecordModalPr
       amount: parsedAmount,
       category: selectedCategory,
       description: description || categoryLabel,
-      date: selectedDate.toISOString().split('T')[0],
+      date: toLocalDateString(selectedDate),
     });
 
     const isToday = selectedDate.toDateString() === new Date().toDateString();
