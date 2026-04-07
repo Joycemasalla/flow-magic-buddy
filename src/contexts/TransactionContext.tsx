@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useOnlineStatus, setOfflineCache, getOfflineCache } from '@/hooks/useOffline';
 import { useOfflineQueue, generateTempId, OfflineOperation } from '@/hooks/useOfflineQueue';
 import { toast } from '@/hooks/use-toast';
+import { toLocalDateString } from '@/lib/utils';
 
 interface TransactionContextType {
   transactions: Transaction[];
@@ -380,7 +381,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     const dbPayload = {
       title: reminder.title,
       amount: reminder.amount,
-      due_date: dueDate.toISOString().split('T')[0],
+      due_date: toLocalDateString(dueDate),
       category: reminder.category,
       is_recurring: reminder.type === 'monthly',
       is_paid: !reminder.isActive,
@@ -433,7 +434,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     if (updates.dueDay) {
       const dueDate = new Date();
       dueDate.setDate(updates.dueDay);
-      updateData.due_date = dueDate.toISOString().split('T')[0];
+      updateData.due_date = toLocalDateString(dueDate);
     }
 
     setReminders((prev) => prev.map((r) => (r.id === id ? { ...r, ...updates } : r)));
@@ -573,13 +574,13 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       category: 'investment',
       amount: investment.valorInvestido,
       description: investment.nome,
-      date: new Date().toISOString().split('T')[0],
+      date: toLocalDateString(),
     });
 
     if (transactionId) {
       await updateInvestment(id, {
         jaInvestido: true,
-        dataInvestimento: new Date().toISOString().split('T')[0],
+        dataInvestimento: toLocalDateString(),
         transactionId,
       });
     }
