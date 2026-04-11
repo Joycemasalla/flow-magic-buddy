@@ -23,6 +23,7 @@ interface TransactionContextType {
   addReminder: (reminder: Omit<Reminder, 'id' | 'createdAt'>) => Promise<void>;
   updateReminder: (id: string, reminder: Partial<Reminder>) => Promise<void>;
   deleteReminder: (id: string) => Promise<void>;
+  markReminderAsPaid: (id: string) => Promise<void>;
   addInvestment: (investment: Omit<Investment, 'id' | 'createdAt'>) => Promise<void>;
   updateInvestment: (id: string, investment: Partial<Investment>) => Promise<void>;
   deleteInvestment: (id: string) => Promise<void>;
@@ -466,6 +467,26 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     if (error && import.meta.env.DEV) console.error('Error deleting reminder:', error);
   };
 
+  const markReminderAsPaid = async (id: string) => {
+    const reminder = reminders.find((r) => r.id === id);
+    if (!reminder || !user) return;
+
+    // Create expense transaction from reminder
+    await addTransaction({
+      type: 'expense',
+      category: reminder.category,
+      amount: reminder.amount,
+      description: reminder.title,
+      date: toLocalDateString(),
+      isLoan: false,
+    });
+
+    toast({
+      title: 'Lembrete pago!',
+      description: `Despesa de R$ ${reminder.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} registrada automaticamente.`,
+    });
+  };
+
   const addInvestment = async (investment: Omit<Investment, 'id' | 'createdAt'>) => {
     if (!user) return;
 
@@ -608,7 +629,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
         pendingOpsCount: pendingCount, isSyncing,
         pendingTransactionIds,
         addTransaction, updateTransaction, deleteTransaction,
-        addReminder, updateReminder, deleteReminder,
+        addReminder, updateReminder, deleteReminder, markReminderAsPaid,
         addInvestment, updateInvestment, deleteInvestment,
         markInvestmentAsDone,
       }}
