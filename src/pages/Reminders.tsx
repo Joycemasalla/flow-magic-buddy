@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Bell, Calendar, Pencil, Trash2, AlertTriangle, Clock } from 'lucide-react';
+import { Plus, Bell, Calendar, Pencil, Trash2, AlertTriangle, Clock, CheckCircle2 } from 'lucide-react';
 import { useTransactions } from '@/contexts/TransactionContext';
 import { useToast } from '@/hooks/use-toast';
 import { categoryLabels, TransactionCategory, Reminder } from '@/types/transaction';
@@ -25,7 +25,7 @@ import {
 import { cn } from '@/lib/utils';
 
 export default function Reminders() {
-  const { reminders, addReminder, updateReminder, deleteReminder } = useTransactions();
+  const { reminders, addReminder, updateReminder, deleteReminder, markReminderAsPaid } = useTransactions();
   const { toast } = useToast();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -236,6 +236,15 @@ export default function Reminders() {
                     </p>
                   </div>
                   <div className="flex gap-1 shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => markReminderAsPaid(reminder.id)}
+                      className="text-income hover:text-income min-h-[36px] min-w-[36px] sm:min-h-[40px] sm:min-w-[40px]"
+                      title="Marcar como pago"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="icon"
