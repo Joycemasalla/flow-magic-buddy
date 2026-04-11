@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react'; // v2
 import { Transaction, Reminder, TransactionCategory } from '@/types/transaction';
 import { Investment, InvestmentType } from '@/types/investment';
 import { validateInvestmentDetails } from '@/lib/investmentValidation';
