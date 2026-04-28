@@ -11,6 +11,7 @@ import CategoryChart from '@/components/dashboard/CategoryChart';
 import EvolutionChart from '@/components/dashboard/EvolutionChart';
 import TransactionList from '@/components/dashboard/TransactionList';
 import InvestmentSummary from '@/components/dashboard/InvestmentSummary';
+import ProfileSwitcher from '@/components/ProfileSwitcher';
 import ReportModal from '@/components/modals/ReportModal';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -18,6 +19,7 @@ import { Check, Landmark, Handshake } from 'lucide-react';
 
 type PeriodFilter = 'today' | 'week' | 'month' | 'year' | 'all';
 type TypeFilter = 'all' | 'income' | 'expense';
+type ProfileMode = 'personal' | 'couple';
 
 const periodLabels: Record<PeriodFilter, string> = {
   today: 'Hoje',
@@ -45,11 +47,20 @@ export default function Dashboard() {
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [includeInvestments, setIncludeInvestments] = useState(true);
   const [includeLoans, setIncludeLoans] = useState(true);
+  const [profileMode, setProfileMode] = useState<ProfileMode>('personal');
 
   const filteredTransactions = useMemo(() => {
     return transactions.filter((t) => {
       const tDate = new Date(t.date + 'T12:00:00');
       const now = new Date();
+
+      // Filter by profile mode - in couple mode, only show "casal" transactions
+      if (profileMode === 'couple' && t.tags?.includes('casal') === false) {
+        return false;
+      }
+      if (profileMode === 'personal' && t.tags?.includes('casal')) {
+        return false;
+      }
 
       // Filtro por tipo
       if (typeFilter !== 'all' && t.type !== typeFilter) {
@@ -79,7 +90,7 @@ export default function Dashboard() {
           return true;
       }
     });
-  }, [transactions, periodFilter, typeFilter]);
+  }, [transactions, periodFilter, typeFilter, profileMode]);
 
   const stats = useMemo(() => {
     const income = filteredTransactions
@@ -168,32 +179,35 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-4 sm:space-y-5 max-w-full overflow-hidden pb-28 lg:pb-4">
-      {/* Header */}
+      {/* Header with Profile Switcher */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between"
+        className="flex items-center justify-between gap-4 flex-wrap"
       >
-        <div>
+        <div className="flex-1">
           <h1 className="text-xl lg:text-2xl font-display font-bold">
             Olá{(() => {
               const name = user?.user_metadata?.full_name || user?.user_metadata?.name || '';
               return name ? `, ${name.split(' ')[0]}` : '';
             })()}! 👋
           </h1>
-          <p className="text-sm text-muted-foreground">
-            Suas finanças em dia
+          <p className="text-xs text-muted-foreground mt-1">
+            {profileMode === 'couple' ? 'Nossa carteira' : 'Minha carteira'}
           </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setIsReportOpen(true)}
-          className="min-h-[44px] px-4"
-        >
-          <Download className="w-4 h-4 mr-2" />
-          <span className="hidden sm:inline">Exportar</span>
-        </Button>
+        <div className="flex items-center gap-3">
+          <ProfileSwitcher mode={profileMode} onModeChange={setProfileMode} />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsReportOpen(true)}
+            className="min-h-[44px] px-4 rounded-2xl"
+          >
+            <Download className="w-4 h-4 mr-2 stroke-[1.5]" />
+            <span className="hidden sm:inline text-xs">Exportar</span>
+          </Button>
+        </div>
       </motion.div>
 
       {/* Period Filter Pills - Horizontal Scroll */}

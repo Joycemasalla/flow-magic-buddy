@@ -20,28 +20,28 @@
 
 @layer base {
   :root {
-    /* Premium dark navy palette */
-    --background: 218 65% 5%;
+    /* Luxo Minimalista - Deep Dark (#050505) */
+    --background: 220 50% 2%;
     --foreground: 210 40% 98%;
 
-    --card: 218 50% 10%;
+    --card: 220 45% 8%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 218 55% 8%;
+    --popover: 220 50% 6%;
     --popover-foreground: 210 40% 98%;
 
-    /* Emerald green primary */
+    /* Premium Emerald Green primary */
     --primary: 158 84% 50%;
     --primary-glow: 158 90% 60%;
-    --primary-foreground: 218 65% 5%;
+    --primary-foreground: 220 50% 2%;
 
-    --secondary: 218 40% 16%;
+    --secondary: 220 40% 14%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 218 35% 14%;
-    --muted-foreground: 215 25% 65%;
+    --muted: 220 30% 16%;
+    --muted-foreground: 215 25% 68%;
 
-    /* Premium purple accent */
+    /* Premium Purple accent */
     --accent: 258 90% 66%;
     --accent-foreground: 210 40% 98%;
 
@@ -49,41 +49,41 @@
     --destructive-foreground: 210 40% 98%;
 
     --income: 158 84% 50%;
-    --income-foreground: 218 65% 5%;
+    --income-foreground: 220 50% 2%;
 
     --expense: 0 80% 65%;
     --expense-foreground: 210 40% 98%;
 
     --warning: 38 95% 58%;
-    --warning-foreground: 222 47% 11%;
+    --warning-foreground: 220 50% 2%;
 
-    --border: 218 40% 18%;
-    --input: 218 40% 16%;
+    --border: 220 35% 18%;
+    --input: 220 40% 14%;
     --ring: 158 84% 50%;
 
-    --radius: 1.25rem;
+    --radius: 1.75rem;
 
-    --sidebar-background: 218 70% 4%;
+    --sidebar-background: 220 50% 2.5%;
     --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 158 84% 50%;
-    --sidebar-primary-foreground: 218 65% 5%;
-    --sidebar-accent: 218 40% 14%;
+    --sidebar-primary-foreground: 220 50% 2%;
+    --sidebar-accent: 220 40% 12%;
     --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 218 40% 14%;
+    --sidebar-border: 220 35% 16%;
     --sidebar-ring: 158 84% 50%;
 
     --gradient-primary: linear-gradient(135deg, hsl(158 84% 50%), hsl(158 90% 38%));
     --gradient-accent: linear-gradient(135deg, hsl(258 90% 66%), hsl(258 80% 48%));
-    --gradient-bg: radial-gradient(ellipse at top, hsl(218 60% 12%) 0%, hsl(218 65% 5%) 50%, hsl(220 70% 3%) 100%);
-    --gradient-card: linear-gradient(145deg, hsl(218 50% 14% / 0.7), hsl(218 55% 9% / 0.5));
-    --gradient-balance: linear-gradient(135deg, hsl(218 60% 16% / 0.9), hsl(220 70% 8% / 0.95));
+    --gradient-bg: radial-gradient(ellipse at top right, hsl(220 55% 8%) 0%, hsl(220 50% 2%) 40%, hsl(220 60% 1%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(220 45% 12% / 0.6), hsl(220 50% 6% / 0.3));
+    --gradient-balance: linear-gradient(135deg, hsl(220 50% 14% / 0.8), hsl(220 55% 4% / 0.9));
     --gradient-income: linear-gradient(135deg, hsl(158 84% 50% / 0.18), hsl(158 84% 50% / 0.04));
     --gradient-expense: linear-gradient(135deg, hsl(0 80% 65% / 0.18), hsl(0 80% 65% / 0.04));
 
     --shadow-glow: 0 0 50px hsl(158 84% 50% / 0.25);
     --shadow-glow-accent: 0 0 60px hsl(258 90% 66% / 0.3);
-    --shadow-card: 0 8px 32px hsl(220 70% 2% / 0.5);
-    --shadow-elevated: 0 20px 60px -10px hsl(220 70% 2% / 0.7);
+    --shadow-card: 0 8px 32px hsl(220 70% 1% / 0.6);
+    --shadow-elevated: 0 20px 60px -10px hsl(220 70% 1% / 0.8);
   }
 
   .light {

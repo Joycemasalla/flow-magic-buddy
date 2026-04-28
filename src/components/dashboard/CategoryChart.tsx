@@ -1,4 +1,4 @@
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Transaction, categoryLabels, categoryColors } from '@/types/transaction';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -30,12 +30,12 @@ export default function CategoryChart({ transactions, compact = false }: Categor
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className={cn('glass-card rounded-xl p-4', compact ? 'p-4' : 'p-6')}
+        className={cn('glass-elevated rounded-3xl', compact ? 'p-5' : 'p-6')}
       >
-        <h3 className={cn('font-semibold mb-3', compact ? 'text-sm' : 'text-lg mb-4')}>
+        <h3 className={cn('font-semibold mb-4', compact ? 'text-sm' : 'text-base')}>
           Gastos por Categoria
         </h3>
-        <div className={cn('flex items-center justify-center text-muted-foreground', compact ? 'h-32' : 'h-64')}>
+        <div className={cn('flex items-center justify-center text-muted-foreground text-sm', compact ? 'h-32' : 'h-56')}>
           Sem despesas no período
         </div>
       </motion.div>
@@ -46,21 +46,21 @@ export default function CategoryChart({ transactions, compact = false }: Categor
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={cn('glass-card rounded-xl', compact ? 'p-4' : 'p-6')}
+      className={cn('glass-elevated rounded-3xl', compact ? 'p-5' : 'p-6')}
     >
-      <h3 className={cn('font-semibold', compact ? 'text-sm mb-3' : 'text-lg mb-4')}>
+      <h3 className={cn('font-semibold mb-4', compact ? 'text-sm' : 'text-base')}>
         Gastos por Categoria
       </h3>
-      <div className={cn(compact ? 'h-40' : 'h-64')}>
+      <div className={cn(compact ? 'h-40' : 'h-56')}>
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
               data={data}
               cx="50%"
               cy="50%"
-              innerRadius={compact ? 30 : 50}
-              outerRadius={compact ? 55 : 80}
-              paddingAngle={4}
+              innerRadius={compact ? 35 : 50}
+              outerRadius={compact ? 60 : 85}
+              paddingAngle={3}
               dataKey="value"
             >
               {data.map((entry, index) => (
@@ -76,17 +76,33 @@ export default function CategoryChart({ transactions, compact = false }: Categor
                 border: '1px solid hsl(var(--border))',
                 borderRadius: '12px',
                 color: 'hsl(var(--popover-foreground))',
-                boxShadow: '0 8px 32px hsl(220 70% 2% / 0.4)',
+                boxShadow: '0 8px 32px hsl(220 70% 1% / 0.6)',
+                padding: '8px 12px',
               }}
-              itemStyle={{ color: 'hsl(var(--popover-foreground))' }}
-              labelStyle={{ color: 'hsl(var(--popover-foreground))', fontWeight: 600 }}
-            />
-            <Legend
-              formatter={(value) => <span className="text-xs text-foreground">{value}</span>}
-              wrapperStyle={{ fontSize: compact ? '10px' : '12px' }}
+              itemStyle={{ color: 'hsl(var(--popover-foreground))', fontWeight: 600, fontSize: '12px' }}
+              labelStyle={{ color: 'hsl(var(--popover-foreground))', fontWeight: 700 }}
+              cursor={{ fill: 'transparent' }}
             />
           </PieChart>
         </ResponsiveContainer>
+      </div>
+      
+      {/* Legend - Subtle and clean */}
+      <div className={cn('mt-4 space-y-2', compact ? 'text-xs' : 'text-sm')}>
+        {data.map((item) => (
+          <div key={item.name} className="flex items-center justify-between text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <div 
+                className="w-2.5 h-2.5 rounded-full" 
+                style={{ backgroundColor: item.color }}
+              />
+              <span className="font-medium">{item.name}</span>
+            </div>
+            <span className="text-foreground font-semibold">
+              R$ {item.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </span>
+          </div>
+        ))}
       </div>
     </motion.div>
   );

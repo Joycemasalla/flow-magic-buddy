@@ -24,6 +24,7 @@ export interface Transaction {
   loanPerson?: string;
   loanStatus?: 'pending' | 'paid' | 'received';
   loanSettledDate?: string;
+  tags?: string[]; // For profile modes like 'casal' (couple)
   createdAt: string;
 }
 
