@@ -190,35 +190,44 @@ export default function AppLayout() {
       </main>
 
       {/* Mobile Bottom Navigation - Simple 5 items */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-card/98 backdrop-blur-lg border-t border-border z-40 safe-area-bottom">
-        <div className="flex justify-around items-center h-16 max-w-md mx-auto px-1">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
-            return (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                className={cn(
-                  'flex flex-col items-center justify-center py-2 px-2 min-w-[56px] rounded-lg transition-colors',
-                  isActive ? 'text-primary' : 'text-muted-foreground'
-                )}
-              >
-                <item.icon className={cn('w-5 h-5 mb-0.5', isActive && 'scale-110')} />
-                <span className="text-[10px] font-medium leading-tight text-center">
-                  {item.mobileLabel}
-                </span>
-              </NavLink>
-            );
-          })}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 safe-area-bottom px-3 pb-2 pt-1">
+        <div className="glass-elevated rounded-3xl mx-auto max-w-md px-2">
+          <div className="flex justify-around items-center h-16 px-1">
+            {navItems.map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={cn(
+                    'relative flex flex-col items-center justify-center py-2 px-2 min-w-[52px] rounded-2xl transition-all duration-300',
+                    isActive ? 'text-primary' : 'text-muted-foreground'
+                  )}
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeNavPill"
+                      className="absolute inset-1 rounded-2xl bg-primary/10 border border-primary/20"
+                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                  <item.icon className={cn('w-5 h-5 mb-0.5 relative z-10 transition-transform', isActive && 'scale-110')} />
+                  <span className="text-[10px] font-medium leading-tight text-center relative z-10">
+                    {item.mobileLabel}
+                  </span>
+                </NavLink>
+              );
+            })}
+          </div>
         </div>
       </nav>
 
-      {/* Floating Action Button - Fixed above nav */}
+      {/* Floating Action Button - Mobile */}
       <motion.button
-        whileTap={{ scale: 0.95 }}
+        whileTap={{ scale: 0.92 }}
+        whileHover={{ scale: 1.05 }}
         onClick={handleFabClick}
-        className="lg:hidden fixed right-4 bottom-[84px] z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-xl flex items-center justify-center active:bg-primary/90 transition-colors"
-        style={{ boxShadow: '0 4px 20px hsl(var(--primary) / 0.4)' }}
+        className="lg:hidden fixed right-5 bottom-[96px] z-50 w-16 h-16 rounded-full bg-gradient-primary text-primary-foreground flex items-center justify-center shadow-glow"
       >
         <Plus className="w-7 h-7" strokeWidth={2.5} />
       </motion.button>
@@ -228,9 +237,9 @@ export default function AppLayout() {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={handleFabClick}
-        className="hidden lg:flex fixed right-8 bottom-8 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg items-center justify-center animate-pulse-glow"
+        className="hidden lg:flex fixed right-8 bottom-8 z-50 w-16 h-16 rounded-full bg-gradient-primary text-primary-foreground shadow-glow items-center justify-center"
       >
-        <Plus className="w-6 h-6" />
+        <Plus className="w-7 h-7" strokeWidth={2.5} />
       </motion.button>
 
       {/* Quick Record Modal */}
