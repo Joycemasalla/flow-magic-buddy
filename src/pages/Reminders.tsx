@@ -180,6 +180,32 @@ export default function Reminders() {
         </Button>
       </div>
 
+      {/* Summary header */}
+      {activeReminders.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass-card rounded-2xl p-4 flex items-center justify-between gap-3"
+        >
+          <div className="min-w-0">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+              Total mensal
+            </p>
+            <p className="text-xl sm:text-2xl font-bold font-display truncate">
+              R$ {totalDue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </p>
+          </div>
+          <div className="text-right shrink-0">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+              Próximos 7 dias
+            </p>
+            <p className={cn('text-xl sm:text-2xl font-bold font-display', upcomingCount > 0 ? 'text-warning' : 'text-muted-foreground')}>
+              {upcomingCount}
+            </p>
+          </div>
+        </motion.div>
+      )}
+
       {/* Reminders List */}
       {activeReminders.length === 0 ? (
         <motion.div
@@ -199,20 +225,33 @@ export default function Reminders() {
         </motion.div>
       ) : (
         <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {activeReminders.map((reminder, index) => {
+          {[...activeReminders]
+            .sort((a, b) => getDaysUntilDue(a.dueDay) - getDaysUntilDue(b.dueDay))
+            .map((reminder, index) => {
             const status = getDueStatus(reminder.dueDay);
+            const StatusIcon = status.icon;
+            const isHigh = status.priority === 'high';
             return (
               <motion.div
                 key={reminder.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="glass-card rounded-xl p-4 sm:p-5 hover-lift active:scale-[0.98] transition-transform"
+                className={cn(
+                  'glass-card rounded-2xl p-4 sm:p-5 hover-lift active:scale-[0.98] transition-transform relative overflow-hidden',
+                  isHigh && 'ring-1 ring-warning/30'
+                )}
               >
+                {isHigh && (
+                  <span className="pointer-events-none absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-warning/0 via-warning to-warning/0" />
+                )}
                 <div className="flex items-start justify-between mb-2 sm:mb-3">
                   <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
-                      <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
+                    <div className={cn(
+                      'w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0',
+                      isHigh ? 'bg-warning/15' : 'bg-accent/10'
+                    )}>
+                      <Bell className={cn('w-4 h-4 sm:w-5 sm:h-5', isHigh ? 'text-warning' : 'text-accent')} />
                     </div>
                     <div className="min-w-0 flex-1">
                       <h3 className="font-semibold text-sm sm:text-base truncate">{reminder.title}</h3>
@@ -221,21 +260,21 @@ export default function Reminders() {
                       </p>
                     </div>
                   </div>
-                  <div className={cn('px-2 py-1 rounded-full text-xs font-medium shrink-0', status.bg, status.color)}>
-                    <Clock className="w-3 h-3 inline mr-1" />
+                  <div className={cn('flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-semibold shrink-0', status.bg, status.color)}>
+                    <StatusIcon className="w-3 h-3" />
                     {status.label}
                   </div>
                 </div>
 
-                {reminder.description && (
+                {reminder.description && reminder.description !== reminder.title && (
                   <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3 line-clamp-1 sm:line-clamp-2">
                     {reminder.description}
                   </p>
                 )}
 
-                <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-border">
+                <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-border/60">
                   <div className="min-w-0 flex-1">
-                    <p className="text-base sm:text-lg font-bold text-expense">
+                    <p className="text-base sm:text-lg font-bold text-expense font-display">
                       R$ {reminder.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </p>
                     <p className="text-xs text-muted-foreground">
@@ -248,7 +287,7 @@ export default function Reminders() {
                       variant="ghost"
                       size="icon"
                       onClick={() => markReminderAsPaid(reminder.id)}
-                      className="text-income hover:text-income min-h-[36px] min-w-[36px] sm:min-h-[40px] sm:min-w-[40px]"
+                      className="text-income hover:text-income hover:bg-income/10 min-h-[36px] min-w-[36px] sm:min-h-[40px] sm:min-w-[40px]"
                       title="Marcar como pago"
                     >
                       <CheckCircle2 className="w-4 h-4" />
@@ -265,7 +304,7 @@ export default function Reminders() {
                       variant="ghost"
                       size="icon"
                       onClick={() => handleDelete(reminder.id)}
-                      className="text-destructive hover:text-destructive min-h-[36px] min-w-[36px] sm:min-h-[40px] sm:min-w-[40px]"
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10 min-h-[36px] min-w-[36px] sm:min-h-[40px] sm:min-w-[40px]"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
