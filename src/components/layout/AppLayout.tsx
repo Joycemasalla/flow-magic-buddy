@@ -147,16 +147,17 @@ export default function AppLayout() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-h-screen pb-20 lg:pb-0">
         {/* Mobile Header */}
-        <header className="lg:hidden flex items-center justify-between px-4 py-3 bg-background/80 backdrop-blur-md sticky top-0 z-40 border-b border-border/50">
-          <h1 className="text-lg font-display font-bold text-gradient">
-            MoneyFlow
+        <header className="lg:hidden flex items-center justify-between px-4 py-3 sticky top-0 z-40 backdrop-blur-2xl border-b border-border/40" style={{ background: 'hsl(var(--background) / 0.65)' }}>
+          <h1 className="text-lg font-display font-bold">
+            <span className="text-foreground">Money</span>
+            <span className="text-gradient">Flow</span>
           </h1>
           <div className="flex items-center gap-1">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={togglePrivacyMode} 
-              className="h-9 w-9"
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={togglePrivacyMode}
+              className="h-9 w-9 rounded-full hover:bg-white/5"
             >
               {isPrivacyMode ? (
                 <EyeOff className="w-5 h-5" />
@@ -164,18 +165,18 @@ export default function AppLayout() {
                 <Eye className="w-5 h-5" />
               )}
             </Button>
-            <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-9 w-9">
+            <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-9 w-9 rounded-full hover:bg-white/5">
               {theme === 'dark' ? (
                 <Sun className="w-5 h-5" />
               ) : (
                 <Moon className="w-5 h-5" />
               )}
             </Button>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={signOut} 
-              className="h-9 w-9 text-destructive hover:text-destructive"
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={signOut}
+              className="h-9 w-9 rounded-full text-destructive hover:text-destructive hover:bg-destructive/10"
             >
               <LogOut className="w-5 h-5" />
             </Button>
