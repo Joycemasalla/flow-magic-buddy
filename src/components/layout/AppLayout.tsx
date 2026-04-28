@@ -63,8 +63,8 @@ export default function AppLayout() {
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex flex-col w-64 bg-sidebar border-r border-sidebar-border">
         <div className="p-6">
-          <h1 className="text-2xl font-display font-bold text-gradient">
-            MoneyFlow
+          <h1 className="text-2xl font-display font-bold">
+            <span className="text-foreground">Money</span><span className="text-gradient">Flow</span>
           </h1>
           <p className="text-xs text-muted-foreground mt-1">
             Gerenciamento Financeiro
