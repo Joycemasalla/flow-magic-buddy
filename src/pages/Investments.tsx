@@ -186,7 +186,7 @@ export default function Investments() {
   };
 
   return (
-    <div className="space-y-4 max-w-full overflow-x-hidden pb-8">
+    <div className="space-y-4 max-w-full overflow-x-hidden pb-28 lg:pb-8">
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <motion.div

@@ -137,7 +137,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-5 max-w-full overflow-hidden pb-4">
+    <div className="space-y-4 sm:space-y-5 max-w-full overflow-hidden pb-28 lg:pb-4">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -177,10 +177,10 @@ export default function Dashboard() {
             key={period}
             onClick={() => setPeriodFilter(period)}
             className={cn(
-              'px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-all min-h-[40px] sm:min-h-[44px] active:scale-95',
+              'px-4 py-2 rounded-full text-xs sm:text-sm font-semibold whitespace-nowrap transition-all min-h-[40px] active:scale-95 border',
               periodFilter === period
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground'
+                ? 'bg-gradient-primary text-primary-foreground border-transparent shadow-glow'
+                : 'glass-card text-muted-foreground border-border/40 hover:text-foreground'
             )}
           >
             {periodLabels[period]}
@@ -200,14 +200,14 @@ export default function Dashboard() {
             key={type}
             onClick={() => setTypeFilter(type)}
             className={cn(
-              'px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-all min-h-[40px] sm:min-h-[44px] active:scale-95',
+              'px-4 py-2 rounded-full text-xs sm:text-sm font-semibold whitespace-nowrap transition-all min-h-[40px] active:scale-95 border',
               typeFilter === type
-                ? type === 'income' 
-                  ? 'bg-income text-income-foreground'
+                ? type === 'income'
+                  ? 'bg-income text-income-foreground border-transparent'
                   : type === 'expense'
-                    ? 'bg-expense text-expense-foreground'
-                    : 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground'
+                    ? 'bg-expense text-expense-foreground border-transparent'
+                    : 'bg-gradient-primary text-primary-foreground border-transparent shadow-glow'
+                : 'glass-card text-muted-foreground border-border/40 hover:text-foreground'
             )}
           >
             {typeLabels[type]}

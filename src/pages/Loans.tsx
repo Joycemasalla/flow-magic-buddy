@@ -240,7 +240,7 @@ export default function Loans() {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6 max-w-full overflow-x-hidden pb-4">
+    <div className="space-y-4 sm:space-y-6 max-w-full overflow-x-hidden pb-28 lg:pb-4">
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
         <motion.div

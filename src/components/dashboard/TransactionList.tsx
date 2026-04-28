@@ -130,18 +130,18 @@ function SwipeableItem({ transaction, onEdit, onDelete, onViewDetails, isPending
           }
         }}
        className={cn(
-          'relative z-[2] flex items-center gap-3 p-3 rounded-xl border cursor-grab active:cursor-grabbing backdrop-blur-xl',
-          isSettledLoan 
-            ? 'bg-income/10 border-income/30' 
-            : 'bg-card border-border/50'
+          'relative z-[2] flex items-center gap-3 p-4 rounded-2xl border cursor-grab active:cursor-grabbing transition-colors',
+          isSettledLoan
+            ? 'bg-income/10 border-income/30'
+            : 'glass-card border-border/40 hover:border-border'
         )}
       >
         <div
           className={cn(
-            'w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0',
+            'w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0',
             isSettledLoan && 'bg-income/20',
-            !isSettledLoan && isIncome && 'bg-income/10',
-            !isSettledLoan && !isIncome && 'bg-expense/10'
+            !isSettledLoan && isIncome && 'bg-income/15',
+            !isSettledLoan && !isIncome && 'bg-expense/15'
           )}
         >
           {isSettledLoan ? (

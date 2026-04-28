@@ -38,7 +38,7 @@ export default function Transactions() {
   };
 
   return (
-    <div className="space-y-5 pb-4">
+    <div className="space-y-5 pb-28 lg:pb-4">
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -60,14 +60,14 @@ export default function Transactions() {
             key={filter}
             onClick={() => setActiveFilter(filter)}
             className={cn(
-              'px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all min-h-[40px] active:scale-95',
+              'px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all min-h-[40px] active:scale-95 border',
               activeFilter === filter
                 ? filter === 'income'
-                  ? 'bg-income text-income-foreground'
+                  ? 'bg-income text-income-foreground border-transparent'
                   : filter === 'expense'
-                  ? 'bg-expense text-expense-foreground'
-                  : 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground'
+                  ? 'bg-expense text-expense-foreground border-transparent'
+                  : 'bg-gradient-primary text-primary-foreground border-transparent shadow-glow'
+                : 'glass-card text-muted-foreground border-border/40 hover:text-foreground'
             )}
           >
             {filterLabels[filter]}
