@@ -5,7 +5,7 @@ import { useTransactions } from '@/contexts/TransactionContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { isToday, subDays, startOfMonth, startOfYear, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
+import { isToday, subDays, startOfMonth, startOfYear, isWithinInterval, startOfDay, endOfDay, subMonths, subYears, endOfMonth, endOfYear } from 'date-fns';
 import SummaryCards from '@/components/dashboard/SummaryCards';
 import CategoryChart from '@/components/dashboard/CategoryChart';
 import EvolutionChart from '@/components/dashboard/EvolutionChart';
@@ -124,6 +124,36 @@ export default function Dashboard() {
     };
   }, [filteredTransactions, includeInvestments, includeLoans]);
 
+  // Previous-period comparison (only meaningful for month/year)
+  const previousStats = useMemo(() => {
+    if (periodFilter !== 'month' && periodFilter !== 'year') return null;
+    const now = new Date();
+    const prevStart = periodFilter === 'month' ? startOfMonth(subMonths(now, 1)) : startOfYear(subYears(now, 1));
+    const prevEnd = periodFilter === 'month' ? endOfMonth(subMonths(now, 1)) : endOfYear(subYears(now, 1));
+
+    const prev = transactions.filter((t) => {
+      const tDate = new Date(t.date + 'T12:00:00');
+      return isWithinInterval(tDate, { start: prevStart, end: prevEnd });
+    });
+
+    const income = prev
+      .filter((t) => t.type === 'income' && !(t.isLoan && t.loanStatus === 'paid') && (includeLoans || !t.isLoan))
+      .reduce((s, t) => s + t.amount, 0);
+    const expense = prev
+      .filter(
+        (t) =>
+          t.type === 'expense' &&
+          !(t.isLoan && t.loanStatus === 'received') &&
+          (includeInvestments || t.category !== 'investment') &&
+          (includeLoans || !t.isLoan)
+      )
+      .reduce((s, t) => s + t.amount, 0);
+    return { income, expense };
+  }, [transactions, periodFilter, includeInvestments, includeLoans]);
+
+  const comparisonLabel =
+    periodFilter === 'month' ? 'vs mês passado' : periodFilter === 'year' ? 'vs ano passado' : undefined;
+
   const handleEdit = (id: string) => {
     navigate(`/transacoes/editar/${id}`);
   };
@@ -223,6 +253,9 @@ export default function Dashboard() {
         transactionCount={stats.count}
         onIncomeClick={() => setTypeFilter('income')}
         onExpenseClick={() => setTypeFilter('expense')}
+        previousIncome={previousStats?.income}
+        previousExpense={previousStats?.expense}
+        comparisonLabel={comparisonLabel}
       />
 
       {/* Filtros de visualização */}
