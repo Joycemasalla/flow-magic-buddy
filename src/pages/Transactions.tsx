@@ -38,7 +38,7 @@ export default function Transactions() {
   };
 
   return (
-    <div className="space-y-5 pb-4">
+    <div className="space-y-5 pb-28 lg:pb-4">
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
