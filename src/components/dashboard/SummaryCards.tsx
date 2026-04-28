@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PrivacyValue } from '@/components/ui/PrivacyValue';
 
@@ -22,22 +22,38 @@ export default function SummaryCards({
 }: SummaryCardsProps) {
   return (
     <div className="space-y-3">
-      {/* Main Balance Card */}
+      {/* Main Balance Card — Premium hero */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        className="glass-card rounded-2xl p-5"
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        className="relative overflow-hidden glass-elevated rounded-3xl p-6 sm:p-7"
       >
-        <p className="text-sm text-muted-foreground font-medium mb-1">Saldo atual</p>
-        <p className={cn(
-          'text-2xl sm:text-3xl lg:text-5xl font-bold font-display truncate',
-          balance >= 0 ? 'text-income' : 'text-expense'
-        )}>
-          <PrivacyValue value={Math.abs(balance)} />
-        </p>
-        {balance < 0 && (
-          <p className="text-xs text-expense mt-1">Saldo negativo</p>
-        )}
+        {/* Decorative glow */}
+        <div className="pointer-events-none absolute -top-20 -right-20 w-56 h-56 rounded-full bg-primary/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 -left-16 w-56 h-56 rounded-full bg-accent/15 blur-3xl" />
+
+        <div className="relative">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-8 h-8 rounded-xl bg-primary/15 flex items-center justify-center">
+              <Wallet className="w-4 h-4 text-primary" />
+            </div>
+            <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+              Saldo atual
+            </p>
+          </div>
+          <p
+            className={cn(
+              'text-4xl sm:text-5xl lg:text-6xl font-bold font-display tracking-tight truncate',
+              balance >= 0 ? 'text-foreground' : 'text-expense'
+            )}
+          >
+            <PrivacyValue value={Math.abs(balance)} />
+          </p>
+          {balance < 0 && (
+            <p className="text-xs text-expense mt-2 font-medium">Saldo negativo</p>
+          )}
+        </div>
       </motion.div>
 
       {/* Income/Expense Row */}
@@ -46,16 +62,20 @@ export default function SummaryCards({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
+          whileTap={{ scale: 0.97 }}
           onClick={onIncomeClick}
-          className="glass-card rounded-xl p-4 text-left cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-transform"
+          className="glass-card rounded-2xl p-4 text-left cursor-pointer hover-lift"
+          style={{ background: 'var(--gradient-income)' }}
         >
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 rounded-lg bg-income/10 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-income/15 flex items-center justify-center">
               <TrendingUp className="w-4 h-4 text-income" />
             </div>
-            <span className="text-xs text-muted-foreground font-medium">Receitas</span>
+            <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wide">
+              Receitas
+            </span>
           </div>
-          <p className="text-base sm:text-xl lg:text-2xl font-bold text-income truncate">
+          <p className="text-lg sm:text-2xl font-bold text-income truncate font-display">
             <PrivacyValue value={income} />
           </p>
         </motion.button>
@@ -64,16 +84,20 @@ export default function SummaryCards({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
+          whileTap={{ scale: 0.97 }}
           onClick={onExpenseClick}
-          className="glass-card rounded-xl p-4 text-left cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-transform"
+          className="glass-card rounded-2xl p-4 text-left cursor-pointer hover-lift"
+          style={{ background: 'var(--gradient-expense)' }}
         >
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 rounded-lg bg-expense/10 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-expense/15 flex items-center justify-center">
               <TrendingDown className="w-4 h-4 text-expense" />
             </div>
-            <span className="text-xs text-muted-foreground font-medium">Despesas</span>
+            <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wide">
+              Despesas
+            </span>
           </div>
-          <p className="text-base sm:text-xl lg:text-2xl font-bold text-expense truncate">
+          <p className="text-lg sm:text-2xl font-bold text-expense truncate font-display">
             <PrivacyValue value={expense} />
           </p>
         </motion.button>
