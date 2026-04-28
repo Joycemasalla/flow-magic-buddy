@@ -57,7 +57,7 @@ export default function AppLayout() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col w-full bg-background overflow-x-hidden">
+    <div className="min-h-screen flex flex-col w-full overflow-x-hidden">
       <OfflineBanner />
       <div className="flex flex-1">
       {/* Desktop Sidebar */}
