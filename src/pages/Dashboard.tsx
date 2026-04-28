@@ -137,7 +137,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-5 max-w-full overflow-hidden pb-4">
+    <div className="space-y-4 sm:space-y-5 max-w-full overflow-hidden pb-28 lg:pb-4">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
