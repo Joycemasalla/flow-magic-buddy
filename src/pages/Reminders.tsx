@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Bell, Calendar, Pencil, Trash2, AlertTriangle, Clock, CheckCircle2 } from 'lucide-react';
+import { Plus, Bell, Calendar, Pencil, Trash2, AlertTriangle, Clock, CheckCircle2, Flame } from 'lucide-react';
 import { useTransactions } from '@/contexts/TransactionContext';
 import { useToast } from '@/hooks/use-toast';
 import { categoryLabels, TransactionCategory, Reminder } from '@/types/transaction';
@@ -144,12 +144,20 @@ export default function Reminders() {
 
   const getDueStatus = (dueDay: number) => {
     const days = getDaysUntilDue(dueDay);
-    if (days === 0) return { label: 'Hoje', color: 'text-warning', bg: 'bg-warning/10' };
-    if (days <= 3) return { label: `${days} dias`, color: 'text-expense', bg: 'bg-expense/10' };
-    return { label: `${days} dias`, color: 'text-income', bg: 'bg-income/10' };
+    // Overdue: due day already passed this month (we infer via days >= 25 wraps to "next month soon")
+    // Use a simple priority scale based on remaining days
+    if (days === 0)
+      return { label: 'Hoje', color: 'text-warning', bg: 'bg-warning/15', ring: 'ring-warning/30', icon: Flame, priority: 'high' as const };
+    if (days <= 3)
+      return { label: `${days}d`, color: 'text-expense', bg: 'bg-expense/15', ring: 'ring-expense/30', icon: AlertTriangle, priority: 'high' as const };
+    if (days <= 7)
+      return { label: `${days}d`, color: 'text-warning', bg: 'bg-warning/15', ring: 'ring-warning/20', icon: Clock, priority: 'medium' as const };
+    return { label: `${days}d`, color: 'text-muted-foreground', bg: 'bg-muted', ring: 'ring-border', icon: Clock, priority: 'low' as const };
   };
 
   const activeReminders = reminders.filter((r) => r.isActive);
+  const totalDue = activeReminders.reduce((sum, r) => sum + r.amount, 0);
+  const upcomingCount = activeReminders.filter((r) => getDaysUntilDue(r.dueDay) <= 7).length;
 
   return (
     <div className="space-y-4 sm:space-y-6 max-w-full overflow-hidden pb-28 lg:pb-4">
