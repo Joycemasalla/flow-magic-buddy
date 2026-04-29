@@ -1,58 +1,157 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, Users } from 'lucide-react';
+import { User, Users, Plus, Copy, LogOut, Check, Link2 } from 'lucide-react';
+import { useWallet } from '@/contexts/WalletContext';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
-interface ProfileSwitcherProps {
-  mode: 'personal' | 'couple';
-  onModeChange: (mode: 'personal' | 'couple') => void;
-}
+export default function ProfileSwitcher() {
+  const { wallets, activeWalletId, setActiveWalletId, createWallet, leaveWallet, createInvite } = useWallet();
+  const [createOpen, setCreateOpen] = useState(false);
+  const [name, setName] = useState('Nossa Carteira');
+  const [inviteUrl, setInviteUrl] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
-export default function ProfileSwitcher({ mode, onModeChange }: ProfileSwitcherProps) {
+  const activeWallet = wallets.find((w) => w.id === activeWalletId) || null;
+  const isCouple = !!activeWallet;
+
+  const handleCreate = async () => {
+    if (!name.trim()) return;
+    const w = await createWallet(name.trim());
+    if (w) {
+      setCreateOpen(false);
+      setName('Nossa Carteira');
+    }
+  };
+
+  const handleInvite = async () => {
+    if (!activeWalletId) return;
+    const url = await createInvite(activeWalletId);
+    if (url) setInviteUrl(url);
+  };
+
+  const handleCopy = async () => {
+    if (!inviteUrl) return;
+    await navigator.clipboard.writeText(inviteUrl);
+    setCopied(true);
+    toast({ title: 'Link copiado!', description: 'Compartilhe com seu parceiro(a).' });
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
-    <div className="inline-flex items-center gap-1 p-1 rounded-2xl bg-muted/40 border border-border/40">
-      {/* Personal Option */}
-      <motion.button
-        whileTap={{ scale: 0.95 }}
-        onClick={() => onModeChange('personal')}
-        className={cn(
-          'relative flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-200 font-medium text-sm',
-          mode === 'personal'
-            ? 'text-primary'
-            : 'text-muted-foreground hover:text-foreground'
-        )}
-      >
-        {mode === 'personal' && (
-          <motion.div
-            layoutId="profileSwitcher"
-            className="absolute inset-0 rounded-xl bg-primary/10 border border-primary/30"
-            transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-          />
-        )}
-        <User className="w-4 h-4 stroke-[1.5] relative z-10" />
-        <span className="relative z-10 hidden sm:inline">Minha</span>
-      </motion.button>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <motion.button
+            whileTap={{ scale: 0.96 }}
+            className={cn(
+              'flex items-center gap-2 px-3 py-2 rounded-2xl border transition-all min-h-[40px] text-sm font-semibold',
+              isCouple
+                ? 'bg-accent/10 text-accent border-accent/30'
+                : 'bg-primary/10 text-primary border-primary/30'
+            )}
+          >
+            {isCouple ? <Users className="w-4 h-4 stroke-[1.5]" /> : <User className="w-4 h-4 stroke-[1.5]" />}
+            <span className="hidden sm:inline truncate max-w-[120px]">
+              {isCouple ? activeWallet!.name : 'Minha'}
+            </span>
+          </motion.button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-64 z-[70]">
+          <DropdownMenuLabel className="text-xs">Carteira ativa</DropdownMenuLabel>
+          <DropdownMenuItem
+            onClick={() => setActiveWalletId(null)}
+            className={cn('gap-2', !activeWalletId && 'bg-primary/10 text-primary')}
+          >
+            <User className="w-4 h-4" /> Minha carteira
+            {!activeWalletId && <Check className="w-4 h-4 ml-auto" />}
+          </DropdownMenuItem>
 
-      {/* Couple Option */}
-      <motion.button
-        whileTap={{ scale: 0.95 }}
-        onClick={() => onModeChange('couple')}
-        className={cn(
-          'relative flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-200 font-medium text-sm',
-          mode === 'couple'
-            ? 'text-accent'
-            : 'text-muted-foreground hover:text-foreground'
-        )}
-      >
-        {mode === 'couple' && (
-          <motion.div
-            layoutId="profileSwitcher"
-            className="absolute inset-0 rounded-xl bg-accent/10 border border-accent/30"
-            transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-          />
-        )}
-        <Users className="w-4 h-4 stroke-[1.5] relative z-10" />
-        <span className="relative z-10 hidden sm:inline">Nossa</span>
-      </motion.button>
-    </div>
+          {wallets.map((w) => (
+            <DropdownMenuItem
+              key={w.id}
+              onClick={() => setActiveWalletId(w.id)}
+              className={cn('gap-2', activeWalletId === w.id && 'bg-accent/10 text-accent')}
+            >
+              <Users className="w-4 h-4" />
+              <span className="truncate">{w.name}</span>
+              {activeWalletId === w.id && <Check className="w-4 h-4 ml-auto" />}
+            </DropdownMenuItem>
+          ))}
+
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => setCreateOpen(true)} className="gap-2">
+            <Plus className="w-4 h-4" /> Criar carteira compartilhada
+          </DropdownMenuItem>
+
+          {activeWalletId && (
+            <>
+              <DropdownMenuItem onClick={handleInvite} className="gap-2">
+                <Link2 className="w-4 h-4" /> Gerar link de convite
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => leaveWallet(activeWalletId)}
+                className="gap-2 text-destructive focus:text-destructive"
+              >
+                <LogOut className="w-4 h-4" /> Sair desta carteira
+              </DropdownMenuItem>
+            </>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      {/* Create wallet sheet */}
+      <Sheet open={createOpen} onOpenChange={setCreateOpen}>
+        <SheetContent side="bottom" className="rounded-t-3xl z-[60]">
+          <SheetHeader>
+            <SheetTitle>Nova carteira compartilhada</SheetTitle>
+          </SheetHeader>
+          <div className="space-y-4 pt-4">
+            <div>
+              <Label>Nome da carteira</Label>
+              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex: Casa, Família..." />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Você poderá convidar outra pessoa depois através de um link compartilhável.
+            </p>
+            <Button onClick={handleCreate} className="w-full rounded-2xl bg-gradient-primary">
+              Criar carteira
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Invite link sheet */}
+      <Sheet open={!!inviteUrl} onOpenChange={(o) => !o && setInviteUrl(null)}>
+        <SheetContent side="bottom" className="rounded-t-3xl z-[60]">
+          <SheetHeader>
+            <SheetTitle>Convide seu parceiro(a)</SheetTitle>
+          </SheetHeader>
+          <div className="space-y-4 pt-4">
+            <p className="text-sm text-muted-foreground">
+              Compartilhe este link. A pessoa precisa abrir já logada na conta dela. O link expira em 7 dias.
+            </p>
+            <div className="flex gap-2">
+              <Input value={inviteUrl || ''} readOnly className="text-xs" />
+              <Button onClick={handleCopy} className="rounded-2xl shrink-0">
+                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              </Button>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+    </>
   );
 }

@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      goals: {
+        Row: {
+          category: string | null
+          created_at: string
+          current_amount: number
+          deadline: string | null
+          id: string
+          target_amount: number
+          title: string
+          updated_at: string
+          user_id: string
+          wallet_id: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          current_amount?: number
+          deadline?: string | null
+          id?: string
+          target_amount: number
+          title: string
+          updated_at?: string
+          user_id: string
+          wallet_id?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          current_amount?: number
+          deadline?: string | null
+          id?: string
+          target_amount?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+          wallet_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goals_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investments: {
         Row: {
           created_at: string
@@ -29,6 +76,7 @@ export type Database = {
           type: string
           updated_at: string
           user_id: string
+          wallet_id: string | null
         }
         Insert: {
           created_at?: string
@@ -44,6 +92,7 @@ export type Database = {
           type: string
           updated_at?: string
           user_id: string
+          wallet_id?: string | null
         }
         Update: {
           created_at?: string
@@ -59,8 +108,17 @@ export type Database = {
           type?: string
           updated_at?: string
           user_id?: string
+          wallet_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "investments_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reminders: {
         Row: {
@@ -74,6 +132,7 @@ export type Database = {
           title: string
           updated_at: string
           user_id: string
+          wallet_id: string | null
         }
         Insert: {
           amount: number
@@ -86,6 +145,7 @@ export type Database = {
           title: string
           updated_at?: string
           user_id: string
+          wallet_id?: string | null
         }
         Update: {
           amount?: number
@@ -98,8 +158,17 @@ export type Database = {
           title?: string
           updated_at?: string
           user_id?: string
+          wallet_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "reminders_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       transactions: {
         Row: {
@@ -116,6 +185,7 @@ export type Database = {
           type: string
           updated_at: string
           user_id: string
+          wallet_id: string | null
         }
         Insert: {
           amount: number
@@ -131,6 +201,7 @@ export type Database = {
           type: string
           updated_at?: string
           user_id: string
+          wallet_id?: string | null
         }
         Update: {
           amount?: number
@@ -146,6 +217,115 @@ export type Database = {
           type?: string
           updated_at?: string
           user_id?: string
+          wallet_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wallet_invites: {
+        Row: {
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          token: string
+          used_at: string | null
+          used_by: string | null
+          wallet_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          expires_at?: string
+          id?: string
+          token?: string
+          used_at?: string | null
+          used_by?: string | null
+          wallet_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          expires_at?: string
+          id?: string
+          token?: string
+          used_at?: string | null
+          used_by?: string | null
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_invites_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wallet_members: {
+        Row: {
+          id: string
+          joined_at: string
+          role: string
+          user_id: string
+          wallet_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id: string
+          wallet_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id?: string
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_members_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wallets: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          name?: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+          type?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -154,7 +334,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_wallet_member: {
+        Args: { _user_id: string; _wallet_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

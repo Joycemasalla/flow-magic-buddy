@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { WalletProvider } from "@/contexts/WalletContext";
 import { TransactionProvider } from "@/contexts/TransactionContext";
 import { PrivacyProvider } from "@/contexts/PrivacyContext";
 import AppLayout from "@/components/layout/AppLayout";
@@ -14,6 +15,8 @@ import TransactionForm from "@/pages/TransactionForm";
 import Investments from "@/pages/Investments";
 import Reminders from "@/pages/Reminders";
 import Loans from "@/pages/Loans";
+import Goals from "@/pages/Goals";
+import JoinWallet from "@/pages/JoinWallet";
 import Auth from "@/pages/Auth";
 import NotFound from "@/pages/NotFound";
 
@@ -67,6 +70,14 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/convite/:token"
+        element={
+          <ProtectedRoute>
+            <JoinWallet />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         element={
           <ProtectedRoute>
             <AppLayout />
@@ -80,6 +91,7 @@ function AppRoutes() {
         <Route path="/investimentos" element={<Investments />} />
         <Route path="/lembretes" element={<Reminders />} />
         <Route path="/emprestimos" element={<Loans />} />
+        <Route path="/metas" element={<Goals />} />
       </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>
@@ -91,15 +103,17 @@ const App = () => (
     <ThemeProvider>
       <BrowserRouter>
         <AuthProvider>
-          <TransactionProvider>
-            <PrivacyProvider>
-              <TooltipProvider>
-                <Toaster />
-                <Sonner />
-                <AppRoutes />
-              </TooltipProvider>
-            </PrivacyProvider>
-          </TransactionProvider>
+          <WalletProvider>
+            <TransactionProvider>
+              <PrivacyProvider>
+                <TooltipProvider>
+                  <Toaster />
+                  <Sonner />
+                  <AppRoutes />
+                </TooltipProvider>
+              </PrivacyProvider>
+            </TransactionProvider>
+          </WalletProvider>
         </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>

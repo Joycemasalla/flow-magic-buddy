@@ -4,6 +4,7 @@ import { Investment, InvestmentType } from '@/types/investment';
 import { validateInvestmentDetails } from '@/lib/investmentValidation';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useWallet } from '@/contexts/WalletContext';
 import { useOnlineStatus, setOfflineCache, getOfflineCache } from '@/hooks/useOffline';
 import { useOfflineQueue, generateTempId, OfflineOperation } from '@/hooks/useOfflineQueue';
 import { toast } from '@/hooks/use-toast';
@@ -43,6 +44,7 @@ const validInvestmentTypes: InvestmentType[] = [
 
 export function TransactionProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
+  const { activeWalletId } = useWallet();
   const isOnline = useOnlineStatus();
   const { queue, pendingCount, enqueue, clearQueue, isSyncing, setIsSyncing, syncingRef } = useOfflineQueue();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -50,7 +52,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch data when user changes or comes back online
+  // Fetch data when user, wallet, or online status changes
   useEffect(() => {
     if (user) {
       if (isOnline) {
@@ -64,7 +66,8 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       setInvestments([]);
       setLoading(false);
     }
-  }, [user, isOnline]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, isOnline, activeWalletId]);
 
   // Sync queue when coming back online
   useEffect(() => {
@@ -73,28 +76,33 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     }
   }, [isOnline, user, pendingCount]);
 
+  const cacheKey = (base: string) => `${base}__${activeWalletId || 'personal'}`;
+
   const loadFromCache = () => {
-    const cachedTransactions = getOfflineCache<Transaction[]>('transactions');
-    const cachedReminders = getOfflineCache<Reminder[]>('reminders');
-    const cachedInvestments = getOfflineCache<Investment[]>('investments');
-    if (cachedTransactions) setTransactions(cachedTransactions);
-    if (cachedReminders) setReminders(cachedReminders);
-    if (cachedInvestments) setInvestments(cachedInvestments);
+    const cachedTransactions = getOfflineCache<Transaction[]>(cacheKey('transactions'));
+    const cachedReminders = getOfflineCache<Reminder[]>(cacheKey('reminders'));
+    const cachedInvestments = getOfflineCache<Investment[]>(cacheKey('investments'));
+    setTransactions(cachedTransactions || []);
+    setReminders(cachedReminders || []);
+    setInvestments(cachedInvestments || []);
     setLoading(false);
   };
 
-  // Cache data for offline use whenever it changes
+  // Cache data for offline use whenever it changes (per-wallet)
   useEffect(() => {
-    if (user && transactions.length > 0) setOfflineCache('transactions', transactions);
-  }, [transactions, user]);
+    if (user) setOfflineCache(cacheKey('transactions'), transactions);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [transactions, user, activeWalletId]);
 
   useEffect(() => {
-    if (user && reminders.length > 0) setOfflineCache('reminders', reminders);
-  }, [reminders, user]);
+    if (user) setOfflineCache(cacheKey('reminders'), reminders);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reminders, user, activeWalletId]);
 
   useEffect(() => {
-    if (user && investments.length > 0) setOfflineCache('investments', investments);
-  }, [investments, user]);
+    if (user) setOfflineCache(cacheKey('investments'), investments);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [investments, user, activeWalletId]);
 
   // --- Sync queue ---
   const syncQueue = async () => {
@@ -178,16 +186,22 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Apply wallet scoping: when activeWalletId is set we want only that wallet;
+  // when null (personal) we want only rows with wallet_id IS NULL belonging to the user.
+  const scopeQuery = (q: any) => {
+    if (activeWalletId) return q.eq('wallet_id', activeWalletId);
+    return q.is('wallet_id', null);
+  };
+
   // --- Fetch data ---
   const fetchData = async () => {
     if (!user) return;
     setLoading(true);
 
     try {
-      const { data: transactionsData } = await supabase
-        .from('transactions')
-        .select('*')
-        .order('date', { ascending: false });
+      const { data: transactionsData } = await scopeQuery(
+        supabase.from('transactions').select('*')
+      ).order('date', { ascending: false });
 
       if (transactionsData) {
         setTransactions(
@@ -212,10 +226,9 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
         );
       }
 
-      const { data: remindersData } = await supabase
-        .from('reminders')
-        .select('*')
-        .order('due_date', { ascending: true });
+      const { data: remindersData } = await scopeQuery(
+        supabase.from('reminders').select('*')
+      ).order('due_date', { ascending: true });
 
       if (remindersData) {
         setReminders(
@@ -238,10 +251,9 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
         );
       }
 
-      const { data: investmentsData } = await supabase
-        .from('investments')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const { data: investmentsData } = await scopeQuery(
+        supabase.from('investments').select('*')
+      ).order('created_at', { ascending: false });
 
       if (investmentsData) {
         setInvestments(
@@ -286,6 +298,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       loan_person: transaction.loanPerson || null,
       loan_status: transaction.loanStatus || null,
       loan_settled_date: transaction.loanSettledDate || null,
+      wallet_id: activeWalletId,
     };
 
     if (!isOnline) {
@@ -386,6 +399,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       category: reminder.category,
       is_recurring: reminder.type === 'monthly',
       is_paid: !reminder.isActive,
+      wallet_id: activeWalletId,
     };
 
     if (!isOnline) {
@@ -499,6 +513,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       status: investment.jaInvestido ? 'completed' : 'active',
       description: investment.descricao || null,
       specific_details: validateInvestmentDetails(investment.tipo, investment.detalhesEspecificos) || null,
+      wallet_id: activeWalletId,
     };
 
     if (!isOnline) {
