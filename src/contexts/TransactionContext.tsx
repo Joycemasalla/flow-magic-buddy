@@ -513,6 +513,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       status: investment.jaInvestido ? 'completed' : 'active',
       description: investment.descricao || null,
       specific_details: validateInvestmentDetails(investment.tipo, investment.detalhesEspecificos) || null,
+      wallet_id: activeWalletId,
     };
 
     if (!isOnline) {
