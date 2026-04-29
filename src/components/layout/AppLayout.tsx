@@ -8,6 +8,7 @@ import {
   Bell,
   HandCoins,
   TrendingUp,
+  Target,
   Moon,
   Sun,
   User,
