@@ -186,16 +186,22 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Apply wallet scoping: when activeWalletId is set we want only that wallet;
+  // when null (personal) we want only rows with wallet_id IS NULL belonging to the user.
+  const scopeQuery = (q: any) => {
+    if (activeWalletId) return q.eq('wallet_id', activeWalletId);
+    return q.is('wallet_id', null);
+  };
+
   // --- Fetch data ---
   const fetchData = async () => {
     if (!user) return;
     setLoading(true);
 
     try {
-      const { data: transactionsData } = await supabase
-        .from('transactions')
-        .select('*')
-        .order('date', { ascending: false });
+      const { data: transactionsData } = await scopeQuery(
+        supabase.from('transactions').select('*')
+      ).order('date', { ascending: false });
 
       if (transactionsData) {
         setTransactions(
