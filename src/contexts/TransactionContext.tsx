@@ -399,6 +399,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       category: reminder.category,
       is_recurring: reminder.type === 'monthly',
       is_paid: !reminder.isActive,
+      wallet_id: activeWalletId,
     };
 
     if (!isOnline) {
