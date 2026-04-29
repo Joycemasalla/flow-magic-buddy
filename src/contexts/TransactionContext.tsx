@@ -298,6 +298,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       loan_person: transaction.loanPerson || null,
       loan_status: transaction.loanStatus || null,
       loan_settled_date: transaction.loanSettledDate || null,
+      wallet_id: activeWalletId,
     };
 
     if (!isOnline) {
