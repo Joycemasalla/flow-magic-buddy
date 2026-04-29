@@ -70,6 +70,14 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/convite/:token"
+        element={
+          <ProtectedRoute>
+            <JoinWallet />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         element={
           <ProtectedRoute>
             <AppLayout />
@@ -83,6 +91,7 @@ function AppRoutes() {
         <Route path="/investimentos" element={<Investments />} />
         <Route path="/lembretes" element={<Reminders />} />
         <Route path="/emprestimos" element={<Loans />} />
+        <Route path="/metas" element={<Goals />} />
       </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>
@@ -94,15 +103,17 @@ const App = () => (
     <ThemeProvider>
       <BrowserRouter>
         <AuthProvider>
-          <TransactionProvider>
-            <PrivacyProvider>
-              <TooltipProvider>
-                <Toaster />
-                <Sonner />
-                <AppRoutes />
-              </TooltipProvider>
-            </PrivacyProvider>
-          </TransactionProvider>
+          <WalletProvider>
+            <TransactionProvider>
+              <PrivacyProvider>
+                <TooltipProvider>
+                  <Toaster />
+                  <Sonner />
+                  <AppRoutes />
+                </TooltipProvider>
+              </PrivacyProvider>
+            </TransactionProvider>
+          </WalletProvider>
         </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>
