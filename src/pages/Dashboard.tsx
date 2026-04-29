@@ -48,20 +48,13 @@ export default function Dashboard() {
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [includeInvestments, setIncludeInvestments] = useState(true);
   const [includeLoans, setIncludeLoans] = useState(true);
-  const [profileMode, setProfileMode] = useState<ProfileMode>('personal');
+  const { activeWalletId, wallets } = useWallet();
+  const activeWallet = wallets.find((w) => w.id === activeWalletId);
 
   const filteredTransactions = useMemo(() => {
     return transactions.filter((t) => {
       const tDate = new Date(t.date + 'T12:00:00');
       const now = new Date();
-
-      // Filter by profile mode - in couple mode, only show "casal" transactions
-      if (profileMode === 'couple' && t.tags?.includes('casal') === false) {
-        return false;
-      }
-      if (profileMode === 'personal' && t.tags?.includes('casal')) {
-        return false;
-      }
 
       // Filtro por tipo
       if (typeFilter !== 'all' && t.type !== typeFilter) {
@@ -91,7 +84,7 @@ export default function Dashboard() {
           return true;
       }
     });
-  }, [transactions, periodFilter, typeFilter, profileMode]);
+  }, [transactions, periodFilter, typeFilter]);
 
   const stats = useMemo(() => {
     const income = filteredTransactions
