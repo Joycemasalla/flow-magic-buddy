@@ -4,6 +4,7 @@ import { Investment, InvestmentType } from '@/types/investment';
 import { validateInvestmentDetails } from '@/lib/investmentValidation';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useWallet } from '@/contexts/WalletContext';
 import { useOnlineStatus, setOfflineCache, getOfflineCache } from '@/hooks/useOffline';
 import { useOfflineQueue, generateTempId, OfflineOperation } from '@/hooks/useOfflineQueue';
 import { toast } from '@/hooks/use-toast';
