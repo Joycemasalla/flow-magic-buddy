@@ -251,10 +251,9 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
         );
       }
 
-      const { data: investmentsData } = await supabase
-        .from('investments')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const { data: investmentsData } = await scopeQuery(
+        supabase.from('investments').select('*')
+      ).order('created_at', { ascending: false });
 
       if (investmentsData) {
         setInvestments(
