@@ -44,6 +44,7 @@ const validInvestmentTypes: InvestmentType[] = [
 
 export function TransactionProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
+  const { activeWalletId } = useWallet();
   const isOnline = useOnlineStatus();
   const { queue, pendingCount, enqueue, clearQueue, isSyncing, setIsSyncing, syncingRef } = useOfflineQueue();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -51,7 +52,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch data when user changes or comes back online
+  // Fetch data when user, wallet, or online status changes
   useEffect(() => {
     if (user) {
       if (isOnline) {
@@ -65,7 +66,8 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       setInvestments([]);
       setLoading(false);
     }
-  }, [user, isOnline]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, isOnline, activeWalletId]);
 
   // Sync queue when coming back online
   useEffect(() => {
