@@ -31,6 +31,7 @@ const navItems = [
   { path: '/', icon: LayoutDashboard, label: 'Início', mobileLabel: 'Início' },
   { path: '/transacoes', icon: Receipt, label: 'Transações', mobileLabel: 'Trans.' },
   { path: '/investimentos', icon: TrendingUp, label: 'Investimentos', mobileLabel: 'Invest.' },
+  { path: '/metas', icon: Target, label: 'Metas', mobileLabel: 'Metas' },
   { path: '/lembretes', icon: Bell, label: 'Lembretes', mobileLabel: 'Alertas' },
   { path: '/emprestimos', icon: HandCoins, label: 'Empréstimos', mobileLabel: 'Emprést.' },
 ];
