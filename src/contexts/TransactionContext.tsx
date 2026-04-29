@@ -226,10 +226,9 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
         );
       }
 
-      const { data: remindersData } = await supabase
-        .from('reminders')
-        .select('*')
-        .order('due_date', { ascending: true });
+      const { data: remindersData } = await scopeQuery(
+        supabase.from('reminders').select('*')
+      ).order('due_date', { ascending: true });
 
       if (remindersData) {
         setReminders(
