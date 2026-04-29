@@ -187,11 +187,11 @@ export default function Dashboard() {
             })()}! 👋
           </h1>
           <p className="text-xs text-muted-foreground mt-1">
-            {profileMode === 'couple' ? 'Nossa carteira' : 'Minha carteira'}
+            {activeWallet ? activeWallet.name : 'Minha carteira'}
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <ProfileSwitcher mode={profileMode} onModeChange={setProfileMode} />
+          <ProfileSwitcher />
           <Button
             variant="outline"
             size="sm"
