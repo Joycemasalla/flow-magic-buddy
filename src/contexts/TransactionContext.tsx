@@ -76,28 +76,33 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     }
   }, [isOnline, user, pendingCount]);
 
+  const cacheKey = (base: string) => `${base}__${activeWalletId || 'personal'}`;
+
   const loadFromCache = () => {
-    const cachedTransactions = getOfflineCache<Transaction[]>('transactions');
-    const cachedReminders = getOfflineCache<Reminder[]>('reminders');
-    const cachedInvestments = getOfflineCache<Investment[]>('investments');
-    if (cachedTransactions) setTransactions(cachedTransactions);
-    if (cachedReminders) setReminders(cachedReminders);
-    if (cachedInvestments) setInvestments(cachedInvestments);
+    const cachedTransactions = getOfflineCache<Transaction[]>(cacheKey('transactions'));
+    const cachedReminders = getOfflineCache<Reminder[]>(cacheKey('reminders'));
+    const cachedInvestments = getOfflineCache<Investment[]>(cacheKey('investments'));
+    setTransactions(cachedTransactions || []);
+    setReminders(cachedReminders || []);
+    setInvestments(cachedInvestments || []);
     setLoading(false);
   };
 
-  // Cache data for offline use whenever it changes
+  // Cache data for offline use whenever it changes (per-wallet)
   useEffect(() => {
-    if (user && transactions.length > 0) setOfflineCache('transactions', transactions);
-  }, [transactions, user]);
+    if (user) setOfflineCache(cacheKey('transactions'), transactions);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [transactions, user, activeWalletId]);
 
   useEffect(() => {
-    if (user && reminders.length > 0) setOfflineCache('reminders', reminders);
-  }, [reminders, user]);
+    if (user) setOfflineCache(cacheKey('reminders'), reminders);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reminders, user, activeWalletId]);
 
   useEffect(() => {
-    if (user && investments.length > 0) setOfflineCache('investments', investments);
-  }, [investments, user]);
+    if (user) setOfflineCache(cacheKey('investments'), investments);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [investments, user, activeWalletId]);
 
   // --- Sync queue ---
   const syncQueue = async () => {
