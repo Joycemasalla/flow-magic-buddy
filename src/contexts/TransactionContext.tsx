@@ -186,22 +186,16 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Apply wallet scoping: when activeWalletId is set we want only that wallet;
-  // when null (personal) we want only rows with wallet_id IS NULL belonging to the user.
-  const scopeQuery = (q: any) => {
-    if (activeWalletId) return q.eq('wallet_id', activeWalletId);
-    return q.is('wallet_id', null);
-  };
-
   // --- Fetch data ---
   const fetchData = async () => {
     if (!user) return;
     setLoading(true);
 
     try {
-      const { data: transactionsData } = await scopeQuery(
-        supabase.from('transactions').select('*')
-      ).order('date', { ascending: false });
+      const { data: transactionsData } = await supabase
+        .from('transactions')
+        .select('*')
+        .order('date', { ascending: false });
 
       if (transactionsData) {
         setTransactions(
@@ -226,9 +220,10 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
         );
       }
 
-      const { data: remindersData } = await scopeQuery(
-        supabase.from('reminders').select('*')
-      ).order('due_date', { ascending: true });
+      const { data: remindersData } = await supabase
+        .from('reminders')
+        .select('*')
+        .order('due_date', { ascending: true });
 
       if (remindersData) {
         setReminders(
@@ -251,9 +246,10 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
         );
       }
 
-      const { data: investmentsData } = await scopeQuery(
-        supabase.from('investments').select('*')
-      ).order('created_at', { ascending: false });
+      const { data: investmentsData } = await supabase
+        .from('investments')
+        .select('*')
+        .order('created_at', { ascending: false });
 
       if (investmentsData) {
         setInvestments(
