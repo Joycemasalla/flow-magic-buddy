@@ -119,14 +119,12 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
         successCount++;
       } catch (err) {
         if (import.meta.env.DEV) console.error('Sync error for op:', op.id, err);
-        // Stop on first error to maintain order
         break;
       }
     }
 
     if (successCount > 0) {
       clearQueue();
-      // Refresh data from server after sync
       await fetchData();
       toast({
         title: 'Sincronizado!',
@@ -187,15 +185,35 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
   };
 
   // --- Fetch data ---
+  // CORREÇÃO PRINCIPAL: filtrar corretamente por wallet_id
+  // - Modo pessoal (activeWalletId = null): busca registros com wallet_id IS NULL
+  // - Modo carteira compartilhada: busca registros com wallet_id = activeWalletId
   const fetchData = async () => {
     if (!user) return;
     setLoading(true);
 
     try {
-      const { data: transactionsData } = await supabase
+      // ---- TRANSACTIONS ----
+      let transactionsQuery = supabase
         .from('transactions')
         .select('*')
         .order('date', { ascending: false });
+
+      if (activeWalletId) {
+        transactionsQuery = transactionsQuery.eq('wallet_id', activeWalletId);
+      } else {
+        // Modo pessoal: registros do usuário sem wallet OU com wallet_id null
+        // Inclui registros antigos (antes da migration) que tinham wallet_id null
+        transactionsQuery = transactionsQuery
+          .eq('user_id', user.id)
+          .is('wallet_id', null);
+      }
+
+      const { data: transactionsData, error: transactionsError } = await transactionsQuery;
+
+      if (transactionsError) {
+        if (import.meta.env.DEV) console.error('Error fetching transactions:', transactionsError);
+      }
 
       if (transactionsData) {
         setTransactions(
@@ -220,10 +238,25 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
         );
       }
 
-      const { data: remindersData } = await supabase
+      // ---- REMINDERS ----
+      let remindersQuery = supabase
         .from('reminders')
         .select('*')
         .order('due_date', { ascending: true });
+
+      if (activeWalletId) {
+        remindersQuery = remindersQuery.eq('wallet_id', activeWalletId);
+      } else {
+        remindersQuery = remindersQuery
+          .eq('user_id', user.id)
+          .is('wallet_id', null);
+      }
+
+      const { data: remindersData, error: remindersError } = await remindersQuery;
+
+      if (remindersError) {
+        if (import.meta.env.DEV) console.error('Error fetching reminders:', remindersError);
+      }
 
       if (remindersData) {
         setReminders(
@@ -246,10 +279,25 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
         );
       }
 
-      const { data: investmentsData } = await supabase
+      // ---- INVESTMENTS ----
+      let investmentsQuery = supabase
         .from('investments')
         .select('*')
         .order('created_at', { ascending: false });
+
+      if (activeWalletId) {
+        investmentsQuery = investmentsQuery.eq('wallet_id', activeWalletId);
+      } else {
+        investmentsQuery = investmentsQuery
+          .eq('user_id', user.id)
+          .is('wallet_id', null);
+      }
+
+      const { data: investmentsData, error: investmentsError } = await investmentsQuery;
+
+      if (investmentsError) {
+        if (import.meta.env.DEV) console.error('Error fetching investments:', investmentsError);
+      }
 
       if (investmentsData) {
         setInvestments(
@@ -294,7 +342,8 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       loan_person: transaction.loanPerson || null,
       loan_status: transaction.loanStatus || null,
       loan_settled_date: transaction.loanSettledDate || null,
-      wallet_id: activeWalletId,
+      // wallet_id null para modo pessoal, uuid para carteira compartilhada
+      wallet_id: activeWalletId || null,
     };
 
     if (!isOnline) {
@@ -318,6 +367,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
 
     if (error) {
       if (import.meta.env.DEV) console.error('Error adding transaction:', error);
+      toast({ title: 'Erro ao salvar', description: error.message, variant: 'destructive' });
       return;
     }
 
@@ -395,7 +445,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       category: reminder.category,
       is_recurring: reminder.type === 'monthly',
       is_paid: !reminder.isActive,
-      wallet_id: activeWalletId,
+      wallet_id: activeWalletId || null,
     };
 
     if (!isOnline) {
@@ -481,7 +531,6 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     const reminder = reminders.find((r) => r.id === id);
     if (!reminder || !user) return;
 
-    // Create expense transaction from reminder
     await addTransaction({
       type: 'expense',
       category: reminder.category,
@@ -509,7 +558,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       status: investment.jaInvestido ? 'completed' : 'active',
       description: investment.descricao || null,
       specific_details: validateInvestmentDetails(investment.tipo, investment.detalhesEspecificos) || null,
-      wallet_id: activeWalletId,
+      wallet_id: activeWalletId || null,
     };
 
     if (!isOnline) {
@@ -621,11 +670,9 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
   // Derive pending transaction IDs from queue + temp IDs
   const pendingTransactionIds = React.useMemo(() => {
     const ids = new Set<string>();
-    // Temp IDs are always pending (offline inserts)
     transactions.forEach(t => {
       if (t.id.startsWith('temp_')) ids.add(t.id);
     });
-    // Queue operations on existing entities
     queue.forEach(op => {
       if (op.table === 'transactions' && op.entityId) ids.add(op.entityId);
       if (op.table === 'transactions' && op.tempId) ids.add(op.tempId);
