@@ -52,7 +52,6 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch data when user, wallet, or online status changes
   useEffect(() => {
     if (user) {
       if (isOnline) {
@@ -69,7 +68,6 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, isOnline, activeWalletId]);
 
-  // Sync queue when coming back online
   useEffect(() => {
     if (isOnline && user && pendingCount > 0 && !syncingRef.current) {
       syncQueue();
@@ -88,7 +86,6 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   };
 
-  // Cache data for offline use whenever it changes (per-wallet)
   useEffect(() => {
     if (user) setOfflineCache(cacheKey('transactions'), transactions);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -104,7 +101,6 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [investments, user, activeWalletId]);
 
-  // --- Sync queue ---
   const syncQueue = async () => {
     if (!user || syncingRef.current) return;
     syncingRef.current = true;
@@ -184,10 +180,12 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // --- Fetch data ---
-  // CORREÇÃO PRINCIPAL: filtrar corretamente por wallet_id
-  // - Modo pessoal (activeWalletId = null): busca registros com wallet_id IS NULL
-  // - Modo carteira compartilhada: busca registros com wallet_id = activeWalletId
+  // CORREÇÃO PRINCIPAL:
+  // As novas políticas RLS usam auth.uid() internamente via SECURITY DEFINER.
+  // NÃO devemos passar user_id como filtro explícito na query — isso conflita
+  // com o RLS e causa 403. Deixar o RLS filtrar automaticamente.
+  // Para modo pessoal: filtrar apenas wallet_id IS NULL.
+  // Para modo carteira: filtrar apenas wallet_id = activeWalletId.
   const fetchData = async () => {
     if (!user) return;
     setLoading(true);
@@ -202,11 +200,9 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       if (activeWalletId) {
         transactionsQuery = transactionsQuery.eq('wallet_id', activeWalletId);
       } else {
-        // Modo pessoal: registros do usuário sem wallet OU com wallet_id null
-        // Inclui registros antigos (antes da migration) que tinham wallet_id null
-        transactionsQuery = transactionsQuery
-          .eq('user_id', user.id)
-          .is('wallet_id', null);
+        // Modo pessoal: apenas registros sem wallet
+        // O RLS garante que só retorna registros do usuário autenticado
+        transactionsQuery = transactionsQuery.is('wallet_id', null);
       }
 
       const { data: transactionsData, error: transactionsError } = await transactionsQuery;
@@ -247,9 +243,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       if (activeWalletId) {
         remindersQuery = remindersQuery.eq('wallet_id', activeWalletId);
       } else {
-        remindersQuery = remindersQuery
-          .eq('user_id', user.id)
-          .is('wallet_id', null);
+        remindersQuery = remindersQuery.is('wallet_id', null);
       }
 
       const { data: remindersData, error: remindersError } = await remindersQuery;
@@ -288,9 +282,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       if (activeWalletId) {
         investmentsQuery = investmentsQuery.eq('wallet_id', activeWalletId);
       } else {
-        investmentsQuery = investmentsQuery
-          .eq('user_id', user.id)
-          .is('wallet_id', null);
+        investmentsQuery = investmentsQuery.is('wallet_id', null);
       }
 
       const { data: investmentsData, error: investmentsError } = await investmentsQuery;
@@ -327,8 +319,6 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // --- CRUD with offline support ---
-
   const addTransaction = async (transaction: Omit<Transaction, 'id' | 'createdAt'>) => {
     if (!user) return;
 
@@ -342,7 +332,6 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       loan_person: transaction.loanPerson || null,
       loan_status: transaction.loanStatus || null,
       loan_settled_date: transaction.loanSettledDate || null,
-      // wallet_id null para modo pessoal, uuid para carteira compartilhada
       wallet_id: activeWalletId || null,
     };
 
@@ -401,7 +390,6 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     if (updates.loanStatus !== undefined) updateData.loan_status = updates.loanStatus;
     if (updates.loanSettledDate !== undefined) updateData.loan_settled_date = updates.loanSettledDate;
 
-    // Optimistic update
     setTransactions((prev) => prev.map((t) => (t.id === id ? { ...t, ...updates } : t)));
 
     if (!isOnline) {
@@ -418,7 +406,6 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
   const deleteTransaction = async (id: string) => {
     if (!user) return;
 
-    // Optimistic delete
     setTransactions((prev) => prev.filter((t) => t.id !== id));
 
     if (!isOnline) {
@@ -667,7 +654,6 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Derive pending transaction IDs from queue + temp IDs
   const pendingTransactionIds = React.useMemo(() => {
     const ids = new Set<string>();
     transactions.forEach(t => {
