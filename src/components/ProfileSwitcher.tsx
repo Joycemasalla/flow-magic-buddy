@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -117,6 +117,9 @@ export default function ProfileSwitcher() {
         <SheetContent side="bottom" className="rounded-t-3xl z-[60]">
           <SheetHeader>
             <SheetTitle>Nova carteira compartilhada</SheetTitle>
+            <SheetDescription>
+              Crie uma carteira separada para gerenciar finanças em conjunto.
+            </SheetDescription>
           </SheetHeader>
           <div className="space-y-4 pt-4">
             <div>
@@ -138,11 +141,11 @@ export default function ProfileSwitcher() {
         <SheetContent side="bottom" className="rounded-t-3xl z-[60]">
           <SheetHeader>
             <SheetTitle>Convide seu parceiro(a)</SheetTitle>
+            <SheetDescription>
+              Compartilhe este link. A pessoa precisa abrir já logada na conta dela. O link expira em 7 dias.
+            </SheetDescription>
           </SheetHeader>
           <div className="space-y-4 pt-4">
-            <p className="text-sm text-muted-foreground">
-              Compartilhe este link. A pessoa precisa abrir já logada na conta dela. O link expira em 7 dias.
-            </p>
             <div className="flex gap-2">
               <Input value={inviteUrl || ''} readOnly className="text-xs" />
               <Button onClick={handleCopy} className="rounded-2xl shrink-0">
