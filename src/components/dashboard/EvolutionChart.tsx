@@ -38,8 +38,10 @@ export default function EvolutionChart({ transactions, compact = false }: Evolut
       .filter((t) => t.type === 'expense')
       .reduce((sum, t) => sum + t.amount, 0);
 
+    // Dia abreviado em 3 letras: Dom, Seg, Ter, Qua, Qui, Sex, Sáb
+    const dayMap = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
     return {
-      name: format(date, 'EEE', { locale: ptBR }).charAt(0).toUpperCase() + format(date, 'EEE', { locale: ptBR }).slice(1),
+      name: dayMap[date.getDay()],
       Receitas: income,
       Despesas: expense,
     };
