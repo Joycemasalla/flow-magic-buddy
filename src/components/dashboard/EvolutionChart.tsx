@@ -59,7 +59,7 @@ export default function EvolutionChart({ transactions, compact = false }: Evolut
       </h3>
       <div className={cn(compact ? 'h-40' : 'h-56')}>
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={last7Days} margin={{ top: 5, right: 10, left: -25, bottom: 5 }}>
+          <BarChart data={last7Days} margin={{ top: 5, right: 8, left: -20, bottom: 5 }} barCategoryGap="20%">
             <CartesianGrid
               strokeDasharray="3 3"
               stroke="hsl(var(--border) / 0.3)"
@@ -70,8 +70,11 @@ export default function EvolutionChart({ transactions, compact = false }: Evolut
               dataKey="name"
               axisLine={false}
               tickLine={false}
-              tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: compact ? 11 : 12, fontWeight: 500 }}
+              tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: compact ? 10 : 11, fontWeight: 600 }}
               interval={0}
+              tickMargin={8}
+              minTickGap={0}
+              padding={{ left: 4, right: 4 }}
             />
             <YAxis
               axisLine={false}
