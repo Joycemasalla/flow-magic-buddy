@@ -74,6 +74,30 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     }
   }, [isOnline, user, pendingCount]);
 
+  // Realtime sync — re-fetch on any change for collaborative wallets and own data
+  useEffect(() => {
+    if (!user || !isOnline) return;
+
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+    const scheduleRefetch = () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => fetchData(), 400);
+    };
+
+    const channel = supabase
+      .channel(`scope-${activeWalletId || 'personal'}-${user.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, scheduleRefetch)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'reminders' }, scheduleRefetch)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'investments' }, scheduleRefetch)
+      .subscribe();
+
+    return () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      supabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, isOnline, activeWalletId]);
+
   const cacheKey = (base: string) => `${base}__${activeWalletId || 'personal'}`;
 
   const loadFromCache = () => {
