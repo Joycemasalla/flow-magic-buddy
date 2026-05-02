@@ -138,24 +138,24 @@ function SwipeableItem({ transaction, onEdit, onDelete, onViewDetails, isPending
       >
         <div
           className={cn(
-            'w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 transition-all',
+            'w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center flex-shrink-0 transition-all',
             isSettledLoan && 'bg-income/15',
             !isSettledLoan && isIncome && 'bg-income/12',
             !isSettledLoan && !isIncome && 'bg-expense/12'
           )}
         >
           {isSettledLoan ? (
-            <Check className="w-6 h-6 text-income stroke-[2]" />
+            <Check className="w-5 h-5 sm:w-6 sm:h-6 text-income stroke-[2]" />
           ) : (
             <Icon
               className={cn(
-                'w-6 h-6 stroke-[1.5]',
+                'w-5 h-5 sm:w-6 sm:h-6 stroke-[1.5]',
                 isIncome ? 'text-income' : 'text-expense'
               )}
             />
           )}
         </div>
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 pr-2">
           <p className={cn(
             'font-semibold truncate text-sm',
             isSettledLoan && 'text-muted-foreground/70'
@@ -169,13 +169,13 @@ function SwipeableItem({ transaction, onEdit, onDelete, onViewDetails, isPending
             }
           </p>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-2 flex-shrink-0 text-right">
           {isPending && (
             <CloudUpload className="w-4 h-4 text-amber-500 animate-pulse" />
           )}
           <p
             className={cn(
-              'font-bold text-sm',
+              'font-bold text-sm whitespace-nowrap tabular-nums',
               isSettledLoan && 'text-income line-through decoration-2',
               !isSettledLoan && isIncome && 'text-income',
               !isSettledLoan && !isIncome && 'text-expense'
