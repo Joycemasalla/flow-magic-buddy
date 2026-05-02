@@ -130,7 +130,7 @@ function SwipeableItem({ transaction, onEdit, onDelete, onViewDetails, isPending
           }
         }}
        className={cn(
-          'relative z-[2] flex items-center gap-4 p-5 rounded-2xl border cursor-grab active:cursor-grabbing transition-all',
+          'relative z-[2] flex items-center gap-3 sm:gap-4 px-4 py-4 sm:p-5 rounded-2xl border cursor-grab active:cursor-grabbing transition-all',
           isSettledLoan
             ? 'bg-income/8 border-income/20 hover:border-income/30'
             : 'glass-elevated border-border/40 hover:border-border/60'
