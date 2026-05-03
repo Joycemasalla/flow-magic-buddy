@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Bell, Calendar, Pencil, Trash2, AlertTriangle, Clock, CheckCircle2, Flame } from 'lucide-react';
+import { Plus, Bell, Calendar, AlertTriangle, Clock, CheckCircle2, Flame } from 'lucide-react';
 import { useTransactions } from '@/contexts/TransactionContext';
 import { useToast } from '@/hooks/use-toast';
 import { categoryLabels, TransactionCategory, Reminder } from '@/types/transaction';
@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { SwipeableCard } from '@/components/ui/SwipeableCard';
 
 export default function Reminders() {
   const { reminders, addReminder, updateReminder, deleteReminder, markReminderAsPaid } = useTransactions();
@@ -237,79 +238,66 @@ export default function Reminders() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className={cn(
-                  'glass-card rounded-2xl p-4 sm:p-5 hover-lift active:scale-[0.98] transition-transform relative overflow-hidden',
-                  isHigh && 'ring-1 ring-warning/30'
-                )}
               >
-                {isHigh && (
-                  <span className="pointer-events-none absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-warning/0 via-warning to-warning/0" />
-                )}
-                <div className="flex items-start justify-between mb-2 sm:mb-3">
-                  <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                    <div className={cn(
-                      'w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0',
-                      isHigh ? 'bg-warning/15' : 'bg-accent/10'
-                    )}>
-                      <Bell className={cn('w-4 h-4 sm:w-5 sm:h-5', isHigh ? 'text-warning' : 'text-accent')} />
+                <SwipeableCard
+                  onEdit={() => openModal(reminder)}
+                  onDelete={() => handleDelete(reminder.id)}
+                  className={cn(
+                    'glass-card rounded-2xl p-4 sm:p-5 transition-transform relative overflow-hidden',
+                    isHigh && 'ring-1 ring-warning/30'
+                  )}
+                >
+                  {isHigh && (
+                    <span className="pointer-events-none absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-warning/0 via-warning to-warning/0" />
+                  )}
+                  <div className="flex items-start justify-between mb-2 sm:mb-3">
+                    <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                      <div className={cn(
+                        'w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0',
+                        isHigh ? 'bg-warning/15' : 'bg-accent/10'
+                      )}>
+                        <Bell className={cn('w-4 h-4 sm:w-5 sm:h-5', isHigh ? 'text-warning' : 'text-accent')} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-semibold text-sm sm:text-base truncate">{reminder.title}</h3>
+                        <p className="text-xs sm:text-sm text-muted-foreground truncate">
+                          {categoryLabels[reminder.category]}
+                        </p>
+                      </div>
                     </div>
+                    <div className={cn('flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-semibold shrink-0', status.bg, status.color)}>
+                      <StatusIcon className="w-3 h-3" />
+                      {status.label}
+                    </div>
+                  </div>
+
+                  {reminder.description && reminder.description !== reminder.title && (
+                    <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3 line-clamp-1 sm:line-clamp-2">
+                      {reminder.description}
+                    </p>
+                  )}
+
+                  <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-border/60">
                     <div className="min-w-0 flex-1">
-                      <h3 className="font-semibold text-sm sm:text-base truncate">{reminder.title}</h3>
-                      <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                        {categoryLabels[reminder.category]}
+                      <p className="text-base sm:text-lg font-bold text-expense font-display">
+                        R$ {reminder.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        <Calendar className="w-3 h-3 inline mr-1" />
+                        Dia {reminder.dueDay} • {reminder.type === 'monthly' ? 'Mensal' : 'Único'}
                       </p>
                     </div>
-                  </div>
-                  <div className={cn('flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-semibold shrink-0', status.bg, status.color)}>
-                    <StatusIcon className="w-3 h-3" />
-                    {status.label}
-                  </div>
-                </div>
-
-                {reminder.description && reminder.description !== reminder.title && (
-                  <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3 line-clamp-1 sm:line-clamp-2">
-                    {reminder.description}
-                  </p>
-                )}
-
-                <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-border/60">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-base sm:text-lg font-bold text-expense font-display">
-                      R$ {reminder.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      <Calendar className="w-3 h-3 inline mr-1" />
-                      Dia {reminder.dueDay} • {reminder.type === 'monthly' ? 'Mensal' : 'Único'}
-                    </p>
-                  </div>
-                  <div className="flex gap-1 shrink-0">
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => markReminderAsPaid(reminder.id)}
-                      className="text-income hover:text-income hover:bg-income/10 min-h-[36px] min-w-[36px] sm:min-h-[40px] sm:min-w-[40px]"
+                      onClick={(e) => { e.stopPropagation(); markReminderAsPaid(reminder.id); }}
+                      className="text-income hover:text-income hover:bg-income/10 min-h-[36px] min-w-[36px] sm:min-h-[40px] sm:min-w-[40px] shrink-0"
                       title="Marcar como pago"
                     >
                       <CheckCircle2 className="w-4 h-4" />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => openModal(reminder)}
-                      className="min-h-[36px] min-w-[36px] sm:min-h-[40px] sm:min-w-[40px]"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(reminder.id)}
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10 min-h-[36px] min-w-[36px] sm:min-h-[40px] sm:min-w-[40px]"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
                   </div>
-                </div>
+                </SwipeableCard>
               </motion.div>
             );
           })}
