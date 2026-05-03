@@ -36,6 +36,7 @@ import { format, parseISO, isThisMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import NewInvestmentModal from '@/components/modals/NewInvestmentModal';
 import InvestmentDetailsModal from '@/components/dashboard/InvestmentDetailsModal';
+import { SwipeableCard } from '@/components/ui/SwipeableCard';
 import InvestmentDistributionChart from '@/components/dashboard/InvestmentDistributionChart';
 import {
   AlertDialog,
