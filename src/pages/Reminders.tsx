@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Bell, Calendar, Pencil, Trash2, AlertTriangle, Clock, CheckCircle2, Flame } from 'lucide-react';
+import { Plus, Bell, Calendar, AlertTriangle, Clock, CheckCircle2, Flame } from 'lucide-react';
 import { useTransactions } from '@/contexts/TransactionContext';
 import { useToast } from '@/hooks/use-toast';
 import { categoryLabels, TransactionCategory, Reminder } from '@/types/transaction';
