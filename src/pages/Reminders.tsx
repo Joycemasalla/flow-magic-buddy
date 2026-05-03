@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { SwipeableCard } from '@/components/ui/SwipeableCard';
 
 export default function Reminders() {
   const { reminders, addReminder, updateReminder, deleteReminder, markReminderAsPaid } = useTransactions();
