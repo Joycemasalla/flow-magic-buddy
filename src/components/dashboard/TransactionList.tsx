@@ -16,13 +16,10 @@ import {
   TrendingUp,
   HandCoins,
   MoreHorizontal,
-  Pencil,
-  Trash2,
   Check,
 } from 'lucide-react';
 import { Transaction, categoryLabels, TransactionCategory } from '@/types/transaction';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import { PrivacyValue } from '@/components/ui/PrivacyValue';
 import TransactionDetailsModal from './TransactionDetailsModal';
 
