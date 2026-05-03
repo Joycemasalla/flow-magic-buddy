@@ -21,6 +21,7 @@ import {
 import { cn } from '@/lib/utils';
 import TransactionDetailsModal from '@/components/dashboard/TransactionDetailsModal';
 import { Transaction } from '@/types/transaction';
+import { SwipeableCard } from '@/components/ui/SwipeableCard';
 
 export default function Loans() {
   const { transactions, addTransaction, updateTransaction, deleteTransaction } = useTransactions();
