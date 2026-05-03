@@ -341,93 +341,86 @@ export default function Investments() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ delay: index * 0.05 }}
-                  onClick={() => setSelectedInvestment(investment)}
-                  className="glass-card rounded-xl p-3 sm:p-4 cursor-pointer hover:scale-[1.01] active:scale-[0.99] transition-transform"
                 >
-                  <div className="flex items-start gap-3">
-                    <div
-                      className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center shrink-0"
-                      style={{ backgroundColor: `${color}20` }}
-                    >
-                      <Icon className="w-4 h-4 sm:w-5 sm:h-5" style={{ color }} />
-                    </div>
-
-                    <div className="flex-1 min-w-0 overflow-hidden">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0 flex-1">
-                          <h3 className="font-semibold text-sm sm:text-base truncate">{investment.nome}</h3>
-                          <p className="text-[10px] sm:text-xs text-muted-foreground">
-                            {investmentTypeLabels[investment.tipo]}
-                          </p>
-                          {renderDetails(investment)}
-                        </div>
-
-                        <Badge
-                          variant={investment.jaInvestido ? 'default' : 'secondary'}
-                          className={cn(
-                            'shrink-0 text-[10px] sm:text-xs px-1.5 sm:px-2',
-                            investment.jaInvestido
-                              ? 'bg-income/10 text-income border-income/20'
-                              : 'bg-warning/10 text-warning border-warning/20'
-                          )}
-                        >
-                          {investment.jaInvestido ? (
-                            <>
-                              <Check className="w-3 h-3 mr-0.5 sm:mr-1" />
-                              <span className="hidden sm:inline">Investido</span>
-                              <span className="sm:hidden">OK</span>
-                            </>
-                          ) : (
-                            <>
-                              <Clock className="w-3 h-3 mr-0.5 sm:mr-1" />
-                              <span className="hidden sm:inline">Pendente</span>
-                              <span className="sm:hidden">Pend.</span>
-                            </>
-                          )}
-                        </Badge>
+                  <SwipeableCard
+                    onEdit={() => setEditingInvestment(investment)}
+                    onDelete={() => setInvestmentToDelete(investment)}
+                    onClick={() => setSelectedInvestment(investment)}
+                    className="glass-card rounded-xl p-3 sm:p-4"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div
+                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center shrink-0"
+                        style={{ backgroundColor: `${color}20` }}
+                      >
+                        <Icon className="w-4 h-4 sm:w-5 sm:h-5" style={{ color }} />
                       </div>
 
-                      <div className="flex items-center justify-between mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-border/50">
-                        <p className="text-base sm:text-lg font-bold">
-                          R$ {investment.valorInvestido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                        </p>
+                      <div className="flex-1 min-w-0 overflow-hidden">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-semibold text-sm sm:text-base truncate">{investment.nome}</h3>
+                            <p className="text-[10px] sm:text-xs text-muted-foreground">
+                              {investmentTypeLabels[investment.tipo]}
+                            </p>
+                            {renderDetails(investment)}
+                          </div>
 
-                        <div className="flex items-center gap-1.5 sm:gap-2">
-                          {investment.jaInvestido ? (
-                            <span className="text-[10px] sm:text-xs text-muted-foreground">
-                              {format(parseISO(investment.dataInvestimento), 'dd/MM', { locale: ptBR })}
-                            </span>
-                          ) : (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="gap-1 text-income border-income/30 hover:bg-income/10 h-7 sm:h-8 text-xs px-2 sm:px-3"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleMarkAsDone(investment);
-                              }}
-                            >
-                              <Check className="w-3 h-3" />
-                              <span className="hidden sm:inline">Marcar Feito</span>
-                              <span className="sm:hidden">Feito</span>
-                            </Button>
-                          )}
-                          
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-destructive"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setInvestmentToDelete(investment);
-                            }}
+                          <Badge
+                            variant={investment.jaInvestido ? 'default' : 'secondary'}
+                            className={cn(
+                              'shrink-0 text-[10px] sm:text-xs px-1.5 sm:px-2',
+                              investment.jaInvestido
+                                ? 'bg-income/10 text-income border-income/20'
+                                : 'bg-warning/10 text-warning border-warning/20'
+                            )}
                           >
-                            <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                          </Button>
+                            {investment.jaInvestido ? (
+                              <>
+                                <Check className="w-3 h-3 mr-0.5 sm:mr-1" />
+                                <span className="hidden sm:inline">Investido</span>
+                                <span className="sm:hidden">OK</span>
+                              </>
+                            ) : (
+                              <>
+                                <Clock className="w-3 h-3 mr-0.5 sm:mr-1" />
+                                <span className="hidden sm:inline">Pendente</span>
+                                <span className="sm:hidden">Pend.</span>
+                              </>
+                            )}
+                          </Badge>
+                        </div>
+
+                        <div className="flex items-center justify-between mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-border/50">
+                          <p className="text-base sm:text-lg font-bold">
+                            R$ {investment.valorInvestido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </p>
+
+                          <div className="flex items-center gap-1.5 sm:gap-2">
+                            {investment.jaInvestido ? (
+                              <span className="text-[10px] sm:text-xs text-muted-foreground">
+                                {format(parseISO(investment.dataInvestimento), 'dd/MM', { locale: ptBR })}
+                              </span>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="gap-1 text-income border-income/30 hover:bg-income/10 h-7 sm:h-8 text-xs px-2 sm:px-3"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleMarkAsDone(investment);
+                                }}
+                              >
+                                <Check className="w-3 h-3" />
+                                <span className="hidden sm:inline">Marcar Feito</span>
+                                <span className="sm:hidden">Feito</span>
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </SwipeableCard>
                 </motion.div>
               );
             })
