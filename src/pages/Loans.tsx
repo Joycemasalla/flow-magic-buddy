@@ -23,7 +23,7 @@ import TransactionDetailsModal from '@/components/dashboard/TransactionDetailsMo
 import { Transaction } from '@/types/transaction';
 
 export default function Loans() {
-  const { transactions, addTransaction, updateTransaction } = useTransactions();
+  const { transactions, addTransaction, updateTransaction, deleteTransaction } = useTransactions();
   const { toast } = useToast();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
