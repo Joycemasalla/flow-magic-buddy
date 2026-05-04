@@ -64,7 +64,7 @@ export default function ProfileSwitcher() {
             )}
           >
             {isCouple ? <Users className="w-4 h-4 stroke-[1.5]" /> : <User className="w-4 h-4 stroke-[1.5]" />}
-            <span className="truncate max-w-[110px]">
+            <span className="hidden sm:inline truncate max-w-[120px]">
               {isCouple ? activeWallet!.name : 'Minha'}
             </span>
           </motion.button>
