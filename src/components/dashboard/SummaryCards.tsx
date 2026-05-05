@@ -145,9 +145,9 @@ export default function SummaryCards({
             </div>
             <Delta current={expense} previous={previousExpense} />
           </div>
-          <p className="text-2xl sm:text-3xl font-black text-expense truncate font-display">
+          <AutoFitText max={30} min={14} className="font-black text-expense font-display">
             <PrivacyValue value={expense} />
-          </p>
+          </AutoFitText>
         </motion.button>
       </div>
     </div>
