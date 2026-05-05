@@ -19,7 +19,8 @@ interface AutoFitTextProps {
 export function AutoFitText({ children, max = 72, min = 20, length, className }: AutoFitTextProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLSpanElement>(null);
-  const estimatedSize = Math.max(min, Math.min(max, Math.floor((max * 11) / Math.max(length ?? 11, 11))));
+  const fitBase = 8.5;
+  const estimatedSize = Math.max(min, Math.min(max, Math.floor((max * fitBase) / Math.max(length ?? fitBase, fitBase))));
   const [size, setSize] = useState(estimatedSize);
 
   useLayoutEffect(() => {
