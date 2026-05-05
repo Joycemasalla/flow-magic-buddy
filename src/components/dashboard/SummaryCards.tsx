@@ -43,6 +43,9 @@ function Delta({ current, previous }: { current: number; previous?: number }) {
   );
 }
 
+const moneyLength = (value: number) =>
+  `R$ ${Math.abs(value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`.length;
+
 export default function SummaryCards({
   income,
   expense,
@@ -85,6 +88,7 @@ export default function SummaryCards({
           <AutoFitText
             max={64}
             min={14}
+            length={moneyLength(balance)}
             className={cn(
               'font-black font-display tracking-tight',
               balance >= 0 ? 'text-foreground' : 'text-expense'
@@ -120,7 +124,7 @@ export default function SummaryCards({
             </div>
             <Delta current={income} previous={previousIncome} />
           </div>
-          <AutoFitText max={30} min={14} className="font-black text-income font-display">
+          <AutoFitText max={30} min={12} length={moneyLength(income)} className="font-black text-income font-display">
             <PrivacyValue value={income} />
           </AutoFitText>
         </motion.button>
@@ -145,7 +149,7 @@ export default function SummaryCards({
             </div>
             <Delta current={expense} previous={previousExpense} />
           </div>
-          <AutoFitText max={30} min={14} className="font-black text-expense font-display">
+          <AutoFitText max={30} min={12} length={moneyLength(expense)} className="font-black text-expense font-display">
             <PrivacyValue value={expense} />
           </AutoFitText>
         </motion.button>
