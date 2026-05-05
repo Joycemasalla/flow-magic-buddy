@@ -120,9 +120,9 @@ export default function SummaryCards({
             </div>
             <Delta current={income} previous={previousIncome} />
           </div>
-          <p className="text-2xl sm:text-3xl font-black text-income truncate font-display">
+          <AutoFitText max={30} min={14} className="font-black text-income font-display">
             <PrivacyValue value={income} />
-          </p>
+          </AutoFitText>
         </motion.button>
 
         <motion.button
