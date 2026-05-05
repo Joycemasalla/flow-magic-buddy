@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, Wallet, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PrivacyValue } from '@/components/ui/PrivacyValue';
+import { AutoFitText } from '@/components/ui/AutoFitText';
 
 interface SummaryCardsProps {
   income: number;
@@ -81,14 +82,16 @@ export default function SummaryCards({
               </span>
             )}
           </div>
-          <p
+          <AutoFitText
+            max={72}
+            min={28}
             className={cn(
-              'text-5xl sm:text-6xl lg:text-7xl font-black font-display tracking-tight truncate',
+              'font-black font-display tracking-tight',
               balance >= 0 ? 'text-foreground' : 'text-expense'
             )}
           >
             <PrivacyValue value={Math.abs(balance)} />
-          </p>
+          </AutoFitText>
           {balance < 0 && (
             <p className="text-xs text-expense mt-3 font-bold uppercase tracking-wide">Saldo negativo</p>
           )}
@@ -117,9 +120,9 @@ export default function SummaryCards({
             </div>
             <Delta current={income} previous={previousIncome} />
           </div>
-          <p className="text-2xl sm:text-3xl font-black text-income truncate font-display">
+          <AutoFitText max={30} min={14} className="font-black text-income font-display">
             <PrivacyValue value={income} />
-          </p>
+          </AutoFitText>
         </motion.button>
 
         <motion.button
@@ -142,9 +145,9 @@ export default function SummaryCards({
             </div>
             <Delta current={expense} previous={previousExpense} />
           </div>
-          <p className="text-2xl sm:text-3xl font-black text-expense truncate font-display">
+          <AutoFitText max={30} min={14} className="font-black text-expense font-display">
             <PrivacyValue value={expense} />
-          </p>
+          </AutoFitText>
         </motion.button>
       </div>
     </div>
