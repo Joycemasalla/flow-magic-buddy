@@ -54,37 +54,37 @@ export default function SummaryCards({
   comparisonLabel,
 }: SummaryCardsProps) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 max-w-full min-w-0 overflow-hidden">
       {/* Main Balance Card — Premium hero */}
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className="relative overflow-hidden glass-elevated rounded-3xl p-8 sm:p-10"
+        className="relative max-w-full min-w-0 overflow-hidden glass-elevated rounded-3xl p-5 sm:p-10"
       >
         {/* Decorative glow */}
         <div className="pointer-events-none absolute -top-24 -right-24 w-64 h-64 rounded-full bg-primary/15 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-32 -left-20 w-72 h-72 rounded-full bg-accent/10 blur-3xl" />
 
-        <div className="relative">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-primary/20 flex items-center justify-center">
+        <div className="relative min-w-0 max-w-full">
+          <div className="flex min-w-0 items-center justify-between gap-3 mb-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/20 flex items-center justify-center">
                 <Wallet className="w-5 h-5 text-primary stroke-[1.5]" />
               </div>
-              <p className="text-xs uppercase tracking-wider text-muted-foreground font-bold">
+              <p className="min-w-0 truncate text-xs uppercase tracking-wider text-muted-foreground font-bold">
                 Saldo Atual
               </p>
             </div>
             {comparisonLabel && (
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-medium">
+              <span className="shrink-0 text-[10px] uppercase tracking-wider text-muted-foreground/60 font-medium">
                 {comparisonLabel}
               </span>
             )}
           </div>
           <AutoFitText
-            max={72}
-            min={28}
+            max={64}
+            min={14}
             className={cn(
               'font-black font-display tracking-tight',
               balance >= 0 ? 'text-foreground' : 'text-expense'
