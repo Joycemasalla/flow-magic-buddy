@@ -7,6 +7,8 @@ interface AutoFitTextProps {
   max?: number;
   /** Minimum font size in px */
   min?: number;
+  /** Character count used to pre-scale before browser measurement */
+  length?: number;
   className?: string;
 }
 
@@ -14,10 +16,11 @@ interface AutoFitTextProps {
  * Shrinks text font-size to fit its parent's width without overflowing.
  * Keeps content on a single line and avoids truncation that would hide digits.
  */
-export function AutoFitText({ children, max = 72, min = 20, className }: AutoFitTextProps) {
+export function AutoFitText({ children, max = 72, min = 20, length, className }: AutoFitTextProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLSpanElement>(null);
-  const [size, setSize] = useState(max);
+  const estimatedSize = Math.max(min, Math.min(max, Math.floor((max * 11) / Math.max(length ?? 11, 11))));
+  const [size, setSize] = useState(estimatedSize);
 
   useLayoutEffect(() => {
     let frame = 0;
@@ -30,13 +33,13 @@ export function AutoFitText({ children, max = 72, min = 20, className }: AutoFit
       if (available <= 0) return;
 
       // Measure at max size, then scale down with a small safety margin.
-      text.style.fontSize = `${max}px`;
+      text.style.fontSize = `${estimatedSize}px`;
       const measured = Math.ceil(text.scrollWidth || text.getBoundingClientRect().width);
       if (measured <= available) {
-        setSize((current) => (current === max ? current : max));
+        setSize((current) => (current === estimatedSize ? current : estimatedSize));
         return;
       }
-      const next = Math.max(min, Math.floor(max * (available / measured) * 0.96));
+      const next = Math.max(min, Math.floor(estimatedSize * (available / measured) * 0.94));
       setSize((current) => (current === next ? current : next));
     };
 
@@ -58,7 +61,7 @@ export function AutoFitText({ children, max = 72, min = 20, className }: AutoFit
       window.removeEventListener('resize', scheduleFit);
       window.removeEventListener('orientationchange', scheduleFit);
     };
-  }, [children, max, min]);
+  }, [children, estimatedSize, min]);
 
   return (
     <div ref={containerRef} className="block w-full max-w-full min-w-0 overflow-hidden">
