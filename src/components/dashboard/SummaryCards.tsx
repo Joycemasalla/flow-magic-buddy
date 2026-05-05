@@ -103,14 +103,14 @@ export default function SummaryCards({
       </motion.div>
 
       {/* Income/Expense Row */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid min-w-0 grid-cols-2 gap-3 sm:gap-4">
         <motion.button
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           whileTap={{ scale: 0.97 }}
           onClick={onIncomeClick}
-          className="glass-elevated rounded-3xl p-5 text-left cursor-pointer hover-lift transition-all"
+          className="glass-elevated min-w-0 max-w-full overflow-hidden rounded-3xl p-5 text-left cursor-pointer hover-lift transition-all"
           style={{ background: 'var(--gradient-income)' }}
         >
           <div className="flex items-center justify-between mb-3">
@@ -124,7 +124,7 @@ export default function SummaryCards({
             </div>
             <Delta current={income} previous={previousIncome} />
           </div>
-          <AutoFitText max={30} min={12} length={moneyLength(income)} className="font-black text-income font-display">
+          <AutoFitText max={26} min={10} length={moneyLength(income)} className="font-black text-income font-display">
             <PrivacyValue value={income} />
           </AutoFitText>
         </motion.button>
@@ -135,7 +135,7 @@ export default function SummaryCards({
           transition={{ delay: 0.15 }}
           whileTap={{ scale: 0.97 }}
           onClick={onExpenseClick}
-          className="glass-elevated rounded-3xl p-5 text-left cursor-pointer hover-lift transition-all"
+          className="glass-elevated min-w-0 max-w-full overflow-hidden rounded-3xl p-5 text-left cursor-pointer hover-lift transition-all"
           style={{ background: 'var(--gradient-expense)' }}
         >
           <div className="flex items-center justify-between mb-3">
@@ -149,7 +149,7 @@ export default function SummaryCards({
             </div>
             <Delta current={expense} previous={previousExpense} />
           </div>
-          <AutoFitText max={30} min={12} length={moneyLength(expense)} className="font-black text-expense font-display">
+          <AutoFitText max={26} min={10} length={moneyLength(expense)} className="font-black text-expense font-display">
             <PrivacyValue value={expense} />
           </AutoFitText>
         </motion.button>
