@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, Wallet, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PrivacyValue } from '@/components/ui/PrivacyValue';
+import { AutoFitText } from '@/components/ui/AutoFitText';
 
 interface SummaryCardsProps {
   income: number;
