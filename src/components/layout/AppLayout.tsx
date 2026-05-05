@@ -164,7 +164,7 @@ export default function AppLayout() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-h-screen pb-20 lg:pb-0">
+      <main className="min-w-0 max-w-full flex-1 flex flex-col min-h-screen pb-20 lg:pb-0 overflow-x-hidden">
         {/* Mobile Header */}
         <header className="lg:hidden flex items-center justify-between px-4 py-3 sticky top-0 z-40 backdrop-blur-2xl border-b border-border/40" style={{ background: 'hsl(var(--background) / 0.65)' }}>
           <h1 className="text-lg font-display font-bold">
@@ -203,7 +203,7 @@ export default function AppLayout() {
         </header>
 
         {/* Page Content */}
-        <div className="flex-1 px-4 py-4 lg:p-8 overflow-y-auto overflow-x-hidden">
+        <div className="w-full min-w-0 max-w-full flex-1 px-4 py-4 lg:p-8 overflow-y-auto overflow-x-hidden">
           <Outlet />
         </div>
       </main>
