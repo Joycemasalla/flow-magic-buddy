@@ -82,14 +82,16 @@ export default function SummaryCards({
               </span>
             )}
           </div>
-          <p
+          <AutoFitText
+            max={72}
+            min={28}
             className={cn(
-              'text-5xl sm:text-6xl lg:text-7xl font-black font-display tracking-tight truncate',
+              'font-black font-display tracking-tight',
               balance >= 0 ? 'text-foreground' : 'text-expense'
             )}
           >
             <PrivacyValue value={Math.abs(balance)} />
-          </p>
+          </AutoFitText>
           {balance < 0 && (
             <p className="text-xs text-expense mt-3 font-bold uppercase tracking-wide">Saldo negativo</p>
           )}
