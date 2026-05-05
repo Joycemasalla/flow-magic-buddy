@@ -43,6 +43,9 @@ function Delta({ current, previous }: { current: number; previous?: number }) {
   );
 }
 
+const moneyLength = (value: number) =>
+  `R$ ${Math.abs(value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`.length;
+
 export default function SummaryCards({
   income,
   expense,
@@ -54,37 +57,38 @@ export default function SummaryCards({
   comparisonLabel,
 }: SummaryCardsProps) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 max-w-full min-w-0 overflow-hidden">
       {/* Main Balance Card — Premium hero */}
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className="relative overflow-hidden glass-elevated rounded-3xl p-8 sm:p-10"
+        className="relative max-w-full min-w-0 overflow-hidden glass-elevated rounded-3xl p-5 sm:p-10"
       >
         {/* Decorative glow */}
         <div className="pointer-events-none absolute -top-24 -right-24 w-64 h-64 rounded-full bg-primary/15 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-32 -left-20 w-72 h-72 rounded-full bg-accent/10 blur-3xl" />
 
-        <div className="relative">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-primary/20 flex items-center justify-center">
+        <div className="relative min-w-0 max-w-full">
+          <div className="flex min-w-0 items-center justify-between gap-3 mb-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/20 flex items-center justify-center">
                 <Wallet className="w-5 h-5 text-primary stroke-[1.5]" />
               </div>
-              <p className="text-xs uppercase tracking-wider text-muted-foreground font-bold">
+              <p className="min-w-0 truncate text-xs uppercase tracking-wider text-muted-foreground font-bold">
                 Saldo Atual
               </p>
             </div>
             {comparisonLabel && (
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-medium">
+              <span className="shrink-0 text-[10px] uppercase tracking-wider text-muted-foreground/60 font-medium">
                 {comparisonLabel}
               </span>
             )}
           </div>
           <AutoFitText
-            max={72}
-            min={28}
+            max={64}
+            min={14}
+            length={moneyLength(balance)}
             className={cn(
               'font-black font-display tracking-tight',
               balance >= 0 ? 'text-foreground' : 'text-expense'
@@ -99,14 +103,14 @@ export default function SummaryCards({
       </motion.div>
 
       {/* Income/Expense Row */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid min-w-0 grid-cols-2 gap-3 sm:gap-4">
         <motion.button
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           whileTap={{ scale: 0.97 }}
           onClick={onIncomeClick}
-          className="glass-elevated rounded-3xl p-5 text-left cursor-pointer hover-lift transition-all"
+          className="glass-elevated min-w-0 max-w-full overflow-hidden rounded-3xl p-5 text-left cursor-pointer hover-lift transition-all"
           style={{ background: 'var(--gradient-income)' }}
         >
           <div className="flex items-center justify-between mb-3">
@@ -120,7 +124,7 @@ export default function SummaryCards({
             </div>
             <Delta current={income} previous={previousIncome} />
           </div>
-          <AutoFitText max={30} min={14} className="font-black text-income font-display">
+          <AutoFitText max={26} min={10} length={moneyLength(income)} className="font-black text-income font-display">
             <PrivacyValue value={income} />
           </AutoFitText>
         </motion.button>
@@ -131,7 +135,7 @@ export default function SummaryCards({
           transition={{ delay: 0.15 }}
           whileTap={{ scale: 0.97 }}
           onClick={onExpenseClick}
-          className="glass-elevated rounded-3xl p-5 text-left cursor-pointer hover-lift transition-all"
+          className="glass-elevated min-w-0 max-w-full overflow-hidden rounded-3xl p-5 text-left cursor-pointer hover-lift transition-all"
           style={{ background: 'var(--gradient-expense)' }}
         >
           <div className="flex items-center justify-between mb-3">
@@ -145,7 +149,7 @@ export default function SummaryCards({
             </div>
             <Delta current={expense} previous={previousExpense} />
           </div>
-          <AutoFitText max={30} min={14} className="font-black text-expense font-display">
+          <AutoFitText max={26} min={10} length={moneyLength(expense)} className="font-black text-expense font-display">
             <PrivacyValue value={expense} />
           </AutoFitText>
         </motion.button>
