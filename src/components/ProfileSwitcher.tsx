@@ -181,6 +181,41 @@ export default function ProfileSwitcher() {
           </div>
         </SheetContent>
       </Sheet>
+
+      <AlertDialog open={!!walletToDelete} onOpenChange={(o) => !o && setWalletToDelete(null)}>
+        <AlertDialogContent className="z-[80]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {walletToDelete?.isOwner ? 'Excluir carteira?' : 'Sair da carteira?'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {walletToDelete?.isOwner ? (
+                <>
+                  Você vai excluir <strong>"{walletToDelete?.name}"</strong> permanentemente. Todos os registros (transações, lembretes, investimentos e metas) vinculados a esta carteira serão removidos para todos os membros. Esta ação não pode ser desfeita.
+                </>
+              ) : (
+                <>
+                  Você vai sair de <strong>"{walletToDelete?.name}"</strong>. Os registros continuam para os outros membros, mas você não terá mais acesso.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={async () => {
+                if (!walletToDelete) return;
+                if (walletToDelete.isOwner) await deleteWallet(walletToDelete.id);
+                else await leaveWallet(walletToDelete.id);
+                setWalletToDelete(null);
+              }}
+            >
+              {walletToDelete?.isOwner ? 'Excluir' : 'Sair'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
