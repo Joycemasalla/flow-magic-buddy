@@ -37,12 +37,6 @@ export default function ProfileSwitcher() {
   const [copied, setCopied] = useState(false);
   const [walletToDelete, setWalletToDelete] = useState<{ id: string; name: string; isOwner: boolean } | null>(null);
 
-export default function ProfileSwitcher() {
-  const { wallets, activeWalletId, setActiveWalletId, createWallet, leaveWallet, createInvite } = useWallet();
-  const [createOpen, setCreateOpen] = useState(false);
-  const [name, setName] = useState('Nossa Carteira');
-  const [inviteUrl, setInviteUrl] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
 
   const activeWallet = wallets.find((w) => w.id === activeWalletId) || null;
   const isCouple = !!activeWallet;
