@@ -187,6 +187,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         refreshWallets,
         createWallet,
         leaveWallet,
+        deleteWallet,
         createInvite,
         acceptInvite,
       }}
