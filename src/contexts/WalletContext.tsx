@@ -27,6 +27,7 @@ interface WalletContextType {
   refreshWallets: () => Promise<void>;
   createWallet: (name: string) => Promise<Wallet | null>;
   leaveWallet: (walletId: string) => Promise<void>;
+  deleteWallet: (walletId: string) => Promise<void>;
   createInvite: (walletId: string) => Promise<string | null>; // returns full URL
   acceptInvite: (token: string) => Promise<{ success: boolean; walletId?: string; error?: string }>;
 }
