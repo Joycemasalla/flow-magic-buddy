@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, Users, Plus, Copy, LogOut, Check, Link2 } from 'lucide-react';
+import { User, Users, Plus, Copy, LogOut, Check, Link2, Trash2 } from 'lucide-react';
 import { useWallet } from '@/contexts/WalletContext';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +12,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,11 +29,14 @@ import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 export default function ProfileSwitcher() {
-  const { wallets, activeWalletId, setActiveWalletId, createWallet, leaveWallet, createInvite } = useWallet();
+  const { wallets, activeWalletId, setActiveWalletId, createWallet, leaveWallet, deleteWallet, createInvite } = useWallet();
+  const { user } = useAuth();
   const [createOpen, setCreateOpen] = useState(false);
   const [name, setName] = useState('Nossa Carteira');
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [walletToDelete, setWalletToDelete] = useState<{ id: string; name: string; isOwner: boolean } | null>(null);
+
 
   const activeWallet = wallets.find((w) => w.id === activeWalletId) || null;
   const isCouple = !!activeWallet;
@@ -79,17 +93,37 @@ export default function ProfileSwitcher() {
             {!activeWalletId && <Check className="w-4 h-4 ml-auto" />}
           </DropdownMenuItem>
 
-          {wallets.map((w) => (
-            <DropdownMenuItem
-              key={w.id}
-              onClick={() => setActiveWalletId(w.id)}
-              className={cn('gap-2', activeWalletId === w.id && 'bg-accent/10 text-accent')}
-            >
-              <Users className="w-4 h-4" />
-              <span className="truncate">{w.name}</span>
-              {activeWalletId === w.id && <Check className="w-4 h-4 ml-auto" />}
-            </DropdownMenuItem>
-          ))}
+          {wallets.map((w) => {
+            const isOwner = user?.id === w.created_by;
+            return (
+              <div
+                key={w.id}
+                className={cn(
+                  'group flex items-center rounded-sm transition-colors',
+                  activeWalletId === w.id && 'bg-accent/10 text-accent'
+                )}
+              >
+                <button
+                  onClick={() => setActiveWalletId(w.id)}
+                  className="flex-1 flex items-center gap-2 px-2 py-1.5 text-sm text-left min-w-0"
+                >
+                  <Users className="w-4 h-4 shrink-0" />
+                  <span className="truncate flex-1">{w.name}</span>
+                  {activeWalletId === w.id && <Check className="w-4 h-4 shrink-0" />}
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setWalletToDelete({ id: w.id, name: w.name, isOwner });
+                  }}
+                  className="p-1.5 mr-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                  aria-label={isOwner ? 'Excluir carteira' : 'Sair da carteira'}
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            );
+          })}
 
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => setCreateOpen(true)} className="gap-2">
@@ -97,17 +131,9 @@ export default function ProfileSwitcher() {
           </DropdownMenuItem>
 
           {activeWalletId && (
-            <>
-              <DropdownMenuItem onClick={handleInvite} className="gap-2">
-                <Link2 className="w-4 h-4" /> Gerar link de convite
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => leaveWallet(activeWalletId)}
-                className="gap-2 text-destructive focus:text-destructive"
-              >
-                <LogOut className="w-4 h-4" /> Sair desta carteira
-              </DropdownMenuItem>
-            </>
+            <DropdownMenuItem onClick={handleInvite} className="gap-2">
+              <Link2 className="w-4 h-4" /> Gerar link de convite
+            </DropdownMenuItem>
           )}
         </DropdownMenuContent>
       </DropdownMenu>
@@ -155,6 +181,41 @@ export default function ProfileSwitcher() {
           </div>
         </SheetContent>
       </Sheet>
+
+      <AlertDialog open={!!walletToDelete} onOpenChange={(o) => !o && setWalletToDelete(null)}>
+        <AlertDialogContent className="z-[80]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {walletToDelete?.isOwner ? 'Excluir carteira?' : 'Sair da carteira?'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {walletToDelete?.isOwner ? (
+                <>
+                  Você vai excluir <strong>"{walletToDelete?.name}"</strong> permanentemente. Todos os registros (transações, lembretes, investimentos e metas) vinculados a esta carteira serão removidos para todos os membros. Esta ação não pode ser desfeita.
+                </>
+              ) : (
+                <>
+                  Você vai sair de <strong>"{walletToDelete?.name}"</strong>. Os registros continuam para os outros membros, mas você não terá mais acesso.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={async () => {
+                if (!walletToDelete) return;
+                if (walletToDelete.isOwner) await deleteWallet(walletToDelete.id);
+                else await leaveWallet(walletToDelete.id);
+                setWalletToDelete(null);
+              }}
+            >
+              {walletToDelete?.isOwner ? 'Excluir' : 'Sair'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

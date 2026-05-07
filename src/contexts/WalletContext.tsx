@@ -27,6 +27,7 @@ interface WalletContextType {
   refreshWallets: () => Promise<void>;
   createWallet: (name: string) => Promise<Wallet | null>;
   leaveWallet: (walletId: string) => Promise<void>;
+  deleteWallet: (walletId: string) => Promise<void>;
   createInvite: (walletId: string) => Promise<string | null>; // returns full URL
   acceptInvite: (token: string) => Promise<{ success: boolean; walletId?: string; error?: string }>;
 }
@@ -95,6 +96,24 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setActiveWalletId(data.id);
     toast({ title: 'Carteira criada!', description: `"${name}" está pronta para uso.` });
     return data as Wallet;
+  };
+
+  const deleteWallet = async (walletId: string) => {
+    if (!user) return;
+    const wallet = wallets.find((w) => w.id === walletId);
+    if (!wallet) return;
+    if (wallet.created_by !== user.id) {
+      toast({ title: 'Apenas o criador pode excluir', description: 'Você pode sair da carteira em vez disso.', variant: 'destructive' });
+      return;
+    }
+    const { error } = await supabase.from('wallets').delete().eq('id', walletId);
+    if (error) {
+      toast({ title: 'Erro', description: error.message, variant: 'destructive' });
+      return;
+    }
+    if (activeWalletId === walletId) setActiveWalletId(null);
+    await refreshWallets();
+    toast({ title: 'Carteira excluída', description: `"${wallet.name}" foi removida.` });
   };
 
   const leaveWallet = async (walletId: string) => {
@@ -168,6 +187,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         refreshWallets,
         createWallet,
         leaveWallet,
+        deleteWallet,
         createInvite,
         acceptInvite,
       }}
