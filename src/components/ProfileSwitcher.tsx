@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, Users, Plus, Copy, LogOut, Check, Link2 } from 'lucide-react';
+import { User, Users, Plus, Copy, LogOut, Check, Link2, Trash2 } from 'lucide-react';
 import { useWallet } from '@/contexts/WalletContext';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,11 +12,30 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+
+export default function ProfileSwitcher() {
+  const { wallets, activeWalletId, setActiveWalletId, createWallet, leaveWallet, deleteWallet, createInvite } = useWallet();
+  const { user } = useAuth();
+  const [createOpen, setCreateOpen] = useState(false);
+  const [name, setName] = useState('Nossa Carteira');
+  const [inviteUrl, setInviteUrl] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [walletToDelete, setWalletToDelete] = useState<{ id: string; name: string; isOwner: boolean } | null>(null);
 
 export default function ProfileSwitcher() {
   const { wallets, activeWalletId, setActiveWalletId, createWallet, leaveWallet, createInvite } = useWallet();
