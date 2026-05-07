@@ -93,17 +93,37 @@ export default function ProfileSwitcher() {
             {!activeWalletId && <Check className="w-4 h-4 ml-auto" />}
           </DropdownMenuItem>
 
-          {wallets.map((w) => (
-            <DropdownMenuItem
-              key={w.id}
-              onClick={() => setActiveWalletId(w.id)}
-              className={cn('gap-2', activeWalletId === w.id && 'bg-accent/10 text-accent')}
-            >
-              <Users className="w-4 h-4" />
-              <span className="truncate">{w.name}</span>
-              {activeWalletId === w.id && <Check className="w-4 h-4 ml-auto" />}
-            </DropdownMenuItem>
-          ))}
+          {wallets.map((w) => {
+            const isOwner = user?.id === w.created_by;
+            return (
+              <div
+                key={w.id}
+                className={cn(
+                  'group flex items-center rounded-sm transition-colors',
+                  activeWalletId === w.id && 'bg-accent/10 text-accent'
+                )}
+              >
+                <button
+                  onClick={() => setActiveWalletId(w.id)}
+                  className="flex-1 flex items-center gap-2 px-2 py-1.5 text-sm text-left min-w-0"
+                >
+                  <Users className="w-4 h-4 shrink-0" />
+                  <span className="truncate flex-1">{w.name}</span>
+                  {activeWalletId === w.id && <Check className="w-4 h-4 shrink-0" />}
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setWalletToDelete({ id: w.id, name: w.name, isOwner });
+                  }}
+                  className="p-1.5 mr-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                  aria-label={isOwner ? 'Excluir carteira' : 'Sair da carteira'}
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            );
+          })}
 
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => setCreateOpen(true)} className="gap-2">
@@ -111,17 +131,9 @@ export default function ProfileSwitcher() {
           </DropdownMenuItem>
 
           {activeWalletId && (
-            <>
-              <DropdownMenuItem onClick={handleInvite} className="gap-2">
-                <Link2 className="w-4 h-4" /> Gerar link de convite
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => leaveWallet(activeWalletId)}
-                className="gap-2 text-destructive focus:text-destructive"
-              >
-                <LogOut className="w-4 h-4" /> Sair desta carteira
-              </DropdownMenuItem>
-            </>
+            <DropdownMenuItem onClick={handleInvite} className="gap-2">
+              <Link2 className="w-4 h-4" /> Gerar link de convite
+            </DropdownMenuItem>
           )}
         </DropdownMenuContent>
       </DropdownMenu>
