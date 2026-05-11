@@ -1,37 +1,66 @@
+# Contas Bancárias (Manuais) na Carteira
 
+Adicionar um conceito de **"Conta"** (banco/dinheiro físico/poupança) ao app, sem integração com Open Finance. Saldos são calculados automaticamente a partir das transações, mas sempre editáveis manualmente.
 
-# Filtros de Visualização no Dashboard: Investimentos e Empréstimos
+## O que será criado
 
-## Problema
-Investimentos e empréstimos saem do saldo mas não são gastos reais. O usuário quer poder ver o saldo/despesas com ou sem esses itens para ter uma visão mais precisa dos gastos reais.
+### 1. Cadastro de Contas
+Cada conta tem:
+- **Nome** (ex: "Nubank", "Carteira", "Poupança Itaú")
+- **Tipo**: Conta corrente/digital, Dinheiro físico, Poupança/Reserva
+- **Ícone + cor** (paleta pré-definida com logos comuns: Nubank roxo, Itaú laranja, etc.)
+- **Saldo inicial** (informado no cadastro)
+- **Visibilidade** (em carteiras compartilhadas): Minha / Do parceiro(a) / Conjunta
+- **Arquivada** sim/não (esconde sem perder histórico)
 
-## Solução
-Adicionar toggle chips abaixo dos cards de resumo que permitem excluir investimentos e/ou empréstimos do cálculo de despesas e saldo.
+### 2. Vínculo com transações
+- Cada transação passa a ter um campo **conta de origem/destino** (opcional para histórico antigo, sugerido para novas)
+- Formulário de nova transação ganha um seletor "Conta" logo após o tipo
+- O **saldo da conta = saldo inicial + receitas vinculadas − despesas vinculadas + ajustes manuais**
 
-```text
-[Saldo atual: R$ 2.500,00]
+### 3. Ajuste manual
+- Botão "Ajustar saldo" em cada conta
+- Quando o usuário define um novo saldo, o sistema cria uma **transação de ajuste** automática (categoria "Ajuste de saldo") com a diferença, mantendo a contabilidade consistente
+- Histórico de ajustes visível na conta
 
-[Receitas: R$ 5.000]  [Despesas: R$ 2.500]
+### 4. Visualização
+- **Dashboard**: novo card "Minhas Contas" abaixo dos cards de resumo, mostrando cada conta (ícone + nome + saldo) e o total. Respeita o modo privacidade.
+- **Página dedicada `/contas`**: lista completa, criar/editar/arquivar/excluir, ver extrato filtrado por conta, botão de ajuste manual
+- **Item no menu** e suporte do FAB contextual (na rota `/contas`, FAB abre modal de nova conta)
 
-  [✓ Incluir investimentos]  [✓ Incluir empréstimos]
+### 5. Compartilhamento
+- Em carteira compartilhada, no cadastro escolhe-se: "Minha", "Do(a) parceiro(a)" ou "Conjunta"
+- Todos veem todas as contas, mas filtros visuais separam por dono
+- Edição: dono edita as próprias; conjuntas qualquer membro edita
+
+## Detalhes técnicos
+
+**Banco (Supabase)** — nova tabela `accounts`:
 ```
+id, user_id, wallet_id, name, type (corrente|dinheiro|poupanca),
+icon, color, initial_balance, owner_scope (mine|partner|joint),
+archived, created_at, updated_at
+```
++ RLS no mesmo padrão das outras tabelas (own OR wallet member)
++ realtime habilitado
 
-Quando desmarcados, as transações com `category === 'investment'` ou `isLoan === true` são excluídas do cálculo de despesas (e consequentemente do saldo), dando uma visão dos gastos reais.
+**Coluna nova em `transactions`**: `account_id uuid NULL` (FK para accounts, ON DELETE SET NULL para não perder histórico ao excluir conta).
 
-## Alterações
+**Ajustes manuais**: implementados como transação tipo `income`/`expense` com categoria reservada `"Ajuste de saldo"` e flag derivada (sem nova coluna), mantendo o cálculo único e consistente.
 
-### 1. `src/pages/Dashboard.tsx`
-- Adicionar dois estados: `includeInvestments` (default: true) e `includeLoans` (default: true)
-- No `useMemo` de `stats`, filtrar transações de investimento e empréstimo conforme os toggles antes de calcular income/expense
-- Renderizar dois chips/toggles clicáveis entre os SummaryCards e o InvestmentSummary
+**Frontend**:
+- `src/contexts/AccountContext.tsx` (CRUD + cálculo de saldo derivado)
+- `src/pages/Accounts.tsx` + rota `/contas`
+- `src/components/accounts/AccountCard.tsx`, `AccountFormSheet.tsx`, `AdjustBalanceSheet.tsx`
+- `src/components/dashboard/AccountsSummary.tsx` (card no Dashboard)
+- Atualizar `TransactionForm.tsx` e `QuickRecordModal.tsx` com seletor de conta
+- Atualizar FAB em `AppLayout` para `/contas`
+- Atualizar menu de navegação
 
-### 2. `src/components/dashboard/SummaryCards.tsx`
-- Adicionar props opcionais `investmentAmount` e `loanAmount` para exibir um subtexto informativo no card de despesas quando filtros estiverem ativos (ex: "sem R$ 500 de investimentos")
-- Alternativamente, manter simples e apenas mostrar o valor já filtrado sem subtexto adicional
+## Fora do escopo (por enquanto)
+- Cartão de crédito (fatura/limite) — exige modelagem própria, fica para depois
+- Integração Open Finance / Pluggy / Belvo
+- Transferência entre contas (pode virar próxima evolução: uma transação que debita de uma e credita em outra)
 
-### Comportamento
-- Por padrão, tudo é incluído (visão completa)
-- Ao desmarcar "Investimentos", transações com `category === 'investment'` são excluídas das despesas
-- Ao desmarcar "Empréstimos", transações com `isLoan === true` são excluídas das despesas
-- Os toggles são visuais (chips com ícone de check), consistentes com o design existente de pills/filtros
-
+## Migração de dados existentes
+Transações antigas ficam com `account_id = NULL` ("Sem conta"). Um banner sugere atribuir uma conta retroativamente, mas nada quebra.

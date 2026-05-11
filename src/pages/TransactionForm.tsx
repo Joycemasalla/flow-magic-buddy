@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn, toLocalDateString } from '@/lib/utils';
+import AccountPicker from '@/components/accounts/AccountPicker';
 
 const categoryEmojis: Record<TransactionCategory, string> = {
   salary: '💰',
@@ -38,6 +39,7 @@ export default function TransactionForm() {
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(toLocalDateString());
   const [isRecurring, setIsRecurring] = useState(false);
+  const [accountId, setAccountId] = useState<string | null>(null);
 
   const isEditing = !!id;
 
@@ -50,6 +52,7 @@ export default function TransactionForm() {
         setAmount(transaction.amount.toString());
         setDescription(transaction.description);
         setDate(transaction.date);
+        setAccountId(transaction.accountId ?? null);
       }
     }
   }, [id, transactions]);
@@ -75,6 +78,7 @@ export default function TransactionForm() {
       amount: parsedAmount,
       description: description || categoryLabels[category],
       date,
+      accountId,
     };
 
     if (isEditing) {
@@ -233,6 +237,9 @@ export default function TransactionForm() {
             className="h-12"
           />
         </div>
+
+        {/* Account */}
+        <AccountPicker value={accountId} onChange={setAccountId} />
 
         {/* Recurring Checkbox - Only for new transactions */}
         {!isEditing && (

@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { WalletProvider } from "@/contexts/WalletContext";
 import { TransactionProvider } from "@/contexts/TransactionContext";
+import { AccountProvider } from "@/contexts/AccountContext";
 import { PrivacyProvider } from "@/contexts/PrivacyContext";
 import AppLayout from "@/components/layout/AppLayout";
 import Dashboard from "@/pages/Dashboard";
@@ -16,6 +17,7 @@ import Investments from "@/pages/Investments";
 import Reminders from "@/pages/Reminders";
 import Loans from "@/pages/Loans";
 import Goals from "@/pages/Goals";
+import Accounts from "@/pages/Accounts";
 import JoinWallet from "@/pages/JoinWallet";
 import Auth from "@/pages/Auth";
 import NotFound from "@/pages/NotFound";
@@ -92,6 +94,7 @@ function AppRoutes() {
         <Route path="/lembretes" element={<Reminders />} />
         <Route path="/emprestimos" element={<Loans />} />
         <Route path="/metas" element={<Goals />} />
+        <Route path="/contas" element={<Accounts />} />
       </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>
@@ -105,13 +108,15 @@ const App = () => (
         <AuthProvider>
           <WalletProvider>
             <TransactionProvider>
-              <PrivacyProvider>
-                <TooltipProvider>
-                  <Toaster />
-                  <Sonner />
-                  <AppRoutes />
-                </TooltipProvider>
-              </PrivacyProvider>
+              <AccountProvider>
+                <PrivacyProvider>
+                  <TooltipProvider>
+                    <Toaster />
+                    <Sonner />
+                    <AppRoutes />
+                  </TooltipProvider>
+                </PrivacyProvider>
+              </AccountProvider>
             </TransactionProvider>
           </WalletProvider>
         </AuthProvider>
