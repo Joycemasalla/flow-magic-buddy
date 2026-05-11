@@ -15,6 +15,7 @@ import {
   LogOut,
   Eye,
   EyeOff,
+  Wallet,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -30,6 +31,7 @@ import { OfflineBanner } from '@/components/OfflineBanner';
 const navItems = [
   { path: '/', icon: LayoutDashboard, label: 'Início', mobileLabel: 'Início' },
   { path: '/transacoes', icon: Receipt, label: 'Transações', mobileLabel: 'Trans.' },
+  { path: '/contas', icon: Wallet, label: 'Contas', mobileLabel: 'Contas' },
   { path: '/investimentos', icon: TrendingUp, label: 'Investimentos', mobileLabel: 'Invest.' },
   { path: '/metas', icon: Target, label: 'Metas', mobileLabel: 'Metas' },
   { path: '/lembretes', icon: Bell, label: 'Lembretes', mobileLabel: 'Alertas' },
@@ -56,6 +58,8 @@ export default function AppLayout() {
       setIsLoanModalOpen(true);
     } else if (path === '/lembretes') {
       setIsReminderModalOpen(true);
+    } else if (path === '/contas') {
+      window.dispatchEvent(new CustomEvent('open-new-account'));
     } else {
       // Default: Dashboard (/), Transactions (/transacoes) → Transaction modal
       setIsQuickRecordOpen(true);
@@ -69,6 +73,7 @@ export default function AppLayout() {
       '/investimentos': { icon: TrendingUp, label: 'Novo Investimento' },
       '/emprestimos': { icon: HandCoins, label: 'Novo Empréstimo' },
       '/lembretes': { icon: Bell, label: 'Novo Alerta' },
+      '/contas': { icon: Wallet, label: 'Nova Conta' },
     };
     return pathMap[path] || { icon: Plus, label: 'Nova Transação' };
   };
