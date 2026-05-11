@@ -238,6 +238,9 @@ export default function TransactionForm() {
           />
         </div>
 
+        {/* Account */}
+        <AccountPicker value={accountId} onChange={setAccountId} />
+
         {/* Recurring Checkbox - Only for new transactions */}
         {!isEditing && (
           <div className="flex items-center space-x-3 p-4 bg-muted/50 rounded-xl">
