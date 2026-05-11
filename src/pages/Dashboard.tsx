@@ -267,6 +267,9 @@ export default function Dashboard() {
         comparisonLabel={comparisonLabel}
       />
 
+      {/* Accounts Summary */}
+      <AccountsSummary />
+
       {/* Filtros de visualização */}
       <motion.div
         initial={{ opacity: 0 }}
