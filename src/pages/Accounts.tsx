@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Pencil, Trash2, Settings2, Archive, ArchiveRestore, Wallet } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
@@ -34,6 +34,12 @@ export default function Accounts() {
     setEditing(a);
     setFormOpen(true);
   };
+
+  useEffect(() => {
+    const handler = () => openNew();
+    window.addEventListener('open-new-account', handler);
+    return () => window.removeEventListener('open-new-account', handler);
+  }, []);
 
   return (
     <div className="space-y-4 pb-28 lg:pb-4 max-w-3xl mx-auto">
