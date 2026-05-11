@@ -222,6 +222,8 @@ export default function QuickRecordModal({ isOpen, onClose }: QuickRecordModalPr
                       className="h-11 sm:h-12"
                     />
 
+                    <AccountPicker value={accountId} onChange={setAccountId} compact />
+
                     {/* Advanced Options Toggle */}
                     <button
                       type="button"
