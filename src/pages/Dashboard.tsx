@@ -12,6 +12,7 @@ import CategoryChart from '@/components/dashboard/CategoryChart';
 import EvolutionChart from '@/components/dashboard/EvolutionChart';
 import TransactionList from '@/components/dashboard/TransactionList';
 import InvestmentSummary from '@/components/dashboard/InvestmentSummary';
+import AccountsSummary from '@/components/dashboard/AccountsSummary';
 import ProfileSwitcher from '@/components/ProfileSwitcher';
 import ReportModal from '@/components/modals/ReportModal';
 import { Button } from '@/components/ui/button';
