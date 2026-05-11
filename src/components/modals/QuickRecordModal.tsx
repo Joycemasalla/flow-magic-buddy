@@ -12,6 +12,7 @@ import { TransactionCategory, TransactionType, categoryLabels } from '@/types/tr
 import { cn, toLocalDateString } from '@/lib/utils';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import AccountPicker from '@/components/accounts/AccountPicker';
 
 interface QuickRecordModalProps {
   isOpen: boolean;
@@ -39,6 +40,7 @@ export default function QuickRecordModal({ isOpen, onClose }: QuickRecordModalPr
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [accountId, setAccountId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { addTransaction } = useTransactions();
   const { toast } = useToast();
@@ -53,6 +55,7 @@ export default function QuickRecordModal({ isOpen, onClose }: QuickRecordModalPr
       setDescription('');
       setShowAdvanced(false);
       setSelectedDate(new Date());
+      setAccountId(null);
       setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, [isOpen]);
@@ -83,6 +86,7 @@ export default function QuickRecordModal({ isOpen, onClose }: QuickRecordModalPr
       category: selectedCategory,
       description: description || categoryLabel,
       date: toLocalDateString(selectedDate),
+      accountId,
     });
 
     const isToday = selectedDate.toDateString() === new Date().toDateString();
