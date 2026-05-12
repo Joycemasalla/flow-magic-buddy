@@ -49,6 +49,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
           type: a.type,
           icon: a.icon,
           color: a.color,
+          logoUrl: a.logo_url ?? null,
           initialBalance: Number(a.initial_balance),
           ownerScope: a.owner_scope,
           archived: a.archived,
@@ -110,6 +111,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       type: data.type,
       icon: data.icon,
       color: data.color,
+      logo_url: data.logoUrl ?? null,
       initial_balance: data.initialBalance,
       owner_scope: data.ownerScope,
       archived: data.archived,
@@ -123,6 +125,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     toast({ title: 'Conta criada!', description: data.name });
     return {
       id: row.id, name: row.name, type: row.type as any, icon: row.icon, color: row.color,
+      logoUrl: (row as any).logo_url ?? null,
       initialBalance: Number(row.initial_balance), ownerScope: row.owner_scope as any,
       archived: row.archived, userId: row.user_id, walletId: row.wallet_id, createdAt: row.created_at,
     };
@@ -134,6 +137,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     if (data.type !== undefined) payload.type = data.type;
     if (data.icon !== undefined) payload.icon = data.icon;
     if (data.color !== undefined) payload.color = data.color;
+    if (data.logoUrl !== undefined) payload.logo_url = data.logoUrl;
     if (data.initialBalance !== undefined) payload.initial_balance = data.initialBalance;
     if (data.ownerScope !== undefined) payload.owner_scope = data.ownerScope;
     if (data.archived !== undefined) payload.archived = data.archived;
