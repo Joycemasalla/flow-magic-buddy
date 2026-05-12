@@ -16,7 +16,7 @@ import TransactionForm from "@/pages/TransactionForm";
 import Investments from "@/pages/Investments";
 import Reminders from "@/pages/Reminders";
 import Loans from "@/pages/Loans";
-import Goals from "@/pages/Goals";
+
 import Accounts from "@/pages/Accounts";
 import JoinWallet from "@/pages/JoinWallet";
 import Auth from "@/pages/Auth";
@@ -93,7 +93,7 @@ function AppRoutes() {
         <Route path="/investimentos" element={<Investments />} />
         <Route path="/lembretes" element={<Reminders />} />
         <Route path="/emprestimos" element={<Loans />} />
-        <Route path="/metas" element={<Goals />} />
+        
         <Route path="/contas" element={<Accounts />} />
       </Route>
       <Route path="*" element={<NotFound />} />
