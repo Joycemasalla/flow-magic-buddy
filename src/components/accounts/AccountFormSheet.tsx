@@ -1,7 +1,6 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from 'react';
 import * as LucideIcons from 'lucide-react';
-import { X, Check } from 'lucide-react';
+import { Check, Image as ImageIcon, Shapes } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,7 +14,9 @@ import {
   accountPresets,
   accountColorPalette,
   accountIconOptions,
+  bankLogo,
 } from '@/types/account';
+import AccountAvatar from '@/components/accounts/AccountAvatar';
 import { useAccounts } from '@/contexts/AccountContext';
 import { useWallet } from '@/contexts/WalletContext';
 import { cn } from '@/lib/utils';
@@ -31,54 +32,61 @@ export default function AccountFormSheet({ open, onClose, editing }: Props) {
   const { activeWalletId } = useWallet();
   const isWallet = !!activeWalletId;
 
-  const [name, setName] = useState(editing?.name ?? '');
-  const [type, setType] = useState<AccountType>(editing?.type ?? 'corrente');
-  const [icon, setIcon] = useState(editing?.icon ?? 'Wallet');
-  const [color, setColor] = useState(editing?.color ?? '#8B5CF6');
-  const [initialBalance, setInitialBalance] = useState(
-    editing ? String(editing.initialBalance).replace('.', ',') : ''
-  );
-  const [ownerScope, setOwnerScope] = useState<AccountOwnerScope>(editing?.ownerScope ?? (isWallet ? 'joint' : 'mine'));
+  const [name, setName] = useState('');
+  const [type, setType] = useState<AccountType>('corrente');
+  const [icon, setIcon] = useState('Wallet');
+  const [color, setColor] = useState('#8B5CF6');
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [visualMode, setVisualMode] = useState<'logo' | 'icon'>('icon');
+  const [initialBalance, setInitialBalance] = useState('');
+  const [ownerScope, setOwnerScope] = useState<AccountOwnerScope>('mine');
   const [saving, setSaving] = useState(false);
 
-  // reset on open
-  useState(() => {
-    if (open) {
-      setName(editing?.name ?? '');
-      setType(editing?.type ?? 'corrente');
-      setIcon(editing?.icon ?? 'Wallet');
-      setColor(editing?.color ?? '#8B5CF6');
-      setInitialBalance(editing ? String(editing.initialBalance).replace('.', ',') : '');
-      setOwnerScope(editing?.ownerScope ?? (isWallet ? 'joint' : 'mine'));
-    }
-  });
+  // Reset whenever the sheet opens / target changes
+  useEffect(() => {
+    if (!open) return;
+    setName(editing?.name ?? '');
+    setType(editing?.type ?? 'corrente');
+    setIcon(editing?.icon ?? 'Wallet');
+    setColor(editing?.color ?? '#8B5CF6');
+    setLogoUrl(editing?.logoUrl ?? null);
+    setVisualMode(editing?.logoUrl ? 'logo' : 'icon');
+    setInitialBalance(editing ? String(editing.initialBalance).replace('.', ',') : '');
+    setOwnerScope(editing?.ownerScope ?? (isWallet ? 'joint' : 'mine'));
+  }, [open, editing, isWallet]);
 
   const handlePreset = (p: typeof accountPresets[0]) => {
     setName(p.name);
     setColor(p.color);
     setIcon(p.icon);
+    if (p.domain) {
+      setLogoUrl(bankLogo(p.domain));
+      setVisualMode('logo');
+    } else {
+      setLogoUrl(null);
+      setVisualMode('icon');
+    }
   };
 
   const handleSubmit = async () => {
     if (!name.trim()) return;
     const parsed = parseFloat(initialBalance.replace(',', '.')) || 0;
+    const finalLogo = visualMode === 'logo' ? logoUrl : null;
     setSaving(true);
     if (editing) {
       await updateAccount(editing.id, {
-        name: name.trim(), type, icon, color,
+        name: name.trim(), type, icon, color, logoUrl: finalLogo,
         initialBalance: parsed, ownerScope, archived: editing.archived,
       });
     } else {
       await addAccount({
-        name: name.trim(), type, icon, color,
+        name: name.trim(), type, icon, color, logoUrl: finalLogo,
         initialBalance: parsed, ownerScope, archived: false,
       });
     }
     setSaving(false);
     onClose();
   };
-
-  const Icon = (LucideIcons as any)[icon] || LucideIcons.Wallet;
 
   return (
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
@@ -93,12 +101,13 @@ export default function AccountFormSheet({ open, onClose, editing }: Props) {
         <div className="space-y-5 pt-4 pb-4">
           {/* Preview */}
           <div className="flex items-center gap-3 p-3 rounded-2xl bg-muted/30">
-            <div
-              className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
-              style={{ backgroundColor: color + '22', color }}
-            >
-              <Icon className="w-6 h-6 stroke-[1.8]" />
-            </div>
+            <AccountAvatar
+              account={{
+                icon, color, name: name || 'Conta',
+                logoUrl: visualMode === 'logo' ? logoUrl : null,
+              }}
+              size="lg"
+            />
             <div className="min-w-0 flex-1">
               <p className="font-semibold truncate">{name || 'Nome da conta'}</p>
               <p className="text-xs text-muted-foreground">{accountTypeLabels[type]}</p>
@@ -167,7 +176,7 @@ export default function AccountFormSheet({ open, onClose, editing }: Props) {
             </div>
           </div>
 
-          {/* Owner scope (only in shared wallet) */}
+          {/* Owner scope */}
           {isWallet && (
             <div className="space-y-2">
               <Label>Quem é dono(a) dessa conta?</Label>
@@ -189,48 +198,91 @@ export default function AccountFormSheet({ open, onClose, editing }: Props) {
             </div>
           )}
 
-          {/* Color */}
+          {/* Visual mode toggle */}
           <div className="space-y-2">
-            <Label>Cor</Label>
-            <div className="flex gap-2 flex-wrap">
-              {accountColorPalette.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setColor(c)}
-                  className={cn(
-                    'w-8 h-8 rounded-full border-2 transition-transform',
-                    color === c ? 'border-foreground scale-110' : 'border-transparent'
-                  )}
-                  style={{ backgroundColor: c }}
-                  aria-label={`Cor ${c}`}
-                />
-              ))}
+            <Label>Aparência</Label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setVisualMode('logo')}
+                className={cn(
+                  'p-3 rounded-xl text-xs font-medium border-2 transition-all flex items-center justify-center gap-2',
+                  visualMode === 'logo' ? 'border-primary bg-primary/10 text-primary' : 'border-transparent bg-muted/40'
+                )}
+              >
+                <ImageIcon className="w-4 h-4" /> Logo do banco
+              </button>
+              <button
+                type="button"
+                onClick={() => setVisualMode('icon')}
+                className={cn(
+                  'p-3 rounded-xl text-xs font-medium border-2 transition-all flex items-center justify-center gap-2',
+                  visualMode === 'icon' ? 'border-primary bg-primary/10 text-primary' : 'border-transparent bg-muted/40'
+                )}
+              >
+                <Shapes className="w-4 h-4" /> Ícone
+              </button>
             </div>
           </div>
 
-          {/* Icon */}
-          <div className="space-y-2">
-            <Label>Ícone</Label>
-            <div className="grid grid-cols-8 gap-2">
-              {accountIconOptions.map((iconName) => {
-                const I = (LucideIcons as any)[iconName] || LucideIcons.Wallet;
-                return (
-                  <button
-                    key={iconName}
-                    type="button"
-                    onClick={() => setIcon(iconName)}
-                    className={cn(
-                      'aspect-square rounded-xl flex items-center justify-center border-2 transition-all',
-                      icon === iconName ? 'border-primary bg-primary/10' : 'border-transparent bg-muted/40'
-                    )}
-                  >
-                    <I className="w-5 h-5 stroke-[1.5]" />
-                  </button>
-                );
-              })}
+          {visualMode === 'logo' ? (
+            <div className="space-y-2">
+              <Label>URL do logo (opcional)</Label>
+              <Input
+                value={logoUrl ?? ''}
+                onChange={(e) => setLogoUrl(e.target.value || null)}
+                placeholder="https://logo.clearbit.com/seubanco.com.br"
+              />
+              <p className="text-[11px] text-muted-foreground">
+                Selecione um banco nas sugestões acima para preencher automaticamente. Caso o logo não carregue, o ícone será usado.
+              </p>
             </div>
-          </div>
+          ) : (
+            <>
+              {/* Color */}
+              <div className="space-y-2">
+                <Label>Cor</Label>
+                <div className="flex gap-2 flex-wrap">
+                  {accountColorPalette.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setColor(c)}
+                      className={cn(
+                        'w-8 h-8 rounded-full border-2 transition-transform',
+                        color === c ? 'border-foreground scale-110' : 'border-transparent'
+                      )}
+                      style={{ backgroundColor: c }}
+                      aria-label={`Cor ${c}`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Icon */}
+              <div className="space-y-2">
+                <Label>Ícone</Label>
+                <div className="grid grid-cols-8 gap-2">
+                  {accountIconOptions.map((iconName) => {
+                    const I = (LucideIcons as any)[iconName] || LucideIcons.Wallet;
+                    return (
+                      <button
+                        key={iconName}
+                        type="button"
+                        onClick={() => setIcon(iconName)}
+                        className={cn(
+                          'aspect-square rounded-xl flex items-center justify-center border-2 transition-all',
+                          icon === iconName ? 'border-primary bg-primary/10' : 'border-transparent bg-muted/40'
+                        )}
+                      >
+                        <I className="w-5 h-5 stroke-[1.5]" />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
 
           <Button
             onClick={handleSubmit}
