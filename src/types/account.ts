@@ -7,6 +7,8 @@ export interface Account {
   type: AccountType;
   icon: string; // lucide icon name
   color: string; // hex
+  /** Optional URL for the real bank logo. When set, takes precedence over the icon. */
+  logoUrl?: string | null;
   initialBalance: number;
   ownerScope: AccountOwnerScope;
   archived: boolean;
@@ -33,19 +35,22 @@ export const accountOwnerLabels: Record<AccountOwnerScope, string> = {
   joint: 'Conjunta',
 };
 
-// Sugestões de bancos brasileiros (ícone genérico + cor da marca)
-export const accountPresets: { name: string; color: string; icon: string }[] = [
-  { name: 'Nubank', color: '#820AD1', icon: 'CreditCard' },
-  { name: 'Itaú', color: '#EC7000', icon: 'Building2' },
-  { name: 'Bradesco', color: '#CC092F', icon: 'Building2' },
-  { name: 'Banco do Brasil', color: '#FFEF38', icon: 'Building2' },
-  { name: 'Caixa', color: '#0070AF', icon: 'Building2' },
-  { name: 'Santander', color: '#EC0000', icon: 'Building2' },
-  { name: 'Inter', color: '#FF7A00', icon: 'CreditCard' },
-  { name: 'C6 Bank', color: '#242424', icon: 'CreditCard' },
-  { name: 'PicPay', color: '#11C76F', icon: 'Wallet' },
-  { name: 'Mercado Pago', color: '#00B1EA', icon: 'Wallet' },
-  { name: 'PagBank', color: '#048138', icon: 'Wallet' },
+/** Build a real bank-logo URL from a domain. Uses Clearbit's free logo CDN. */
+export const bankLogo = (domain: string) => `https://logo.clearbit.com/${domain}`;
+
+// Sugestões de bancos brasileiros (com domínio para logo real)
+export const accountPresets: { name: string; color: string; icon: string; domain?: string }[] = [
+  { name: 'Nubank', color: '#820AD1', icon: 'CreditCard', domain: 'nubank.com.br' },
+  { name: 'Itaú', color: '#EC7000', icon: 'Building2', domain: 'itau.com.br' },
+  { name: 'Bradesco', color: '#CC092F', icon: 'Building2', domain: 'bradesco.com.br' },
+  { name: 'Banco do Brasil', color: '#FFEF38', icon: 'Building2', domain: 'bb.com.br' },
+  { name: 'Caixa', color: '#0070AF', icon: 'Building2', domain: 'caixa.gov.br' },
+  { name: 'Santander', color: '#EC0000', icon: 'Building2', domain: 'santander.com.br' },
+  { name: 'Inter', color: '#FF7A00', icon: 'CreditCard', domain: 'bancointer.com.br' },
+  { name: 'C6 Bank', color: '#242424', icon: 'CreditCard', domain: 'c6bank.com.br' },
+  { name: 'PicPay', color: '#11C76F', icon: 'Wallet', domain: 'picpay.com' },
+  { name: 'Mercado Pago', color: '#00B1EA', icon: 'Wallet', domain: 'mercadopago.com.br' },
+  { name: 'PagBank', color: '#048138', icon: 'Wallet', domain: 'pagseguro.uol.com.br' },
   { name: 'Carteira', color: '#8B5CF6', icon: 'Wallet' },
   { name: 'Poupança', color: '#10B981', icon: 'PiggyBank' },
 ];

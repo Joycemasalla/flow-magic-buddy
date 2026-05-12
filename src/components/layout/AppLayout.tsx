@@ -8,7 +8,6 @@ import {
   Bell,
   HandCoins,
   TrendingUp,
-  Target,
   Moon,
   Sun,
   User,
@@ -33,7 +32,6 @@ const navItems = [
   { path: '/transacoes', icon: Receipt, label: 'Transações', mobileLabel: 'Trans.' },
   { path: '/contas', icon: Wallet, label: 'Contas', mobileLabel: 'Contas' },
   { path: '/investimentos', icon: TrendingUp, label: 'Investimentos', mobileLabel: 'Invest.' },
-  { path: '/metas', icon: Target, label: 'Metas', mobileLabel: 'Metas' },
   { path: '/lembretes', icon: Bell, label: 'Lembretes', mobileLabel: 'Alertas' },
   { path: '/emprestimos', icon: HandCoins, label: 'Empréstimos', mobileLabel: 'Emprést.' },
 ];

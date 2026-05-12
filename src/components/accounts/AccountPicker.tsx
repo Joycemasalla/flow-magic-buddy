@@ -44,9 +44,13 @@ export default function AccountPicker({ value, onChange, label = 'Conta', compac
                 'shrink-0 px-3 py-2 rounded-xl text-xs font-medium border-2 transition-all min-h-[40px] flex items-center gap-2',
                 selected ? 'border-primary bg-primary/10' : 'border-transparent bg-muted/40'
               )}
-              style={selected ? undefined : { color: a.color }}
+              style={selected || a.logoUrl ? undefined : { color: a.color }}
             >
-              <Icon className="w-3.5 h-3.5" />
+              {a.logoUrl ? (
+                <img src={a.logoUrl} alt={a.name} className="w-4 h-4 object-contain rounded-sm bg-white" />
+              ) : (
+                <Icon className="w-3.5 h-3.5" />
+              )}
               <span className="truncate max-w-[80px]">{a.name}</span>
             </button>
           );

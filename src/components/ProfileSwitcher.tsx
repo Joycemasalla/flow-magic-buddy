@@ -191,7 +191,7 @@ export default function ProfileSwitcher() {
             <AlertDialogDescription>
               {walletToDelete?.isOwner ? (
                 <>
-                  Você vai excluir <strong>"{walletToDelete?.name}"</strong> permanentemente. Todos os registros (transações, lembretes, investimentos e metas) vinculados a esta carteira serão removidos para todos os membros. Esta ação não pode ser desfeita.
+                  Você vai excluir <strong>"{walletToDelete?.name}"</strong> permanentemente. Todos os registros (transações, lembretes e investimentos) vinculados a esta carteira serão removidos para todos os membros. Esta ação não pode ser desfeita.
                 </>
               ) : (
                 <>
