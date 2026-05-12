@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Pencil, Trash2, Settings2, Archive, ArchiveRestore, Wallet } from 'lucide-react';
-import * as LucideIcons from 'lucide-react';
 import { useAccounts } from '@/contexts/AccountContext';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,6 +9,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import AccountFormSheet from '@/components/accounts/AccountFormSheet';
 import AdjustBalanceSheet from '@/components/accounts/AdjustBalanceSheet';
+import AccountAvatar from '@/components/accounts/AccountAvatar';
 import { Account, accountOwnerLabels, accountTypeShort } from '@/types/account';
 import { PrivacyValue } from '@/components/ui/PrivacyValue';
 import { useWallet } from '@/contexts/WalletContext';
@@ -80,7 +80,6 @@ export default function Accounts() {
 
       <div className="space-y-2">
         {visibleAccounts.map((a) => {
-          const Icon = (LucideIcons as any)[a.icon] || LucideIcons.Wallet;
           const bal = balances[a.id] ?? 0;
           return (
             <div
@@ -90,12 +89,7 @@ export default function Accounts() {
                 a.archived && 'opacity-60'
               )}
             >
-              <div
-                className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
-                style={{ backgroundColor: a.color + '22', color: a.color }}
-              >
-                <Icon className="w-5 h-5 stroke-[1.8]" />
-              </div>
+              <AccountAvatar account={a} size="lg" />
               <div className="flex-1 min-w-0">
                 <p className="font-semibold truncate text-sm">{a.name}</p>
                 <p className="text-[10px] text-muted-foreground truncate">
