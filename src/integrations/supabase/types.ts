@@ -22,6 +22,7 @@ export type Database = {
           icon: string
           id: string
           initial_balance: number
+          logo_url: string | null
           name: string
           owner_scope: string
           type: string
@@ -36,6 +37,7 @@ export type Database = {
           icon?: string
           id?: string
           initial_balance?: number
+          logo_url?: string | null
           name: string
           owner_scope?: string
           type?: string
@@ -50,6 +52,7 @@ export type Database = {
           icon?: string
           id?: string
           initial_balance?: number
+          logo_url?: string | null
           name?: string
           owner_scope?: string
           type?: string
@@ -60,53 +63,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "accounts_wallet_id_fkey"
-            columns: ["wallet_id"]
-            isOneToOne: false
-            referencedRelation: "wallets"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      goals: {
-        Row: {
-          category: string | null
-          created_at: string
-          current_amount: number
-          deadline: string | null
-          id: string
-          target_amount: number
-          title: string
-          updated_at: string
-          user_id: string
-          wallet_id: string | null
-        }
-        Insert: {
-          category?: string | null
-          created_at?: string
-          current_amount?: number
-          deadline?: string | null
-          id?: string
-          target_amount: number
-          title: string
-          updated_at?: string
-          user_id: string
-          wallet_id?: string | null
-        }
-        Update: {
-          category?: string | null
-          created_at?: string
-          current_amount?: number
-          deadline?: string | null
-          id?: string
-          target_amount?: number
-          title?: string
-          updated_at?: string
-          user_id?: string
-          wallet_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "goals_wallet_id_fkey"
             columns: ["wallet_id"]
             isOneToOne: false
             referencedRelation: "wallets"
