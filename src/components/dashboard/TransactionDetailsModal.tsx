@@ -197,6 +197,23 @@ export default function TransactionDetailsModal({ transaction, onClose }: Transa
                       </div>
                     </div>
 
+                    {!isSettledLoan && (transaction.loanPaidAmount ?? 0) > 0 && (
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
+                          <Check className="w-5 h-5 text-muted-foreground" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-xs text-muted-foreground">
+                            {transaction.type === 'expense' ? 'Recebido até agora' : 'Pago até agora'}
+                          </p>
+                          <p className="font-medium">
+                            R$ {(transaction.loanPaidAmount ?? 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                            <span className="text-xs text-muted-foreground"> de R$ {transaction.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
                     {isSettledLoan && transaction.loanSettledDate && (
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
