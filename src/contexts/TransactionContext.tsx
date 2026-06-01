@@ -253,6 +253,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
               loanPerson: t.loan_person || undefined,
               loanStatus: t.loan_status || undefined,
               loanSettledDate: t.loan_settled_date || undefined,
+              loanPaidAmount: t.loan_paid_amount != null ? Number(t.loan_paid_amount) : 0,
               accountId: t.account_id || null,
             };
           })
@@ -357,6 +358,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       loan_person: transaction.loanPerson || null,
       loan_status: transaction.loanStatus || null,
       loan_settled_date: transaction.loanSettledDate || null,
+      loan_paid_amount: transaction.loanPaidAmount ?? 0,
       account_id: transaction.accountId || null,
       wallet_id: activeWalletId || null,
     };
@@ -396,6 +398,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
         createdAt: d.created_at, isLoan: d.is_loan || false,
         loanPerson: d.loan_person || undefined, loanStatus: d.loan_status || undefined,
         loanSettledDate: d.loan_settled_date || undefined,
+        loanPaidAmount: d.loan_paid_amount != null ? Number(d.loan_paid_amount) : 0,
         accountId: d.account_id || null,
       };
       setTransactions((prev) => [newTransaction, ...prev]);
@@ -416,6 +419,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     if (updates.loanPerson !== undefined) updateData.loan_person = updates.loanPerson;
     if (updates.loanStatus !== undefined) updateData.loan_status = updates.loanStatus;
     if (updates.loanSettledDate !== undefined) updateData.loan_settled_date = updates.loanSettledDate;
+    if (updates.loanPaidAmount !== undefined) updateData.loan_paid_amount = updates.loanPaidAmount;
     if (updates.accountId !== undefined) updateData.account_id = updates.accountId;
 
     setTransactions((prev) => prev.map((t) => (t.id === id ? { ...t, ...updates } : t)));

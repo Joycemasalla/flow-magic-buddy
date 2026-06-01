@@ -1,6 +1,6 @@
-import * as LucideIcons from 'lucide-react';
 import { useAccounts } from '@/contexts/AccountContext';
 import { Label } from '@/components/ui/label';
+import AccountAvatar from '@/components/accounts/AccountAvatar';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -33,7 +33,6 @@ export default function AccountPicker({ value, onChange, label = 'Conta', compac
           Sem conta
         </button>
         {active.map((a) => {
-          const Icon = (LucideIcons as any)[a.icon] || LucideIcons.Wallet;
           const selected = value === a.id;
           return (
             <button
@@ -41,16 +40,11 @@ export default function AccountPicker({ value, onChange, label = 'Conta', compac
               type="button"
               onClick={() => onChange(a.id)}
               className={cn(
-                'shrink-0 px-3 py-2 rounded-xl text-xs font-medium border-2 transition-all min-h-[40px] flex items-center gap-2',
+                'shrink-0 pl-1.5 pr-3 py-1 rounded-xl text-xs font-medium border-2 transition-all min-h-[40px] flex items-center gap-2',
                 selected ? 'border-primary bg-primary/10' : 'border-transparent bg-muted/40'
               )}
-              style={selected || a.logoUrl ? undefined : { color: a.color }}
             >
-              {a.logoUrl ? (
-                <img src={a.logoUrl} alt={a.name} className="w-4 h-4 object-contain rounded-sm bg-white" />
-              ) : (
-                <Icon className="w-3.5 h-3.5" />
-              )}
+              <AccountAvatar account={a} size="sm" />
               <span className="truncate max-w-[80px]">{a.name}</span>
             </button>
           );
