@@ -24,6 +24,8 @@ export interface Transaction {
   loanPerson?: string;
   loanStatus?: 'pending' | 'paid' | 'received';
   loanSettledDate?: string;
+  /** Total já pago/recebido para empréstimos com quitação parcial. */
+  loanPaidAmount?: number;
   accountId?: string | null;
   tags?: string[]; // For profile modes like 'casal' (couple)
   createdAt: string;
