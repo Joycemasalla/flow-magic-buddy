@@ -106,27 +106,49 @@ export default function Loans() {
     setLoanDate(new Date());
   };
 
-  const handleStatusChange = (id: string, type: TransactionType, amount: number) => {
-    const newStatus = type === 'expense' ? 'received' : 'paid';
-    updateTransaction(id, { 
-      loanStatus: newStatus,
-      loanSettledDate: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`,
-    });
-    
-    const formattedAmount = amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-    
-    toast({
-      title: type === 'expense' ? '✅ Empréstimo Recebido!' : '✅ Empréstimo Pago!',
-      description: type === 'expense' 
-        ? `+R$ ${formattedAmount} voltou para seu saldo` 
-        : `-R$ ${formattedAmount} removido do seu saldo`,
-    });
+  const handleRegisterPayment = (loan: Transaction, paidValue: number, settleAll: boolean) => {
+    const current = loan.loanPaidAmount ?? 0;
+    const newPaid = settleAll
+      ? loan.amount
+      : Math.min(loan.amount, Number((current + paidValue).toFixed(2)));
+
+    if (!settleAll && paidValue <= 0) {
+      toast({ title: 'Valor inválido', description: 'Informe um valor maior que zero.', variant: 'destructive' });
+      return;
+    }
+
+    const isFullySettled = newPaid >= loan.amount;
+    const updates: Partial<Transaction> = { loanPaidAmount: newPaid };
+    if (isFullySettled) {
+      updates.loanStatus = loan.type === 'expense' ? 'received' : 'paid';
+      updates.loanSettledDate = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`;
+    }
+
+    updateTransaction(loan.id, updates);
+
+    const verb = loan.type === 'expense' ? 'recebido' : 'pago';
+    if (isFullySettled) {
+      toast({
+        title: loan.type === 'expense' ? '✅ Empréstimo Recebido!' : '✅ Empréstimo Pago!',
+        description: `Total ${verb}: R$ ${newPaid.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+      });
+    } else {
+      const added = newPaid - current;
+      toast({
+        title: '💵 Pagamento registrado',
+        description: `+R$ ${added.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} ${verb}. Falta R$ ${(loan.amount - newPaid).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}.`,
+      });
+    }
   };
 
   const renderLoanCard = (loan: typeof loans[0], index: number) => {
     const isGiven = loan.type === 'expense';
     const isPending = loan.loanStatus === 'pending';
     const isSettled = !isPending;
+    const paid = loan.loanPaidAmount ?? 0;
+    const remaining = Math.max(0, loan.amount - paid);
+    const progress = loan.amount > 0 ? Math.min(100, (paid / loan.amount) * 100) : 0;
+    const hasPartial = isPending && paid > 0;
 
     return (
       <motion.div
@@ -184,14 +206,23 @@ export default function Loans() {
             <div
               className={cn(
                 'px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 shrink-0',
-                isPending ? 'bg-warning/10 text-warning' : 'bg-income/20 text-income'
+                isPending && !hasPartial && 'bg-warning/10 text-warning',
+                isPending && hasPartial && 'bg-primary/10 text-primary',
+                !isPending && 'bg-income/20 text-income'
               )}
             >
               {isPending ? (
-                <>
-                  <Clock className="w-3 h-3" />
-                  <span className="hidden sm:inline">Pendente</span>
-                </>
+                hasPartial ? (
+                  <>
+                    <Clock className="w-3 h-3" />
+                    <span>Parcial</span>
+                  </>
+                ) : (
+                  <>
+                    <Clock className="w-3 h-3" />
+                    <span className="hidden sm:inline">Pendente</span>
+                  </>
+                )
               ) : (
                 <>
                   <Check className="w-3 h-3" />
@@ -221,7 +252,27 @@ export default function Loans() {
             </p>
           )}
 
-          <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-border/50">
+          {/* Progress (partial payments) */}
+          {isPending && hasPartial && (
+            <div className="mb-3 space-y-1.5">
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="text-muted-foreground">
+                  {isGiven ? 'Recebido' : 'Pago'}: <span className="font-semibold text-foreground">R$ {paid.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                </span>
+                <span className="text-muted-foreground">
+                  Falta: <span className="font-semibold text-foreground">R$ {remaining.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                </span>
+              </div>
+              <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                <div
+                  className={cn('h-full transition-all', isGiven ? 'bg-income' : 'bg-primary')}
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-border/50 gap-2">
             <p
               className={cn(
                 'text-lg sm:text-xl font-bold transition-colors',
@@ -235,15 +286,26 @@ export default function Loans() {
             </p>
 
             {isPending && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={(e) => { e.stopPropagation(); handleStatusChange(loan.id, loan.type, loan.amount); }}
-                className="min-h-[36px] sm:min-h-[40px] text-xs sm:text-sm"
-              >
-                <Check className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                {isGiven ? 'Recebi' : 'Paguei'}
-              </Button>
+              <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="min-h-[36px] text-xs"
+                    >
+                      <Plus className="w-3 h-3 mr-1" />
+                      {isGiven ? 'Recebi' : 'Paguei'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-64 p-3 z-[70]" align="end">
+                    <PartialPaymentForm
+                      loan={loan}
+                      onConfirm={(val, settleAll) => handleRegisterPayment(loan, val, settleAll)}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
             )}
           </div>
         </SwipeableCard>
