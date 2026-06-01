@@ -43,13 +43,16 @@ export default function Loans() {
   const receivedLoans = loans.filter((l) => l.type === 'income');
 
   const stats = useMemo(() => {
+    const remaining = (l: Transaction) =>
+      Math.max(0, l.amount - (l.loanPaidAmount ?? 0));
+
     const totalGiven = givenLoans
       .filter((l) => l.loanStatus === 'pending')
-      .reduce((sum, l) => sum + l.amount, 0);
+      .reduce((sum, l) => sum + remaining(l), 0);
 
     const totalReceived = receivedLoans
       .filter((l) => l.loanStatus === 'pending')
-      .reduce((sum, l) => sum + l.amount, 0);
+      .reduce((sum, l) => sum + remaining(l), 0);
 
     return {
       totalGiven,
