@@ -23,6 +23,56 @@ import TransactionDetailsModal from '@/components/dashboard/TransactionDetailsMo
 import { Transaction } from '@/types/transaction';
 import { SwipeableCard } from '@/components/ui/SwipeableCard';
 
+function PartialPaymentForm({
+  loan,
+  onConfirm,
+}: {
+  loan: Transaction;
+  onConfirm: (value: number, settleAll: boolean) => void;
+}) {
+  const isGiven = loan.type === 'expense';
+  const paid = loan.loanPaidAmount ?? 0;
+  const remaining = Math.max(0, loan.amount - paid);
+  const [value, setValue] = useState('');
+
+  const handleSubmit = (settleAll: boolean) => {
+    const parsed = parseFloat(value.replace(',', '.')) || 0;
+    onConfirm(parsed, settleAll);
+    setValue('');
+  };
+
+  return (
+    <div className="space-y-3">
+      <div>
+        <p className="text-xs font-semibold">{isGiven ? 'Quanto você recebeu?' : 'Quanto você pagou?'}</p>
+        <p className="text-[11px] text-muted-foreground">
+          Falta R$ {remaining.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} de R$ {loan.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+        </p>
+      </div>
+      <div className="relative">
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">R$</span>
+        <Input
+          type="text"
+          inputMode="decimal"
+          autoFocus
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder="0,00"
+          className="pl-9 h-9 text-sm"
+        />
+      </div>
+      <div className="flex gap-2">
+        <Button size="sm" className="flex-1 h-9 text-xs" onClick={() => handleSubmit(false)}>
+          Registrar
+        </Button>
+        <Button size="sm" variant="outline" className="flex-1 h-9 text-xs" onClick={() => handleSubmit(true)}>
+          Quitar tudo
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export default function Loans() {
   const { transactions, addTransaction, updateTransaction, deleteTransaction } = useTransactions();
   const { toast } = useToast();
