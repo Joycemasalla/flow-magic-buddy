@@ -16,6 +16,7 @@ import {
   accountIconOptions,
   bankLogo,
 } from '@/types/account';
+import { isBankSlug } from '@/lib/bankLogos';
 import AccountAvatar from '@/components/accounts/AccountAvatar';
 import { useAccounts } from '@/contexts/AccountContext';
 import { useWallet } from '@/contexts/WalletContext';
@@ -59,8 +60,8 @@ export default function AccountFormSheet({ open, onClose, editing }: Props) {
     setName(p.name);
     setColor(p.color);
     setIcon(p.icon);
-    if (p.domain) {
-      setLogoUrl(bankLogo(p.domain));
+    if (p.bankSlug) {
+      setLogoUrl(bankLogo(p.bankSlug));
       setVisualMode('logo');
     } else {
       setLogoUrl(null);
@@ -227,15 +228,16 @@ export default function AccountFormSheet({ open, onClose, editing }: Props) {
 
           {visualMode === 'logo' ? (
             <div className="space-y-2">
-              <Label>URL do logo (opcional)</Label>
-              <Input
-                value={logoUrl ?? ''}
-                onChange={(e) => setLogoUrl(e.target.value || null)}
-                placeholder="https://logo.clearbit.com/seubanco.com.br"
-              />
-              <p className="text-[11px] text-muted-foreground">
-                Selecione um banco nas sugestões acima para preencher automaticamente. Caso o logo não carregue, o ícone será usado.
-              </p>
+              <Label>Logo do banco</Label>
+              {isBankSlug(logoUrl) ? (
+                <p className="text-[11px] text-muted-foreground">
+                  Logo bundlada no app — sem requisições externas. Use as sugestões acima para trocar de banco.
+                </p>
+              ) : (
+                <p className="text-[11px] text-muted-foreground">
+                  Selecione um banco nas sugestões acima para usar a logo oficial bundlada. Se o seu banco não estiver na lista, use o modo "Ícone".
+                </p>
+              )}
             </div>
           ) : (
             <>
