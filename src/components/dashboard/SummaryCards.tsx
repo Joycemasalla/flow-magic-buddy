@@ -110,8 +110,7 @@ export default function SummaryCards({
           transition={{ delay: 0.1 }}
           whileTap={{ scale: 0.97 }}
           onClick={onIncomeClick}
-          className="glass-elevated min-w-0 max-w-full overflow-hidden rounded-3xl p-4 sm:p-5 text-left cursor-pointer hover-lift transition-all"
-          style={{ background: 'var(--gradient-income)' }}
+          className="glass-elevated bg-gradient-income min-w-0 max-w-full overflow-hidden rounded-3xl p-4 sm:p-5 text-left cursor-pointer hover-lift transition-all"
         >
           <div className="flex items-start justify-between gap-2 mb-3 min-w-0">
             <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -137,8 +136,7 @@ export default function SummaryCards({
           transition={{ delay: 0.15 }}
           whileTap={{ scale: 0.97 }}
           onClick={onExpenseClick}
-          className="glass-elevated min-w-0 max-w-full overflow-hidden rounded-3xl p-4 sm:p-5 text-left cursor-pointer hover-lift transition-all"
-          style={{ background: 'var(--gradient-expense)' }}
+          className="glass-elevated bg-gradient-expense min-w-0 max-w-full overflow-hidden rounded-3xl p-4 sm:p-5 text-left cursor-pointer hover-lift transition-all"
         >
           <div className="flex items-start justify-between gap-2 mb-3 min-w-0">
             <div className="flex items-center gap-2 min-w-0 flex-1">

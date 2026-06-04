@@ -53,7 +53,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     try {
       if (id) localStorage.setItem(ACTIVE_WALLET_KEY, id);
       else localStorage.removeItem(ACTIVE_WALLET_KEY);
-    } catch {}
+    } catch {
+      // localStorage unavailable (private mode); silently ignore
+    }
   }, []);
 
   const refreshWallets = useCallback(async () => {

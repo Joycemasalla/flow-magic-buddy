@@ -16,6 +16,7 @@ import InvestmentSummary from '@/components/dashboard/InvestmentSummary';
 import ProfileSwitcher from '@/components/ProfileSwitcher';
 import ReportModal from '@/components/modals/ReportModal';
 import { Button } from '@/components/ui/button';
+import { FilterPill, FilterPillRow } from '@/components/ui/FilterPill';
 import { cn } from '@/lib/utils';
 import { Check, Landmark, Handshake } from 'lucide-react';
 
@@ -206,53 +207,31 @@ export default function Dashboard() {
       </motion.div>
 
       {/* Period Filter Pills - Horizontal Scroll */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide"
-      >
+      <FilterPillRow>
         {(Object.keys(periodLabels) as PeriodFilter[]).map((period) => (
-          <button
+          <FilterPill
             key={period}
+            active={periodFilter === period}
             onClick={() => setPeriodFilter(period)}
-            className={cn(
-              'px-4 py-2 rounded-full text-xs sm:text-sm font-semibold whitespace-nowrap transition-all min-h-[40px] active:scale-95 border',
-              periodFilter === period
-                ? 'bg-gradient-primary text-primary-foreground border-transparent shadow-glow'
-                : 'glass-card text-muted-foreground border-border/40 hover:text-foreground'
-            )}
           >
             {periodLabels[period]}
-          </button>
+          </FilterPill>
         ))}
-      </motion.div>
+      </FilterPillRow>
 
       {/* Type Filter Pills */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.05 }}
-        className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide"
-      >
+      <FilterPillRow delay={0.05}>
         {(Object.keys(typeLabels) as TypeFilter[]).map((type) => (
-          <button
+          <FilterPill
             key={type}
+            active={typeFilter === type}
+            variant={type === 'income' ? 'income' : type === 'expense' ? 'expense' : 'default'}
             onClick={() => setTypeFilter(type)}
-            className={cn(
-              'px-4 py-2 rounded-full text-xs sm:text-sm font-semibold whitespace-nowrap transition-all min-h-[40px] active:scale-95 border',
-              typeFilter === type
-                ? type === 'income'
-                  ? 'bg-income text-income-foreground border-transparent'
-                  : type === 'expense'
-                    ? 'bg-expense text-expense-foreground border-transparent'
-                    : 'bg-gradient-primary text-primary-foreground border-transparent shadow-glow'
-                : 'glass-card text-muted-foreground border-border/40 hover:text-foreground'
-            )}
           >
             {typeLabels[type]}
-          </button>
+          </FilterPill>
         ))}
-      </motion.div>
+      </FilterPillRow>
 
       {/* Summary Cards */}
       <SummaryCards
