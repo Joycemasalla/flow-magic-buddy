@@ -212,6 +212,14 @@
     background: var(--gradient-accent);
   }
 
+  .bg-gradient-income {
+    background: var(--gradient-income);
+  }
+
+  .bg-gradient-expense {
+    background: var(--gradient-expense);
+  }
+
   .shadow-glow {
     box-shadow: var(--shadow-glow);
   }
