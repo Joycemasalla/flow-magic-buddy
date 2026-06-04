@@ -110,19 +110,21 @@ export default function SummaryCards({
           transition={{ delay: 0.1 }}
           whileTap={{ scale: 0.97 }}
           onClick={onIncomeClick}
-          className="glass-elevated min-w-0 max-w-full overflow-hidden rounded-3xl p-5 text-left cursor-pointer hover-lift transition-all"
+          className="glass-elevated min-w-0 max-w-full overflow-hidden rounded-3xl p-4 sm:p-5 text-left cursor-pointer hover-lift transition-all"
           style={{ background: 'var(--gradient-income)' }}
         >
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-2xl bg-income/25 flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-income stroke-[1.5]" />
+          <div className="flex items-start justify-between gap-2 mb-3 min-w-0">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-2xl bg-income/25 flex items-center justify-center">
+                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-income stroke-[1.5]" />
               </div>
-              <span className="text-xs text-muted-foreground font-bold uppercase tracking-wide">
+              <span className="text-[10px] sm:text-xs text-muted-foreground font-bold uppercase tracking-wide truncate">
                 Receitas
               </span>
             </div>
-            <Delta current={income} previous={previousIncome} />
+            <div className="shrink-0">
+              <Delta current={income} previous={previousIncome} />
+            </div>
           </div>
           <AutoFitText max={26} min={10} length={moneyLength(income)} className="font-black text-income font-display">
             <PrivacyValue value={income} />
@@ -135,19 +137,21 @@ export default function SummaryCards({
           transition={{ delay: 0.15 }}
           whileTap={{ scale: 0.97 }}
           onClick={onExpenseClick}
-          className="glass-elevated min-w-0 max-w-full overflow-hidden rounded-3xl p-5 text-left cursor-pointer hover-lift transition-all"
+          className="glass-elevated min-w-0 max-w-full overflow-hidden rounded-3xl p-4 sm:p-5 text-left cursor-pointer hover-lift transition-all"
           style={{ background: 'var(--gradient-expense)' }}
         >
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-2xl bg-expense/25 flex items-center justify-center">
-                <TrendingDown className="w-5 h-5 text-expense stroke-[1.5]" />
+          <div className="flex items-start justify-between gap-2 mb-3 min-w-0">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-2xl bg-expense/25 flex items-center justify-center">
+                <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5 text-expense stroke-[1.5]" />
               </div>
-              <span className="text-xs text-muted-foreground font-bold uppercase tracking-wide">
+              <span className="text-[10px] sm:text-xs text-muted-foreground font-bold uppercase tracking-wide truncate">
                 Despesas
               </span>
             </div>
-            <Delta current={expense} previous={previousExpense} />
+            <div className="shrink-0">
+              <Delta current={expense} previous={previousExpense} />
+            </div>
           </div>
           <AutoFitText max={26} min={10} length={moneyLength(expense)} className="font-black text-expense font-display">
             <PrivacyValue value={expense} />
