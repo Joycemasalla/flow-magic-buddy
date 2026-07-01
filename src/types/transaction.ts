@@ -40,6 +40,10 @@ export interface Reminder {
   dueDay: number;
   category: TransactionCategory;
   isActive: boolean;
+  /** Quantos dias antes do vencimento destacar como alerta. */
+  alertDaysBefore: number;
+  /** Último mês (YYYY-MM) em que foi marcado como pago. */
+  lastPaidMonth?: string | null;
   createdAt: string;
 }
 
