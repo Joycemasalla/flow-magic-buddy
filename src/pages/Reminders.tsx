@@ -215,13 +215,13 @@ export default function Reminders() {
           className="glass-card rounded-xl p-6 sm:p-8 text-center"
         >
           <Bell className="w-10 h-10 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
-          <h3 className="text-base sm:text-lg font-semibold mb-2">Nenhum lembrete</h3>
+          <h3 className="text-base sm:text-lg font-semibold mb-2">Nenhum gasto mensal registrado</h3>
           <p className="text-sm text-muted-foreground mb-4">
-            Adicione lembretes para não esquecer de pagar suas contas
+            Cadastre as contas fixas que você paga todo mês (aluguel, internet, streaming...) para não esquecer
           </p>
           <Button onClick={() => openModal()} className="min-h-[44px]">
             <Plus className="w-4 h-4 mr-2" />
-            Criar Lembrete
+            Registrar Gasto Mensal
           </Button>
         </motion.div>
       ) : (
