@@ -280,7 +280,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
 
       if (remindersData) {
         setReminders(
-          remindersData.map((r) => {
+          remindersData.map((r: any) => {
             const category = validCategories.includes(r.category as TransactionCategory) 
               ? (r.category as TransactionCategory) 
               : 'other';
@@ -289,10 +289,12 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
               title: r.title,
               description: r.title,
               amount: Number(r.amount),
-              type: r.is_recurring ? 'monthly' : 'single',
+              type: r.is_recurring ? 'monthly' as const : 'single' as const,
               dueDay: new Date(r.due_date).getDate(),
               category,
               isActive: !r.is_paid,
+              alertDaysBefore: r.alert_days_before ?? 3,
+              lastPaidMonth: r.last_paid_month ?? null,
               createdAt: r.created_at,
             };
           })
