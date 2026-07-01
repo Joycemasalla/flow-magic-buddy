@@ -168,12 +168,10 @@ export default function NewReminderModal({ isOpen, onClose }: NewReminderModalPr
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Title */}
                 <div className="space-y-2">
-                  <Label htmlFor="title" className="text-sm font-medium">
-                    Título do Alerta
-                  </Label>
+                  <Label htmlFor="title" className="text-sm font-medium">Nome do gasto</Label>
                   <Input
                     id="title"
-                    placeholder="Ex: Conta de Luz"
+                    placeholder="Ex: Aluguel, Netflix, Internet"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     className="rounded-2xl bg-muted/40 border-border/40 h-11"
@@ -183,9 +181,7 @@ export default function NewReminderModal({ isOpen, onClose }: NewReminderModalPr
 
                 {/* Amount */}
                 <div className="space-y-2">
-                  <Label htmlFor="amount" className="text-sm font-medium">
-                    Valor
-                  </Label>
+                  <Label htmlFor="amount" className="text-sm font-medium">Valor</Label>
                   <div className="relative">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
                       R$
@@ -201,21 +197,34 @@ export default function NewReminderModal({ isOpen, onClose }: NewReminderModalPr
                   </div>
                 </div>
 
-                {/* Due Day */}
-                <div className="space-y-2">
-                  <Label htmlFor="dueDay" className="text-sm font-medium">
-                    Dia do Mês (1-31)
-                  </Label>
-                  <Input
-                    id="dueDay"
-                    type="number"
-                    min="1"
-                    max="31"
-                    value={dueDay}
-                    onChange={(e) => setDueDay(e.target.value)}
-                    className="rounded-2xl bg-muted/40 border-border/40 h-11"
-                    disabled={isProcessing}
-                  />
+                {/* Due Day + Alert Days */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="dueDay" className="text-sm font-medium">Vence dia</Label>
+                    <Input
+                      id="dueDay"
+                      type="number"
+                      min="1"
+                      max="31"
+                      value={dueDay}
+                      onChange={(e) => setDueDay(e.target.value)}
+                      className="rounded-2xl bg-muted/40 border-border/40 h-11"
+                      disabled={isProcessing}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="alertDays" className="text-sm font-medium">Alertar (dias antes)</Label>
+                    <Input
+                      id="alertDays"
+                      type="number"
+                      min="0"
+                      max="30"
+                      value={alertDays}
+                      onChange={(e) => setAlertDays(e.target.value)}
+                      className="rounded-2xl bg-muted/40 border-border/40 h-11"
+                      disabled={isProcessing}
+                    />
+                  </div>
                 </div>
 
                 {/* Category */}
