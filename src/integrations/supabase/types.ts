@@ -131,6 +131,7 @@ export type Database = {
       }
       reminders: {
         Row: {
+          alert_days_before: number
           amount: number
           category: string
           created_at: string
@@ -138,12 +139,14 @@ export type Database = {
           id: string
           is_paid: boolean
           is_recurring: boolean
+          last_paid_month: string | null
           title: string
           updated_at: string
           user_id: string
           wallet_id: string | null
         }
         Insert: {
+          alert_days_before?: number
           amount: number
           category: string
           created_at?: string
@@ -151,12 +154,14 @@ export type Database = {
           id?: string
           is_paid?: boolean
           is_recurring?: boolean
+          last_paid_month?: string | null
           title: string
           updated_at?: string
           user_id: string
           wallet_id?: string | null
         }
         Update: {
+          alert_days_before?: number
           amount?: number
           category?: string
           created_at?: string
@@ -164,6 +169,7 @@ export type Database = {
           id?: string
           is_paid?: boolean
           is_recurring?: boolean
+          last_paid_month?: string | null
           title?: string
           updated_at?: string
           user_id?: string
