@@ -572,9 +572,15 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       isLoan: false,
     });
 
+    // Marca o mês atual como pago. No próximo mês o gasto reaparece automaticamente
+    // (porque last_paid_month != mês corrente).
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    await updateReminder(id, { lastPaidMonth: currentMonth });
+
     toast({
-      title: 'Lembrete pago!',
-      description: `Despesa de R$ ${reminder.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} registrada automaticamente.`,
+      title: 'Gasto pago!',
+      description: `Despesa de R$ ${reminder.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} registrada. Volta a lembrar mês que vem.`,
     });
   };
 
