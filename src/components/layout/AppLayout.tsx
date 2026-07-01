@@ -32,7 +32,7 @@ const navItems = [
   { path: '/transacoes', icon: Receipt, label: 'Transações', mobileLabel: 'Trans.' },
   { path: '/contas', icon: Wallet, label: 'Contas', mobileLabel: 'Contas' },
   { path: '/investimentos', icon: TrendingUp, label: 'Investimentos', mobileLabel: 'Invest.' },
-  { path: '/lembretes', icon: Bell, label: 'Lembretes', mobileLabel: 'Alertas' },
+  { path: '/lembretes', icon: Bell, label: 'Gastos Mensais', mobileLabel: 'Mensais' },
   { path: '/emprestimos', icon: HandCoins, label: 'Empréstimos', mobileLabel: 'Emprést.' },
 ];
 
@@ -70,7 +70,7 @@ export default function AppLayout() {
     const pathMap: Record<string, { icon: typeof Plus; label: string }> = {
       '/investimentos': { icon: TrendingUp, label: 'Novo Investimento' },
       '/emprestimos': { icon: HandCoins, label: 'Novo Empréstimo' },
-      '/lembretes': { icon: Bell, label: 'Novo Alerta' },
+      '/lembretes': { icon: Bell, label: 'Novo Gasto Mensal' },
       '/contas': { icon: Wallet, label: 'Nova Conta' },
     };
     return pathMap[path] || { icon: Plus, label: 'Nova Transação' };

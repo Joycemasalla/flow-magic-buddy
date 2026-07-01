@@ -169,15 +169,15 @@ export default function Reminders() {
           animate={{ opacity: 1, y: 0 }}
           className="flex-1 min-w-0"
         >
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-display font-bold">Lembretes</h1>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-display font-bold">Gastos Mensais</h1>
           <p className="text-sm text-muted-foreground truncate">
-            Gerencie suas contas
+            Registro das contas que você paga todo mês
           </p>
         </motion.div>
 
         <Button onClick={() => openModal()} className="min-h-[44px] shrink-0">
           <Plus className="w-4 h-4 sm:mr-2" />
-          <span className="hidden sm:inline">Novo Lembrete</span>
+          <span className="hidden sm:inline">Novo Gasto</span>
         </Button>
       </div>
 
@@ -190,7 +190,7 @@ export default function Reminders() {
         >
           <div className="min-w-0">
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
-              Total mensal
+              Total do mês
             </p>
             <p className="text-xl sm:text-2xl font-bold font-display truncate">
               R$ {totalDue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
@@ -198,7 +198,7 @@ export default function Reminders() {
           </div>
           <div className="text-right shrink-0">
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
-              Próximos 7 dias
+              Vencem em 7 dias
             </p>
             <p className={cn('text-xl sm:text-2xl font-bold font-display', upcomingCount > 0 ? 'text-warning' : 'text-muted-foreground')}>
               {upcomingCount}
@@ -215,13 +215,13 @@ export default function Reminders() {
           className="glass-card rounded-xl p-6 sm:p-8 text-center"
         >
           <Bell className="w-10 h-10 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
-          <h3 className="text-base sm:text-lg font-semibold mb-2">Nenhum lembrete</h3>
+          <h3 className="text-base sm:text-lg font-semibold mb-2">Nenhum gasto mensal registrado</h3>
           <p className="text-sm text-muted-foreground mb-4">
-            Adicione lembretes para não esquecer de pagar suas contas
+            Cadastre as contas fixas que você paga todo mês (aluguel, internet, streaming...) para não esquecer
           </p>
           <Button onClick={() => openModal()} className="min-h-[44px]">
             <Plus className="w-4 h-4 mr-2" />
-            Criar Lembrete
+            Registrar Gasto Mensal
           </Button>
         </motion.div>
       ) : (
@@ -309,17 +309,17 @@ export default function Reminders() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editingId ? 'Editar Lembrete' : 'Novo Lembrete'}
+              {editingId ? 'Editar Gasto Mensal' : 'Novo Gasto Mensal'}
             </DialogTitle>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label>Título</Label>
+              <Label>Nome do gasto</Label>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Ex: Conta de Internet"
+                placeholder="Ex: Aluguel, Netflix, Internet"
                 required
               />
             </div>
@@ -399,7 +399,7 @@ export default function Reminders() {
 
             <div className="flex items-center justify-between pt-2">
               <Label htmlFor="active" className="cursor-pointer">
-                Lembrete ativo
+                Ativo (lembrar todo mês)
               </Label>
               <Switch
                 id="active"
@@ -409,7 +409,7 @@ export default function Reminders() {
             </div>
 
             <Button type="submit" className="w-full">
-              {editingId ? 'Salvar Alterações' : 'Criar Lembrete'}
+              {editingId ? 'Salvar Alterações' : 'Registrar Gasto'}
             </Button>
           </form>
         </DialogContent>
