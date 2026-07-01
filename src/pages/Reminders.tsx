@@ -169,15 +169,15 @@ export default function Reminders() {
           animate={{ opacity: 1, y: 0 }}
           className="flex-1 min-w-0"
         >
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-display font-bold">Lembretes</h1>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-display font-bold">Gastos Mensais</h1>
           <p className="text-sm text-muted-foreground truncate">
-            Gerencie suas contas
+            Registro das contas que você paga todo mês
           </p>
         </motion.div>
 
         <Button onClick={() => openModal()} className="min-h-[44px] shrink-0">
           <Plus className="w-4 h-4 sm:mr-2" />
-          <span className="hidden sm:inline">Novo Lembrete</span>
+          <span className="hidden sm:inline">Novo Gasto</span>
         </Button>
       </div>
 
