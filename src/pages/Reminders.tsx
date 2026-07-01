@@ -315,11 +315,11 @@ export default function Reminders() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label>Título</Label>
+              <Label>Nome do gasto</Label>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Ex: Conta de Internet"
+                placeholder="Ex: Aluguel, Netflix, Internet"
                 required
               />
             </div>
