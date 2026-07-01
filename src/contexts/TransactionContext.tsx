@@ -466,13 +466,18 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       category: reminder.category,
       is_recurring: reminder.type === 'monthly',
       is_paid: !reminder.isActive,
+      alert_days_before: reminder.alertDaysBefore ?? 3,
+      last_paid_month: reminder.lastPaidMonth ?? null,
       wallet_id: activeWalletId || null,
     };
 
     if (!isOnline) {
       const tempId = generateTempId();
       const newReminder: Reminder = {
-        id: tempId, ...reminder, description: reminder.title, createdAt: new Date().toISOString(),
+        id: tempId, ...reminder, description: reminder.title,
+        alertDaysBefore: reminder.alertDaysBefore ?? 3,
+        lastPaidMonth: reminder.lastPaidMonth ?? null,
+        createdAt: new Date().toISOString(),
       };
       setReminders((prev) => [newReminder, ...prev]);
       enqueue({ table: 'reminders', action: 'insert', payload: dbPayload, tempId });
@@ -492,13 +497,17 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     }
 
     if (data) {
-      const category = validCategories.includes(data.category as TransactionCategory) 
-        ? (data.category as TransactionCategory) : 'other';
+      const d = data as any;
+      const category = validCategories.includes(d.category as TransactionCategory) 
+        ? (d.category as TransactionCategory) : 'other';
       const newReminder: Reminder = {
-        id: data.id, title: data.title, description: data.title,
-        amount: Number(data.amount), type: data.is_recurring ? 'monthly' : 'single',
-        dueDay: new Date(data.due_date).getDate(), category,
-        isActive: !data.is_paid, createdAt: data.created_at,
+        id: d.id, title: d.title, description: d.title,
+        amount: Number(d.amount), type: d.is_recurring ? 'monthly' : 'single',
+        dueDay: new Date(d.due_date).getDate(), category,
+        isActive: !d.is_paid,
+        alertDaysBefore: d.alert_days_before ?? 3,
+        lastPaidMonth: d.last_paid_month ?? null,
+        createdAt: d.created_at,
       };
       setReminders((prev) => [newReminder, ...prev]);
     }
@@ -513,6 +522,8 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     if (updates.category) updateData.category = updates.category;
     if (updates.type) updateData.is_recurring = updates.type === 'monthly';
     if (updates.isActive !== undefined) updateData.is_paid = !updates.isActive;
+    if (updates.alertDaysBefore !== undefined) updateData.alert_days_before = updates.alertDaysBefore;
+    if (updates.lastPaidMonth !== undefined) updateData.last_paid_month = updates.lastPaidMonth;
     if (updates.dueDay) {
       const dueDate = new Date();
       dueDate.setDate(updates.dueDay);
