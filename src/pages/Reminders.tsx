@@ -399,7 +399,7 @@ export default function Reminders() {
 
             <div className="flex items-center justify-between pt-2">
               <Label htmlFor="active" className="cursor-pointer">
-                Lembrete ativo
+                Ativo (lembrar todo mês)
               </Label>
               <Switch
                 id="active"
@@ -409,7 +409,7 @@ export default function Reminders() {
             </div>
 
             <Button type="submit" className="w-full">
-              {editingId ? 'Salvar Alterações' : 'Criar Lembrete'}
+              {editingId ? 'Salvar Alterações' : 'Registrar Gasto'}
             </Button>
           </form>
         </DialogContent>
