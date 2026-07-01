@@ -70,7 +70,7 @@ export default function AppLayout() {
     const pathMap: Record<string, { icon: typeof Plus; label: string }> = {
       '/investimentos': { icon: TrendingUp, label: 'Novo Investimento' },
       '/emprestimos': { icon: HandCoins, label: 'Novo Empréstimo' },
-      '/lembretes': { icon: Bell, label: 'Novo Alerta' },
+      '/lembretes': { icon: Bell, label: 'Novo Gasto Mensal' },
       '/contas': { icon: Wallet, label: 'Nova Conta' },
     };
     return pathMap[path] || { icon: Plus, label: 'Nova Transação' };
