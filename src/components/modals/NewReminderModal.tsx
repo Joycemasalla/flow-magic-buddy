@@ -277,7 +277,7 @@ export default function NewReminderModal({ isOpen, onClose }: NewReminderModalPr
                     className="flex-1 rounded-2xl h-11 bg-accent hover:bg-accent/90"
                     disabled={isProcessing}
                   >
-                    {isProcessing ? 'Criando...' : 'Criar Alerta'}
+                    {isProcessing ? 'Salvando...' : 'Adicionar'}
                   </Button>
                 </div>
               </form>
