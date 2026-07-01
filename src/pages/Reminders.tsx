@@ -190,7 +190,7 @@ export default function Reminders() {
         >
           <div className="min-w-0">
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
-              Total mensal
+              Total do mês
             </p>
             <p className="text-xl sm:text-2xl font-bold font-display truncate">
               R$ {totalDue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
@@ -198,7 +198,7 @@ export default function Reminders() {
           </div>
           <div className="text-right shrink-0">
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
-              Próximos 7 dias
+              Vencem em 7 dias
             </p>
             <p className={cn('text-xl sm:text-2xl font-bold font-display', upcomingCount > 0 ? 'text-warning' : 'text-muted-foreground')}>
               {upcomingCount}
