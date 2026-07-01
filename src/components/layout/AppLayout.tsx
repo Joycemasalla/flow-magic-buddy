@@ -32,7 +32,7 @@ const navItems = [
   { path: '/transacoes', icon: Receipt, label: 'Transações', mobileLabel: 'Trans.' },
   { path: '/contas', icon: Wallet, label: 'Contas', mobileLabel: 'Contas' },
   { path: '/investimentos', icon: TrendingUp, label: 'Investimentos', mobileLabel: 'Invest.' },
-  { path: '/lembretes', icon: Bell, label: 'Lembretes', mobileLabel: 'Alertas' },
+  { path: '/lembretes', icon: Bell, label: 'Gastos Mensais', mobileLabel: 'Mensais' },
   { path: '/emprestimos', icon: HandCoins, label: 'Empréstimos', mobileLabel: 'Emprést.' },
 ];
 
