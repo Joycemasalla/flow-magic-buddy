@@ -253,7 +253,7 @@ export default function NewReminderModal({ isOpen, onClose }: NewReminderModalPr
                   </Label>
                   <Textarea
                     id="description"
-                    placeholder="Adicione detalhes sobre o alerta..."
+                    placeholder="Detalhes desse gasto..."
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     className="rounded-2xl bg-muted/40 border-border/40 resize-none h-24"
