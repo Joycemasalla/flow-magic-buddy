@@ -154,7 +154,7 @@ export default function NewReminderModal({ isOpen, onClose }: NewReminderModalPr
                   <div className="w-10 h-10 rounded-2xl bg-accent/15 flex items-center justify-center">
                     <Bell className="w-5 h-5 text-accent stroke-[1.5]" />
                   </div>
-                  <h2 className="text-2xl font-bold">Novo Alerta</h2>
+                  <h2 className="text-2xl font-bold">Novo Gasto Mensal</h2>
                 </div>
                 <button
                   onClick={onClose}
