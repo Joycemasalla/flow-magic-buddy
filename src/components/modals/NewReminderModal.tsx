@@ -42,6 +42,7 @@ export default function NewReminderModal({ isOpen, onClose }: NewReminderModalPr
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [dueDay, setDueDay] = useState('10');
+  const [alertDays, setAlertDays] = useState('3');
   const [category, setCategory] = useState<TransactionCategory>('bills');
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -54,6 +55,7 @@ export default function NewReminderModal({ isOpen, onClose }: NewReminderModalPr
       setDescription('');
       setAmount('');
       setDueDay('10');
+      setAlertDays('3');
       setCategory('bills');
     }
   }, [isOpen]);
@@ -63,8 +65,8 @@ export default function NewReminderModal({ isOpen, onClose }: NewReminderModalPr
 
     if (!title.trim()) {
       toast({
-        title: 'Título obrigatório',
-        description: 'Digite um título para o alerta.',
+        title: 'Nome obrigatório',
+        description: 'Digite um nome para o gasto mensal.',
         variant: 'destructive',
       });
       return;
@@ -90,6 +92,9 @@ export default function NewReminderModal({ isOpen, onClose }: NewReminderModalPr
       return;
     }
 
+    const parsedAlert = parseInt(alertDays);
+    const safeAlert = isNaN(parsedAlert) || parsedAlert < 0 ? 3 : Math.min(parsedAlert, 30);
+
     setIsProcessing(true);
 
     try {
@@ -101,18 +106,19 @@ export default function NewReminderModal({ isOpen, onClose }: NewReminderModalPr
         dueDay: parsedDueDay,
         category,
         isActive: true,
+        alertDaysBefore: safeAlert,
       });
 
       toast({
-        title: '🔔 Alerta criado',
-        description: `${title} - R$ ${parsedAmount.toFixed(2)}`,
+        title: '✅ Gasto mensal criado',
+        description: `${title} — R$ ${parsedAmount.toFixed(2)}`,
       });
 
       setIsProcessing(false);
       onClose();
     } catch (error) {
       toast({
-        title: 'Erro ao criar alerta',
+        title: 'Erro ao criar gasto',
         description: 'Tente novamente mais tarde.',
         variant: 'destructive',
       });
