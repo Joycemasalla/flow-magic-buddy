@@ -309,7 +309,7 @@ export default function Reminders() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editingId ? 'Editar Lembrete' : 'Novo Lembrete'}
+              {editingId ? 'Editar Gasto Mensal' : 'Novo Gasto Mensal'}
             </DialogTitle>
           </DialogHeader>
 
