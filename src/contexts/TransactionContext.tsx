@@ -717,18 +717,24 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     return ids;
   }, [transactions, queue]);
 
+  const contextValue = React.useMemo(
+    () => ({
+      transactions, reminders, investments, loading,
+      pendingOpsCount: pendingCount, isSyncing,
+      pendingTransactionIds,
+      addTransaction, updateTransaction, deleteTransaction,
+      addReminder, updateReminder, deleteReminder, markReminderAsPaid,
+      addInvestment, updateInvestment, deleteInvestment,
+      markInvestmentAsDone,
+    }),
+    [transactions, reminders, investments, loading, pendingCount, isSyncing, pendingTransactionIds,
+     addTransaction, updateTransaction, deleteTransaction,
+     addReminder, updateReminder, deleteReminder, markReminderAsPaid,
+     addInvestment, updateInvestment, deleteInvestment, markInvestmentAsDone]
+  );
+
   return (
-    <TransactionContext.Provider
-      value={{
-        transactions, reminders, investments, loading,
-        pendingOpsCount: pendingCount, isSyncing,
-        pendingTransactionIds,
-        addTransaction, updateTransaction, deleteTransaction,
-        addReminder, updateReminder, deleteReminder, markReminderAsPaid,
-        addInvestment, updateInvestment, deleteInvestment,
-        markInvestmentAsDone,
-      }}
-    >
+    <TransactionContext.Provider value={contextValue}>
       {children}
     </TransactionContext.Provider>
   );

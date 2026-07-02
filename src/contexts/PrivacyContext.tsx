@@ -23,12 +23,17 @@ export function PrivacyProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(PRIVACY_KEY, isPrivacyMode.toString());
   }, [isPrivacyMode]);
 
-  const togglePrivacyMode = () => {
+  const togglePrivacyMode = React.useCallback(() => {
     setIsPrivacyMode((prev) => !prev);
-  };
+  }, []);
+
+  const value = React.useMemo(
+    () => ({ isPrivacyMode, togglePrivacyMode }),
+    [isPrivacyMode, togglePrivacyMode]
+  );
 
   return (
-    <PrivacyContext.Provider value={{ isPrivacyMode, togglePrivacyMode }}>
+    <PrivacyContext.Provider value={value}>
       {children}
     </PrivacyContext.Provider>
   );
