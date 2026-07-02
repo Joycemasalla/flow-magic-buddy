@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SwipeableCard } from '@/components/ui/SwipeableCard';
 import { format, isToday, isYesterday } from 'date-fns';
@@ -52,7 +52,7 @@ interface SwipeableItemProps {
   isPending?: boolean;
 }
 
-function SwipeableItem({ transaction, onEdit, onDelete, onViewDetails, isPending }: SwipeableItemProps) {
+const SwipeableItem = memo(function SwipeableItem({ transaction, onEdit, onDelete, onViewDetails, isPending }: SwipeableItemProps) {
   const Icon = categoryIconMap[transaction.category] || MoreHorizontal;
   const isIncome = transaction.type === 'income';
 
@@ -124,7 +124,7 @@ function SwipeableItem({ transaction, onEdit, onDelete, onViewDetails, isPending
       </div>
     </SwipeableCard>
   );
-}
+});
 
 export default function TransactionList({
   transactions,
@@ -134,19 +134,19 @@ export default function TransactionList({
 }: TransactionListProps) {
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
 
-  // Group transactions by date
-  const grouped = transactions.reduce((acc, transaction) => {
-    const date = transaction.date;
-    if (!acc[date]) {
-      acc[date] = [];
-    }
-    acc[date].push(transaction);
-    return acc;
-  }, {} as Record<string, Transaction[]>);
+  const { grouped, sortedDates } = useMemo(() => {
+    const grouped = transactions.reduce((acc, transaction) => {
+      const date = transaction.date;
+      if (!acc[date]) acc[date] = [];
+      acc[date].push(transaction);
+      return acc;
+    }, {} as Record<string, Transaction[]>);
 
-  const sortedDates = Object.keys(grouped).sort(
-    (a, b) => new Date(b).getTime() - new Date(a).getTime()
-  );
+    const sortedDates = Object.keys(grouped).sort(
+      (a, b) => new Date(b).getTime() - new Date(a).getTime()
+    );
+    return { grouped, sortedDates };
+  }, [transactions]);
 
   const formatDateLabel = (dateStr: string) => {
     const date = new Date(dateStr + 'T12:00:00');
