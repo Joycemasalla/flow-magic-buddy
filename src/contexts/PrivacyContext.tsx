@@ -28,7 +28,7 @@ export function PrivacyProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <PrivacyContext.Provider value={{ isPrivacyMode, togglePrivacyMode }}>
+    <PrivacyContext.Provider value={React.useMemo(() => ({ isPrivacyMode, togglePrivacyMode }), [isPrivacyMode])}>
       {children}
     </PrivacyContext.Provider>
   );
