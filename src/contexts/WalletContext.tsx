@@ -179,24 +179,16 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     return { success: true, walletId: invite.wallet_id };
   };
 
-  return (
-    <WalletContext.Provider
-      value={{
-        wallets,
-        activeWalletId,
-        setActiveWalletId,
-        loading,
-        refreshWallets,
-        createWallet,
-        leaveWallet,
-        deleteWallet,
-        createInvite,
-        acceptInvite,
-      }}
-    >
-      {children}
-    </WalletContext.Provider>
+  const value = React.useMemo(
+    () => ({
+      wallets, activeWalletId, setActiveWalletId, loading,
+      refreshWallets, createWallet, leaveWallet, deleteWallet,
+      createInvite, acceptInvite,
+    }),
+    [wallets, activeWalletId, setActiveWalletId, loading, refreshWallets]
   );
+
+  return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>;
 }
 
 export function useWallet(): WalletContextType {
