@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, HandCoins, ArrowUpRight, ArrowDownLeft, Check, Clock, CalendarIcon } from 'lucide-react';
+import { Plus, HandCoins, ArrowUpRight, ArrowDownLeft, Check, Clock, CalendarIcon, CheckCircle2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useTransactions } from '@/contexts/TransactionContext';
@@ -79,57 +79,45 @@ export default function Loans() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState<Transaction | null>(null);
+  const [tab, setTab] = useState<'receive' | 'pay' | 'done'>('receive');
+
   const [loanType, setLoanType] = useState<'given' | 'received'>('given');
   const [person, setPerson] = useState('');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [loanDate, setLoanDate] = useState<Date>(new Date());
 
-  const loans = useMemo(() => {
-    return transactions.filter((t) => t.isLoan);
-  }, [transactions]);
+  const loans = useMemo(() => transactions.filter((t) => t.isLoan), [transactions]);
+  const remaining = (l: Transaction) => Math.max(0, l.amount - (l.loanPaidAmount ?? 0));
 
-  const givenLoans = loans.filter((l) => l.type === 'expense');
-  const receivedLoans = loans.filter((l) => l.type === 'income');
+  const toReceive = useMemo(
+    () => loans.filter((l) => l.type === 'expense' && l.loanStatus === 'pending'),
+    [loans]
+  );
+  const toPay = useMemo(
+    () => loans.filter((l) => l.type === 'income' && l.loanStatus === 'pending'),
+    [loans]
+  );
+  const settled = useMemo(
+    () => loans.filter((l) => l.loanStatus !== 'pending').sort((a, b) => (b.loanSettledDate ?? '').localeCompare(a.loanSettledDate ?? '')),
+    [loans]
+  );
 
-  const stats = useMemo(() => {
-    const remaining = (l: Transaction) =>
-      Math.max(0, l.amount - (l.loanPaidAmount ?? 0));
+  const totalReceive = toReceive.reduce((s, l) => s + remaining(l), 0);
+  const totalPay = toPay.reduce((s, l) => s + remaining(l), 0);
 
-    const totalGiven = givenLoans
-      .filter((l) => l.loanStatus === 'pending')
-      .reduce((sum, l) => sum + remaining(l), 0);
-
-    const totalReceived = receivedLoans
-      .filter((l) => l.loanStatus === 'pending')
-      .reduce((sum, l) => sum + remaining(l), 0);
-
-    return {
-      totalGiven,
-      totalReceived,
-      balance: totalGiven - totalReceived,
-    };
-  }, [givenLoans, receivedLoans]);
+  const list = tab === 'receive' ? toReceive : tab === 'pay' ? toPay : settled;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     const parsedAmount = parseFloat(amount.replace(',', '.'));
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      toast({
-        title: 'Valor inválido',
-        description: 'Digite um valor maior que zero.',
-        variant: 'destructive',
-      });
+      toast({ title: 'Valor inválido', description: 'Digite um valor maior que zero.', variant: 'destructive' });
       return;
     }
-
     if (!person.trim()) {
-      toast({
-        title: 'Nome obrigatório',
-        description: 'Digite o nome da pessoa.',
-        variant: 'destructive',
-      });
+      toast({ title: 'Nome obrigatório', description: 'Digite o nome da pessoa.', variant: 'destructive' });
       return;
     }
 
@@ -150,10 +138,7 @@ export default function Loans() {
     });
 
     setIsModalOpen(false);
-    setPerson('');
-    setAmount('');
-    setDescription('');
-    setLoanDate(new Date());
+    setPerson(''); setAmount(''); setDescription(''); setLoanDate(new Date());
   };
 
   const handleRegisterPayment = (loan: Transaction, paidValue: number, settleAll: boolean) => {
@@ -171,7 +156,8 @@ export default function Loans() {
     const updates: Partial<Transaction> = { loanPaidAmount: newPaid };
     if (isFullySettled) {
       updates.loanStatus = loan.type === 'expense' ? 'received' : 'paid';
-      updates.loanSettledDate = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`;
+      const d = new Date();
+      updates.loanSettledDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     }
 
     updateTransaction(loan.id, updates);
@@ -191,21 +177,27 @@ export default function Loans() {
     }
   };
 
-  const renderLoanCard = (loan: typeof loans[0], index: number) => {
+  const renderLoanCard = (loan: Transaction, index: number) => {
     const isGiven = loan.type === 'expense';
     const isPending = loan.loanStatus === 'pending';
-    const isSettled = !isPending;
     const paid = loan.loanPaidAmount ?? 0;
-    const remaining = Math.max(0, loan.amount - paid);
+    const rem = Math.max(0, loan.amount - paid);
     const progress = loan.amount > 0 ? Math.min(100, (paid / loan.amount) * 100) : 0;
     const hasPartial = isPending && paid > 0;
+
+    const status: { label: string; color: string; bg: string; Icon: typeof Clock } = !isPending
+      ? { label: isGiven ? 'Recebido' : 'Pago', color: 'text-income', bg: 'bg-income/10', Icon: CheckCircle2 }
+      : hasPartial
+      ? { label: 'Parcial', color: 'text-primary', bg: 'bg-primary/10', Icon: Clock }
+      : { label: 'Pendente', color: 'text-warning', bg: 'bg-warning/10', Icon: Clock };
+    const StatusIcon = status.Icon;
 
     return (
       <motion.div
         key={loan.id}
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: index * 0.05 }}
+        transition={{ delay: index * 0.03 }}
       >
         <SwipeableCard
           onEdit={() => setSelectedLoan(loan)}
@@ -215,94 +207,27 @@ export default function Loans() {
           }}
           onClick={() => setSelectedLoan(loan)}
           className={cn(
-            'rounded-xl p-4 sm:p-5 transition-all border-2',
-            isPending && 'glass-card border-transparent hover-lift',
-            isSettled && 'bg-income/5 border-income/20'
+            'glass-card rounded-2xl p-4 relative overflow-hidden',
+            !isPending && 'opacity-75'
           )}
         >
-          <div className="flex items-start justify-between mb-2 sm:mb-3">
-            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-              <div
-                className={cn(
-                  'w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors',
-                  isPending && isGiven && 'bg-expense/10',
-                  isPending && !isGiven && 'bg-income/10',
-                  isSettled && 'bg-income/20'
-                )}
-              >
-                {isSettled ? (
-                  <Check className="w-4 h-4 sm:w-5 sm:h-5 text-income" />
-                ) : isGiven ? (
-                  <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5 text-expense" />
-                ) : (
-                  <ArrowDownLeft className="w-4 h-4 sm:w-5 sm:h-5 text-income" />
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <h3 className={cn(
-                  'font-semibold text-sm sm:text-base truncate',
-                  isSettled && 'text-muted-foreground'
-                )}>
-                  {loan.loanPerson}
-                </h3>
-                <p className="text-xs sm:text-sm text-muted-foreground">
-                  {isSettled
-                    ? (isGiven ? 'Recebido de volta' : 'Pago')
-                    : (isGiven ? 'Você emprestou' : 'Você pegou')
-                  }
-                </p>
-              </div>
-            </div>
-            <div
-              className={cn(
-                'px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 shrink-0',
-                isPending && !hasPartial && 'bg-warning/10 text-warning',
-                isPending && hasPartial && 'bg-primary/10 text-primary',
-                !isPending && 'bg-income/20 text-income'
-              )}
-            >
-              {isPending ? (
-                hasPartial ? (
-                  <>
-                    <Clock className="w-3 h-3" />
-                    <span>Parcial</span>
-                  </>
-                ) : (
-                  <>
-                    <Clock className="w-3 h-3" />
-                    <span className="hidden sm:inline">Pendente</span>
-                  </>
-                )
-              ) : (
-                <>
-                  <Check className="w-3 h-3" />
-                  <span>{isGiven ? 'Recebido' : 'Pago'}</span>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Dates */}
-          <div className="text-xs text-muted-foreground mb-2 space-y-0.5">
-            <p className="flex items-center gap-1">
-              <CalendarIcon className="w-3 h-3" />
-              {isGiven ? 'Emprestado' : 'Pego'} em: {format(new Date(loan.date + 'T12:00:00'), "dd/MM/yyyy")}
-            </p>
-            {isSettled && loan.loanSettledDate && (
-              <p className="flex items-center gap-1 text-income">
-                <Check className="w-3 h-3" />
-                {isGiven ? 'Recebido' : 'Pago'} em: {format(new Date(loan.loanSettledDate + 'T12:00:00'), "dd/MM/yyyy")}
+          {/* Linha 1: pessoa + status */}
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <div className="min-w-0 flex-1">
+              <h3 className={cn('font-semibold text-[15px] truncate', !isPending && 'text-muted-foreground')}>
+                {loan.loanPerson}
+              </h3>
+              <p className="text-xs text-muted-foreground truncate mt-0.5">
+                {isGiven ? 'Você emprestou' : 'Você pegou'} · {format(new Date(loan.date + 'T12:00:00'), "dd/MM/yy")}
               </p>
-            )}
+            </div>
+            <div className={cn('flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-semibold shrink-0', status.bg, status.color)}>
+              <StatusIcon className="w-3 h-3" />
+              {status.label}
+            </div>
           </div>
 
-          {loan.description && (
-            <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3 line-clamp-1 sm:line-clamp-2">
-              {loan.description}
-            </p>
-          )}
-
-          {/* Progress (partial payments) */}
+          {/* Progresso (parcial) */}
           {isPending && hasPartial && (
             <div className="mb-3 space-y-1.5">
               <div className="flex items-center justify-between text-[11px]">
@@ -310,7 +235,7 @@ export default function Loans() {
                   {isGiven ? 'Recebido' : 'Pago'}: <span className="font-semibold text-foreground">R$ {paid.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                 </span>
                 <span className="text-muted-foreground">
-                  Falta: <span className="font-semibold text-foreground">R$ {remaining.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                  Falta: <span className="font-semibold text-foreground">R$ {rem.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                 </span>
               </div>
               <div className="h-1.5 rounded-full bg-muted overflow-hidden">
@@ -322,29 +247,25 @@ export default function Loans() {
             </div>
           )}
 
-          <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-border/50 gap-2">
+          {/* Linha 2: valor + ação */}
+          <div className="flex items-center justify-between pt-3 border-t border-border/50 gap-2">
             <p
               className={cn(
-                'text-lg sm:text-xl font-bold transition-colors',
+                'text-base font-bold font-display',
                 isPending && isGiven && 'text-expense',
                 isPending && !isGiven && 'text-income',
-                isSettled && 'text-income line-through decoration-2'
+                !isPending && 'text-muted-foreground line-through'
               )}
             >
-              {isPending ? (isGiven ? '-' : '+') : '✓'} R${' '}
-              {loan.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              R$ {loan.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </p>
 
             {isPending && (
-              <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+              <div onClick={(e) => e.stopPropagation()} className="shrink-0">
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="min-h-[36px] text-xs"
-                    >
-                      <Plus className="w-3 h-3 mr-1" />
+                    <Button variant="ghost" size="sm" className="h-8 px-3 text-xs text-income hover:text-income hover:bg-income/10">
+                      <CheckCircle2 className="w-4 h-4 mr-1" />
                       {isGiven ? 'Recebi' : 'Paguei'}
                     </Button>
                   </PopoverTrigger>
@@ -358,154 +279,127 @@ export default function Loans() {
               </div>
             )}
           </div>
+
+          {!isPending && loan.loanSettledDate && (
+            <p className="mt-2 text-[11px] text-income/80 flex items-center gap-1">
+              <Check className="w-3 h-3" />
+              Quitado em {format(new Date(loan.loanSettledDate + 'T12:00:00'), "dd/MM/yy")}
+            </p>
+          )}
         </SwipeableCard>
       </motion.div>
     );
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6 max-w-full overflow-x-hidden pb-28 lg:pb-4">
+    <div className="space-y-5 max-w-full overflow-hidden pb-28 lg:pb-4">
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex-1 min-w-0"
         >
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-display font-bold">Empréstimos</h1>
-          <p className="text-sm text-muted-foreground truncate">
-            Controle seus empréstimos
-          </p>
+          <p className="text-sm text-muted-foreground truncate">Controle o que entra e sai</p>
         </motion.div>
 
         <Button onClick={() => setIsModalOpen(true)} className="min-h-[44px] shrink-0">
           <Plus className="w-4 h-4 sm:mr-2" />
-          <span className="hidden sm:inline">Novo Empréstimo</span>
+          <span className="hidden sm:inline">Novo</span>
         </Button>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      {/* Resumo — 2 métricas */}
+      {loans.length > 0 && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="glass-card rounded-xl p-4"
+          className="glass-card rounded-2xl p-4 grid grid-cols-2 gap-3"
         >
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 rounded-lg bg-expense/10 flex items-center justify-center">
-              <ArrowUpRight className="w-4 h-4 text-expense" />
-            </div>
-            <span className="text-xs text-muted-foreground">Emprestado</span>
+          <div className="min-w-0">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">A receber</p>
+            <p className="text-lg sm:text-xl font-bold font-display truncate text-income">
+              R$ {totalReceive.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">{toReceive.length} pendente(s)</p>
           </div>
-          <p className="text-lg sm:text-2xl font-bold text-expense truncate">
-            R$ {stats.totalGiven.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-          </p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="glass-card rounded-xl p-4"
-        >
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 rounded-lg bg-income/10 flex items-center justify-center">
-              <ArrowDownLeft className="w-4 h-4 text-income" />
-            </div>
-            <span className="text-xs text-muted-foreground">A Pagar</span>
+          <div className="min-w-0 text-right">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">A pagar</p>
+            <p className="text-lg sm:text-xl font-bold font-display truncate text-expense">
+              R$ {totalPay.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">{toPay.length} pendente(s)</p>
           </div>
-          <p className="text-lg sm:text-2xl font-bold text-income truncate">
-            R$ {stats.totalReceived.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-          </p>
         </motion.div>
+      )}
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="glass-card rounded-xl p-4 col-span-2 sm:col-span-1"
-        >
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
-              <HandCoins className="w-4 h-4 text-accent" />
-            </div>
-            <span className="text-xs text-muted-foreground">Saldo</span>
-          </div>
-          <p
-            className={cn(
-              'text-lg sm:text-2xl font-bold truncate',
-              stats.balance >= 0 ? 'text-income' : 'text-expense'
-            )}
-          >
-            R$ {Math.abs(stats.balance).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-          </p>
-        </motion.div>
-      </div>
+      {/* Tabs */}
+      {loans.length > 0 && (
+        <div className="flex gap-2 p-1 rounded-2xl bg-muted/40 w-full">
+          {([
+            { id: 'receive' as const, label: `A receber (${toReceive.length})` },
+            { id: 'pay' as const, label: `A pagar (${toPay.length})` },
+            { id: 'done' as const, label: `Quitados (${settled.length})` },
+          ]).map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={cn(
+                'flex-1 h-9 rounded-xl text-xs sm:text-sm font-medium transition-colors truncate px-2',
+                tab === t.id ? 'bg-background shadow-sm' : 'text-muted-foreground'
+              )}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      )}
 
-      {/* Loans Lists */}
+      {/* Lista */}
       {loans.length === 0 ? (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="glass-card rounded-xl p-6 sm:p-8 text-center"
+          className="glass-card rounded-2xl p-8 text-center"
         >
-          <HandCoins className="w-10 h-10 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
-          <h3 className="text-base sm:text-lg font-semibold mb-2">Nenhum empréstimo</h3>
+          <HandCoins className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+          <h3 className="text-base font-semibold mb-1">Nenhum empréstimo</h3>
           <p className="text-sm text-muted-foreground mb-4">
-            Registre empréstimos dados ou recebidos
+            Registre empréstimos dados ou recebidos e acompanhe o status.
           </p>
           <Button onClick={() => setIsModalOpen(true)} className="min-h-[44px]">
             <Plus className="w-4 h-4 mr-2" />
             Adicionar Empréstimo
           </Button>
         </motion.div>
+      ) : list.length === 0 ? (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="glass-card rounded-2xl p-6 text-center"
+        >
+          <CheckCircle2 className={cn('w-8 h-8 mx-auto mb-2', tab === 'done' ? 'text-muted-foreground' : 'text-income')} />
+          <p className="text-sm text-muted-foreground">
+            {tab === 'receive' && 'Ninguém te deve nada 🎉'}
+            {tab === 'pay' && 'Você não deve nada 🎉'}
+            {tab === 'done' && 'Nenhum empréstimo quitado ainda.'}
+          </p>
+        </motion.div>
       ) : (
-        <div className="space-y-6 lg:grid lg:grid-cols-2 lg:gap-6 lg:space-y-0">
-          {/* Given Loans */}
-          <div>
-            <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center gap-2">
-              <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5 text-expense" />
-              Emprestado (A Receber)
-            </h2>
-            {givenLoans.length === 0 ? (
-              <div className="glass-card rounded-xl p-4 sm:p-6 text-center text-muted-foreground text-sm">
-                Nenhum empréstimo dado
-              </div>
-            ) : (
-              <div className="space-y-3 sm:space-y-4">
-                {givenLoans.map((loan, index) => renderLoanCard(loan, index))}
-              </div>
-            )}
-          </div>
-
-          {/* Received Loans */}
-          <div>
-            <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center gap-2">
-              <ArrowDownLeft className="w-4 h-4 sm:w-5 sm:h-5 text-income" />
-              Pego Emprestado (A Pagar)
-            </h2>
-            {receivedLoans.length === 0 ? (
-              <div className="glass-card rounded-xl p-4 sm:p-6 text-center text-muted-foreground text-sm">
-                Nenhum empréstimo recebido
-              </div>
-            ) : (
-              <div className="space-y-3 sm:space-y-4">
-                {receivedLoans.map((loan, index) => renderLoanCard(loan, index))}
-              </div>
-            )}
-          </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {list.map((loan, index) => renderLoanCard(loan, index))}
         </div>
       )}
 
-      {/* Modal */}
+      {/* Modal — bottom-sheet friendly */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-lg mx-auto">
+        <DialogContent className="max-w-[calc(100vw-1rem)] sm:max-w-lg mx-auto top-4 translate-y-0 sm:top-1/2 sm:-translate-y-1/2 max-h-[calc(100dvh-2rem)] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Novo Empréstimo</DialogTitle>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Loan Type Selector */}
             <div className="space-y-2">
               <Label>Tipo</Label>
               <div className="grid grid-cols-2 gap-2">
@@ -540,20 +434,13 @@ export default function Loans() {
 
             <div className="space-y-2">
               <Label>Pessoa</Label>
-              <Input
-                value={person}
-                onChange={(e) => setPerson(e.target.value)}
-                placeholder="Nome da pessoa"
-                required
-              />
+              <Input value={person} onChange={(e) => setPerson(e.target.value)} placeholder="Nome da pessoa" required />
             </div>
 
             <div className="space-y-2">
               <Label>Valor</Label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  R$
-                </span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R$</span>
                 <Input
                   type="text"
                   inputMode="decimal"
@@ -604,7 +491,6 @@ export default function Loans() {
         </DialogContent>
       </Dialog>
 
-      {/* Loan Details Modal */}
       <TransactionDetailsModal
         transaction={selectedLoan}
         onClose={() => setSelectedLoan(null)}

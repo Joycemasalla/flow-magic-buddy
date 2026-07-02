@@ -141,13 +141,14 @@ export default function NewReminderModal({ isOpen, onClose }: NewReminderModalPr
 
           {/* Modal */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="fixed left-4 right-4 top-1/2 -translate-y-1/2 z-50 max-w-md mx-auto lg:max-w-lg"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 40 }}
+            transition={{ type: 'spring', stiffness: 320, damping: 32 }}
+            className="fixed left-2 right-2 top-4 z-50 max-w-md mx-auto lg:max-w-lg lg:top-10 max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain rounded-3xl"
           >
-            <div className="glass-elevated rounded-3xl p-6 lg:p-8">
+            <div className="glass-elevated rounded-3xl p-5 lg:p-8">
+
               {/* Header */}
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
