@@ -174,39 +174,35 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-5 max-w-full overflow-hidden pb-28 lg:pb-4">
-      {/* Header with Profile Switcher */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between gap-4 flex-wrap"
-      >
-        <div className="flex-1">
-          <h1 className="text-xl lg:text-2xl font-display font-bold">
+    <div className="space-y-4 max-w-full overflow-hidden pb-28 lg:pb-4">
+      {/* Header */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-xl lg:text-2xl font-display font-bold truncate">
             Olá{(() => {
               const name = user?.user_metadata?.full_name || user?.user_metadata?.name || '';
               return name ? `, ${name.split(' ')[0]}` : '';
             })()}! 👋
           </h1>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs text-muted-foreground mt-0.5 truncate">
             {activeWallet ? activeWallet.name : 'Minha carteira'}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <ProfileSwitcher />
           <Button
             variant="outline"
             size="sm"
             onClick={() => setIsReportOpen(true)}
-            className="min-h-[44px] px-4 rounded-2xl"
+            className="min-h-[40px] px-3 rounded-2xl"
           >
-            <Download className="w-4 h-4 mr-2 stroke-[1.5]" />
+            <Download className="w-4 h-4 sm:mr-2 stroke-[1.5]" />
             <span className="hidden sm:inline text-xs">Exportar</span>
           </Button>
         </div>
-      </motion.div>
+      </div>
 
-      {/* Period Filter Pills - Horizontal Scroll */}
+      {/* Período — pills compactas */}
       <FilterPillRow>
         {(Object.keys(periodLabels) as PeriodFilter[]).map((period) => (
           <FilterPill
@@ -215,20 +211,6 @@ export default function Dashboard() {
             onClick={() => setPeriodFilter(period)}
           >
             {periodLabels[period]}
-          </FilterPill>
-        ))}
-      </FilterPillRow>
-
-      {/* Type Filter Pills */}
-      <FilterPillRow delay={0.05}>
-        {(Object.keys(typeLabels) as TypeFilter[]).map((type) => (
-          <FilterPill
-            key={type}
-            active={typeFilter === type}
-            variant={type === 'income' ? 'income' : type === 'expense' ? 'expense' : 'default'}
-            onClick={() => setTypeFilter(type)}
-          >
-            {typeLabels[type]}
           </FilterPill>
         ))}
       </FilterPillRow>
@@ -246,21 +228,31 @@ export default function Dashboard() {
         comparisonLabel={comparisonLabel}
       />
 
+      {/* Tabs segmentadas de tipo — padrão do app */}
+      <div className="flex gap-2 p-1 rounded-2xl bg-muted/40 w-full">
+        {(Object.keys(typeLabels) as TypeFilter[]).map((type) => (
+          <button
+            key={type}
+            onClick={() => setTypeFilter(type)}
+            className={cn(
+              'flex-1 h-9 rounded-xl text-sm font-medium transition-colors',
+              typeFilter === type ? 'bg-background shadow-sm' : 'text-muted-foreground'
+            )}
+          >
+            {typeLabels[type]}
+          </button>
+        ))}
+      </div>
 
-      {/* Filtros de visualização */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.1 }}
-        className="flex gap-2 flex-wrap"
-      >
+      {/* Toggles de inclusão — linha única discreta */}
+      <div className="flex items-center gap-2 flex-wrap text-xs">
         <button
           onClick={() => setIncludeInvestments(!includeInvestments)}
           className={cn(
-            'flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium transition-all min-h-[36px] active:scale-95 border',
+            'flex items-center gap-1.5 px-2.5 py-1.5 rounded-full font-medium transition-colors border',
             includeInvestments
-              ? 'bg-primary/10 text-primary border-primary/30'
-              : 'bg-muted text-muted-foreground border-transparent'
+              ? 'bg-primary/10 text-primary border-primary/20'
+              : 'text-muted-foreground border-border/40'
           )}
         >
           {includeInvestments ? <Check className="w-3 h-3" /> : <Landmark className="w-3 h-3" />}
@@ -269,23 +261,17 @@ export default function Dashboard() {
         <button
           onClick={() => setIncludeLoans(!includeLoans)}
           className={cn(
-            'flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium transition-all min-h-[36px] active:scale-95 border',
+            'flex items-center gap-1.5 px-2.5 py-1.5 rounded-full font-medium transition-colors border',
             includeLoans
-              ? 'bg-primary/10 text-primary border-primary/30'
-              : 'bg-muted text-muted-foreground border-transparent'
+              ? 'bg-primary/10 text-primary border-primary/20'
+              : 'text-muted-foreground border-border/40'
           )}
         >
           {includeLoans ? <Check className="w-3 h-3" /> : <Handshake className="w-3 h-3" />}
           Empréstimos
         </button>
-        {(!includeInvestments || !includeLoans) && (
-          <span className="text-[10px] text-muted-foreground self-center ml-1">
-            {!includeInvestments && stats.excludedInvestments > 0 && `-R$ ${stats.excludedInvestments.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} invest.`}
-            {!includeInvestments && !includeLoans && stats.excludedInvestments > 0 && stats.excludedLoans > 0 && ' | '}
-            {!includeLoans && stats.excludedLoans > 0 && `-R$ ${stats.excludedLoans.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} emprést.`}
-          </span>
-        )}
-      </motion.div>
+      </div>
+
 
       {/* Investment Summary - Compact */}
       <InvestmentSummary investments={investments} />
