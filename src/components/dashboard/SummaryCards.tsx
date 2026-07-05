@@ -57,104 +57,78 @@ export default function SummaryCards({
   comparisonLabel,
 }: SummaryCardsProps) {
   return (
-    <div className="space-y-4 max-w-full min-w-0 overflow-hidden">
-      {/* Main Balance Card — Premium hero */}
+    <div className="space-y-3 max-w-full min-w-0 overflow-hidden">
+      {/* Saldo — hero enxuto */}
       <motion.div
-        initial={{ opacity: 0, y: 24 }}
+        initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className="relative max-w-full min-w-0 overflow-hidden glass-elevated rounded-3xl p-5 sm:p-10"
+        transition={{ duration: 0.3 }}
+        className="relative max-w-full min-w-0 overflow-hidden glass-elevated rounded-3xl p-5 sm:p-7"
       >
-        {/* Decorative glow */}
-        <div className="pointer-events-none absolute -top-24 -right-24 w-64 h-64 rounded-full bg-primary/15 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-32 -left-20 w-72 h-72 rounded-full bg-accent/10 blur-3xl" />
-
         <div className="relative min-w-0 max-w-full">
-          <div className="flex min-w-0 items-center justify-between gap-3 mb-3">
-            <div className="flex min-w-0 items-center gap-3">
-              <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/20 flex items-center justify-center">
-                <Wallet className="w-5 h-5 text-primary stroke-[1.5]" />
-              </div>
-              <p className="min-w-0 truncate text-xs uppercase tracking-wider text-muted-foreground font-bold">
-                Saldo Atual
+          <div className="flex items-center justify-between gap-3 mb-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <Wallet className="w-4 h-4 text-primary stroke-[1.75]" />
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+                Saldo
               </p>
             </div>
             {comparisonLabel && (
-              <span className="shrink-0 text-[10px] uppercase tracking-wider text-muted-foreground/60 font-medium">
+              <span className="shrink-0 text-[10px] text-muted-foreground/60 font-medium">
                 {comparisonLabel}
               </span>
             )}
           </div>
           <AutoFitText
-            max={64}
+            max={40}
             min={14}
             length={moneyLength(balance)}
             className={cn(
-              'font-black font-display tracking-tight',
+              'font-bold font-display tracking-tight',
               balance >= 0 ? 'text-foreground' : 'text-expense'
             )}
           >
             <PrivacyValue value={Math.abs(balance)} />
           </AutoFitText>
           {balance < 0 && (
-            <p className="text-xs text-expense mt-3 font-bold uppercase tracking-wide">Saldo negativo</p>
+            <p className="text-[11px] text-expense mt-1.5 font-semibold">Saldo negativo</p>
           )}
         </div>
       </motion.div>
 
-      {/* Income/Expense Row */}
-      <div className="grid min-w-0 grid-cols-2 gap-3 sm:gap-4">
-        <motion.button
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          whileTap={{ scale: 0.97 }}
+      {/* Receitas / Despesas — cards leves */}
+      <div className="grid min-w-0 grid-cols-2 gap-3">
+        <button
           onClick={onIncomeClick}
-          className="glass-elevated bg-gradient-income min-w-0 max-w-full overflow-hidden rounded-3xl p-4 sm:p-5 text-left cursor-pointer hover-lift transition-all"
+          className="glass-card min-w-0 rounded-2xl p-3.5 text-left transition-colors hover:border-income/30 active:scale-[0.98]"
         >
-          <div className="flex items-start justify-between gap-2 mb-3 min-w-0">
-            <div className="flex items-center gap-2 min-w-0 flex-1">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-2xl bg-income/25 flex items-center justify-center">
-                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-income stroke-[1.5]" />
-              </div>
-              <span className="text-[10px] sm:text-xs text-muted-foreground font-bold uppercase tracking-wide truncate">
-                Receitas
-              </span>
-            </div>
-            <div className="shrink-0">
-              <Delta current={income} previous={previousIncome} />
-            </div>
+          <div className="flex items-center gap-2 mb-2 min-w-0">
+            <TrendingUp className="w-3.5 h-3.5 text-income stroke-[2]" />
+            <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider truncate flex-1">
+              Receitas
+            </span>
+            <Delta current={income} previous={previousIncome} />
           </div>
-          <AutoFitText max={26} min={10} length={moneyLength(income)} className="font-black text-income font-display">
+          <AutoFitText max={20} min={11} length={moneyLength(income)} className="font-bold text-income font-display">
             <PrivacyValue value={income} />
           </AutoFitText>
-        </motion.button>
+        </button>
 
-        <motion.button
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          whileTap={{ scale: 0.97 }}
+        <button
           onClick={onExpenseClick}
-          className="glass-elevated bg-gradient-expense min-w-0 max-w-full overflow-hidden rounded-3xl p-4 sm:p-5 text-left cursor-pointer hover-lift transition-all"
+          className="glass-card min-w-0 rounded-2xl p-3.5 text-left transition-colors hover:border-expense/30 active:scale-[0.98]"
         >
-          <div className="flex items-start justify-between gap-2 mb-3 min-w-0">
-            <div className="flex items-center gap-2 min-w-0 flex-1">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-2xl bg-expense/25 flex items-center justify-center">
-                <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5 text-expense stroke-[1.5]" />
-              </div>
-              <span className="text-[10px] sm:text-xs text-muted-foreground font-bold uppercase tracking-wide truncate">
-                Despesas
-              </span>
-            </div>
-            <div className="shrink-0">
-              <Delta current={expense} previous={previousExpense} />
-            </div>
+          <div className="flex items-center gap-2 mb-2 min-w-0">
+            <TrendingDown className="w-3.5 h-3.5 text-expense stroke-[2]" />
+            <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider truncate flex-1">
+              Despesas
+            </span>
+            <Delta current={expense} previous={previousExpense} />
           </div>
-          <AutoFitText max={26} min={10} length={moneyLength(expense)} className="font-black text-expense font-display">
+          <AutoFitText max={20} min={11} length={moneyLength(expense)} className="font-bold text-expense font-display">
             <PrivacyValue value={expense} />
           </AutoFitText>
-        </motion.button>
+        </button>
       </div>
     </div>
   );
