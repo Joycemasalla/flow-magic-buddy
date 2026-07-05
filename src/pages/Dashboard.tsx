@@ -247,32 +247,39 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Toggles de inclusão — linha única discreta */}
-      <div className="flex items-center gap-2 flex-wrap text-xs">
-        <button
-          onClick={() => setIncludeInvestments(!includeInvestments)}
-          className={cn(
-            'flex items-center gap-1.5 px-2.5 py-1.5 rounded-full font-medium transition-colors border',
-            includeInvestments
-              ? 'bg-primary/10 text-primary border-primary/20'
-              : 'text-muted-foreground border-border/40'
+      {/* Ajustes (extras) — dentro de Popover discreto */}
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-[11px] text-muted-foreground">
+          {!includeInvestments || !includeLoans ? (
+            <span className="text-warning">Alguns valores estão ocultos</span>
+          ) : (
+            <>Incluindo investimentos e empréstimos</>
           )}
-        >
-          {includeInvestments ? <Check className="w-3 h-3" /> : <Landmark className="w-3 h-3" />}
-          Investimentos
-        </button>
-        <button
-          onClick={() => setIncludeLoans(!includeLoans)}
-          className={cn(
-            'flex items-center gap-1.5 px-2.5 py-1.5 rounded-full font-medium transition-colors border',
-            includeLoans
-              ? 'bg-primary/10 text-primary border-primary/20'
-              : 'text-muted-foreground border-border/40'
-          )}
-        >
-          {includeLoans ? <Check className="w-3 h-3" /> : <Handshake className="w-3 h-3" />}
-          Empréstimos
-        </button>
+        </p>
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs text-muted-foreground border border-border/40 hover:text-foreground transition-colors">
+              <SlidersHorizontal className="w-3 h-3" />
+              Ajustes
+            </button>
+          </PopoverTrigger>
+          <PopoverContent align="end" className="w-64 p-3 space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <Label htmlFor="inc-inv" className="flex items-center gap-2 text-sm cursor-pointer">
+                <Landmark className="w-3.5 h-3.5 text-muted-foreground" />
+                Investimentos
+              </Label>
+              <Switch id="inc-inv" checked={includeInvestments} onCheckedChange={setIncludeInvestments} />
+            </div>
+            <div className="flex items-center justify-between gap-2">
+              <Label htmlFor="inc-loans" className="flex items-center gap-2 text-sm cursor-pointer">
+                <Handshake className="w-3.5 h-3.5 text-muted-foreground" />
+                Empréstimos
+              </Label>
+              <Switch id="inc-loans" checked={includeLoans} onCheckedChange={setIncludeLoans} />
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
 
 
