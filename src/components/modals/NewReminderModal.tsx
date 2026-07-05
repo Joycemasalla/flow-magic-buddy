@@ -1,10 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  X,
-  Bell,
-  Calendar as CalendarIcon,
-} from 'lucide-react';
+import { X, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,7 +14,6 @@ import {
 } from '@/components/ui/select';
 import { useTransactions } from '@/contexts/TransactionContext';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
 import { TransactionCategory, categoryLabels } from '@/types/transaction';
 
 interface NewReminderModalProps {
