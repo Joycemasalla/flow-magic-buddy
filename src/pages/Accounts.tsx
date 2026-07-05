@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect, useMemo } from 'react';
 import { Plus, Pencil, Trash2, Settings2, Archive, ArchiveRestore, Wallet } from 'lucide-react';
 import { useAccounts } from '@/contexts/AccountContext';
 import { Button } from '@/components/ui/button';
@@ -22,9 +21,16 @@ export default function Accounts() {
   const [editing, setEditing] = useState<Account | null>(null);
   const [adjusting, setAdjusting] = useState<Account | null>(null);
   const [deleting, setDeleting] = useState<Account | null>(null);
-  const [showArchived, setShowArchived] = useState(false);
+  const [tab, setTab] = useState<'active' | 'archived'>('active');
 
-  const visibleAccounts = accounts.filter((a) => showArchived || !a.archived);
+  const { active, archived, activeTotal } = useMemo(() => {
+    const active = accounts.filter((a) => !a.archived);
+    const archived = accounts.filter((a) => a.archived);
+    const activeTotal = active.reduce((s, a) => s + (balances[a.id] ?? 0), 0);
+    return { active, archived, activeTotal };
+  }, [accounts, balances]);
+
+  const list = tab === 'active' ? active : archived;
 
   const openNew = () => {
     setEditing(null);
@@ -42,108 +48,141 @@ export default function Accounts() {
   }, []);
 
   return (
-    <div className="space-y-4 pb-28 lg:pb-4 max-w-3xl mx-auto">
-      <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl lg:text-2xl font-display font-bold">Contas</h1>
-          <p className="text-xs text-muted-foreground mt-1">Onde seu dinheiro está</p>
+    <div className="space-y-5 max-w-3xl mx-auto pb-28 lg:pb-4">
+      {/* Header */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-xl sm:text-2xl font-display font-bold">Contas</h1>
+          <p className="text-sm text-muted-foreground truncate">Onde seu dinheiro está</p>
         </div>
-        <Button onClick={openNew} size="sm" className="rounded-2xl bg-gradient-primary min-h-[44px]">
-          <Plus className="w-4 h-4 mr-1" /> Nova conta
+        <Button onClick={openNew} className="min-h-[44px] shrink-0">
+          <Plus className="w-4 h-4 sm:mr-2" />
+          <span className="hidden sm:inline">Nova</span>
         </Button>
-      </motion.div>
+      </div>
 
-      {/* Total */}
-      <motion.div
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-        className="p-5 rounded-3xl bg-gradient-primary text-primary-foreground"
-      >
-        <p className="text-xs opacity-80 uppercase tracking-wide">Saldo total</p>
-        <PrivacyValue value={totalBalance} className="text-3xl font-bold block mt-1" />
-        <p className="text-xs opacity-80 mt-1">{accounts.filter((a) => !a.archived).length} conta(s) ativa(s)</p>
-      </motion.div>
-
-      {loading && <p className="text-sm text-muted-foreground text-center py-8">Carregando...</p>}
-
-      {!loading && accounts.length === 0 && (
-        <div className="text-center py-12 px-4 rounded-3xl border border-dashed border-border">
-          <Wallet className="w-12 h-12 mx-auto text-muted-foreground/50" />
-          <p className="mt-3 font-semibold">Nenhuma conta cadastrada</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Cadastre seus bancos, carteira e poupança para acompanhar onde seu dinheiro está.
-          </p>
-          <Button onClick={openNew} className="mt-4 rounded-2xl bg-gradient-primary">
-            <Plus className="w-4 h-4 mr-1" /> Criar primeira conta
-          </Button>
+      {/* Resumo — 2 métricas */}
+      {accounts.length > 0 && (
+        <div className="glass-card rounded-2xl p-4 grid grid-cols-2 gap-3">
+          <div className="min-w-0">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Saldo total</p>
+            <PrivacyValue
+              value={activeTotal}
+              className={cn('text-lg sm:text-xl font-bold font-display truncate block', activeTotal < 0 && 'text-expense')}
+            />
+            <p className="text-[11px] text-muted-foreground mt-0.5">{active.length} ativa(s)</p>
+          </div>
+          <div className="min-w-0 text-right">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Arquivadas</p>
+            <p className="text-lg sm:text-xl font-bold font-display truncate text-muted-foreground">
+              {archived.length}
+            </p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">contas</p>
+          </div>
         </div>
       )}
 
-      <div className="space-y-2">
-        {visibleAccounts.map((a) => {
-          const bal = balances[a.id] ?? 0;
-          return (
-            <div
-              key={a.id}
+      {/* Tabs */}
+      {accounts.length > 0 && (
+        <div className="flex gap-2 p-1 rounded-2xl bg-muted/40 w-full">
+          {([
+            { id: 'active' as const, label: `Ativas (${active.length})` },
+            { id: 'archived' as const, label: `Arquivadas (${archived.length})` },
+          ]).map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
               className={cn(
-                'flex items-center gap-3 p-3 rounded-2xl border border-border/50 bg-card',
-                a.archived && 'opacity-60'
+                'flex-1 h-9 rounded-xl text-sm font-medium transition-colors',
+                tab === t.id ? 'bg-background shadow-sm' : 'text-muted-foreground'
               )}
             >
-              <AccountAvatar account={a} size="lg" />
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold truncate text-sm">{a.name}</p>
-                <p className="text-[10px] text-muted-foreground truncate">
-                  {accountTypeShort[a.type]}
-                  {activeWalletId && ` · ${accountOwnerLabels[a.ownerScope]}`}
-                  {a.archived && ' · arquivada'}
-                </p>
-                <PrivacyValue
-                  value={bal}
-                  className={cn('font-bold text-base tabular-nums block mt-0.5', bal < 0 && 'text-expense')}
-                />
-              </div>
-              <div className="flex flex-col gap-1 shrink-0">
-                <button
-                  onClick={() => setAdjusting(a)}
-                  className="p-2 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/10"
-                  title="Ajustar saldo"
-                >
-                  <Settings2 className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => openEdit(a)}
-                  className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted"
-                  title="Editar"
-                >
-                  <Pencil className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => updateAccount(a.id, { archived: !a.archived })}
-                  className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted"
-                  title={a.archived ? 'Desarquivar' : 'Arquivar'}
-                >
-                  {a.archived ? <ArchiveRestore className="w-4 h-4" /> : <Archive className="w-4 h-4" />}
-                </button>
-                <button
-                  onClick={() => setDeleting(a)}
-                  className="p-2 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                  title="Excluir"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+              {t.label}
+            </button>
+          ))}
+        </div>
+      )}
 
-      {accounts.some((a) => a.archived) && (
-        <button
-          onClick={() => setShowArchived((s) => !s)}
-          className="text-xs text-muted-foreground hover:text-foreground underline w-full text-center py-2"
-        >
-          {showArchived ? 'Ocultar arquivadas' : `Mostrar arquivadas (${accounts.filter((a) => a.archived).length})`}
-        </button>
+      {/* Lista */}
+      {loading ? (
+        <p className="text-sm text-muted-foreground text-center py-8">Carregando...</p>
+      ) : accounts.length === 0 ? (
+        <div className="glass-card rounded-2xl p-8 text-center">
+          <Wallet className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+          <h3 className="text-base font-semibold mb-1">Nenhuma conta cadastrada</h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Cadastre seus bancos e carteiras para acompanhar onde seu dinheiro está.
+          </p>
+          <Button onClick={openNew} className="min-h-[44px]">
+            <Plus className="w-4 h-4 mr-2" />
+            Criar primeira conta
+          </Button>
+        </div>
+      ) : list.length === 0 ? (
+        <div className="glass-card rounded-2xl p-6 text-center">
+          <p className="text-sm text-muted-foreground">
+            {tab === 'active' ? 'Nenhuma conta ativa.' : 'Nenhuma conta arquivada.'}
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {list.map((a) => {
+            const bal = balances[a.id] ?? 0;
+            return (
+              <div
+                key={a.id}
+                className={cn(
+                  'glass-card rounded-2xl p-3.5 flex items-center gap-3',
+                  a.archived && 'opacity-60'
+                )}
+              >
+                <AccountAvatar account={a} size="lg" />
+                {/* Linha 1: nome + info · Linha 2: saldo */}
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold truncate text-sm">{a.name}</p>
+                  <p className="text-[11px] text-muted-foreground truncate mt-0.5">
+                    {accountTypeShort[a.type]}
+                    {activeWalletId && ` · ${accountOwnerLabels[a.ownerScope]}`}
+                  </p>
+                  <PrivacyValue
+                    value={bal}
+                    className={cn('font-bold text-base tabular-nums block mt-1', bal < 0 && 'text-expense')}
+                  />
+                </div>
+                <div className="flex flex-col gap-1 shrink-0">
+                  <button
+                    onClick={() => setAdjusting(a)}
+                    className="p-2 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/10"
+                    title="Ajustar saldo"
+                  >
+                    <Settings2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => openEdit(a)}
+                    className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted"
+                    title="Editar"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => updateAccount(a.id, { archived: !a.archived })}
+                    className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted"
+                    title={a.archived ? 'Desarquivar' : 'Arquivar'}
+                  >
+                    {a.archived ? <ArchiveRestore className="w-4 h-4" /> : <Archive className="w-4 h-4" />}
+                  </button>
+                  <button
+                    onClick={() => setDeleting(a)}
+                    className="p-2 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                    title="Excluir"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       )}
 
       <AccountFormSheet open={formOpen} onClose={() => setFormOpen(false)} editing={editing} />

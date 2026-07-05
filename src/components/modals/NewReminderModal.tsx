@@ -1,10 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  X,
-  Bell,
-  Calendar as CalendarIcon,
-} from 'lucide-react';
+import { X, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,7 +14,6 @@ import {
 } from '@/components/ui/select';
 import { useTransactions } from '@/contexts/TransactionContext';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
 import { TransactionCategory, categoryLabels } from '@/types/transaction';
 
 interface NewReminderModalProps {
@@ -135,73 +130,73 @@ export default function NewReminderModal({ isOpen, onClose }: NewReminderModalPr
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/50 z-50 backdrop-blur-sm"
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[55]"
           />
 
-          {/* Modal */}
+          {/* Bottom-sheet padrão */}
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 40 }}
-            transition={{ type: 'spring', stiffness: 320, damping: 32 }}
-            className="fixed left-2 right-2 top-4 z-50 max-w-md mx-auto lg:max-w-lg lg:top-10 max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain rounded-3xl"
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ type: 'spring', damping: 28, stiffness: 320 }}
+            className="fixed bottom-0 left-0 right-0 z-[60] bg-card border-t border-border rounded-t-3xl safe-area-bottom max-h-[92dvh] overflow-y-auto overscroll-contain"
           >
-            <div className="glass-elevated rounded-3xl p-5 lg:p-8">
+            {/* Handle */}
+            <div className="flex justify-center pt-3 pb-2 sticky top-0 bg-card z-10">
+              <div className="w-10 h-1 bg-muted-foreground/30 rounded-full" />
+            </div>
 
+            <div className="px-4 sm:px-5 pb-8">
               {/* Header */}
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-accent/15 flex items-center justify-center">
-                    <Bell className="w-5 h-5 text-accent stroke-[1.5]" />
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-8 h-8 rounded-xl bg-accent/15 flex items-center justify-center shrink-0">
+                    <Bell className="w-4 h-4 text-accent stroke-[1.75]" />
                   </div>
-                  <h2 className="text-2xl font-bold">Novo Gasto Mensal</h2>
+                  <h2 className="text-lg font-bold truncate">Novo Gasto Mensal</h2>
                 </div>
-                <button
-                  onClick={onClose}
-                  className="w-9 h-9 rounded-full hover:bg-muted flex items-center justify-center transition-colors"
-                >
-                  <X className="w-5 h-5 stroke-[1.5]" />
-                </button>
+                <Button variant="ghost" size="icon" onClick={onClose} className="h-9 w-9 shrink-0">
+                  <X className="w-5 h-5" />
+                </Button>
               </div>
 
               {/* Form */}
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Title */}
-                <div className="space-y-2">
-                  <Label htmlFor="title" className="text-sm font-medium">Nome do gasto</Label>
+              <form onSubmit={handleSubmit} className="space-y-3.5">
+                <div className="space-y-1.5">
+                  <Label htmlFor="title" className="text-xs font-medium">Nome do gasto</Label>
                   <Input
                     id="title"
                     placeholder="Ex: Aluguel, Netflix, Internet"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="rounded-2xl bg-muted/40 border-border/40 h-11"
+                    className="h-11 rounded-xl"
                     disabled={isProcessing}
                   />
                 </div>
 
-                {/* Amount */}
-                <div className="space-y-2">
-                  <Label htmlFor="amount" className="text-sm font-medium">Valor</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="amount" className="text-xs font-medium">Valor</Label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
                       R$
                     </span>
                     <Input
                       id="amount"
+                      inputMode="decimal"
                       placeholder="0,00"
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
-                      className="pl-10 rounded-2xl bg-muted/40 border-border/40 h-11"
+                      className="pl-9 h-11 rounded-xl"
                       disabled={isProcessing}
                     />
                   </div>
                 </div>
 
-                {/* Due Day + Alert Days */}
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="dueDay" className="text-sm font-medium">Vence dia</Label>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="dueDay" className="text-xs font-medium">Vence dia</Label>
                     <Input
                       id="dueDay"
                       type="number"
@@ -209,12 +204,12 @@ export default function NewReminderModal({ isOpen, onClose }: NewReminderModalPr
                       max="31"
                       value={dueDay}
                       onChange={(e) => setDueDay(e.target.value)}
-                      className="rounded-2xl bg-muted/40 border-border/40 h-11"
+                      className="h-11 rounded-xl"
                       disabled={isProcessing}
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="alertDays" className="text-sm font-medium">Alertar (dias antes)</Label>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="alertDays" className="text-xs font-medium">Alertar (dias)</Label>
                     <Input
                       id="alertDays"
                       type="number"
@@ -222,22 +217,19 @@ export default function NewReminderModal({ isOpen, onClose }: NewReminderModalPr
                       max="30"
                       value={alertDays}
                       onChange={(e) => setAlertDays(e.target.value)}
-                      className="rounded-2xl bg-muted/40 border-border/40 h-11"
+                      className="h-11 rounded-xl"
                       disabled={isProcessing}
                     />
                   </div>
                 </div>
 
-                {/* Category */}
-                <div className="space-y-2">
-                  <Label htmlFor="category" className="text-sm font-medium">
-                    Categoria
-                  </Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="category" className="text-xs font-medium">Categoria</Label>
                   <Select value={category} onValueChange={(value) => setCategory(value as TransactionCategory)}>
-                    <SelectTrigger className="rounded-2xl bg-muted/40 border-border/40 h-11">
+                    <SelectTrigger className="h-11 rounded-xl">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="rounded-2xl">
+                    <SelectContent className="z-[70]">
                       {categoryOptions.map((option) => (
                         <SelectItem key={option.value} value={option.value}>
                           {option.label}
@@ -247,35 +239,36 @@ export default function NewReminderModal({ isOpen, onClose }: NewReminderModalPr
                   </Select>
                 </div>
 
-                {/* Description */}
-                <div className="space-y-2">
-                  <Label htmlFor="description" className="text-sm font-medium">
-                    Descrição (opcional)
-                  </Label>
-                  <Textarea
-                    id="description"
-                    placeholder="Detalhes desse gasto..."
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    className="rounded-2xl bg-muted/40 border-border/40 resize-none h-24"
-                    disabled={isProcessing}
-                  />
-                </div>
+                <details className="group">
+                  <summary className="cursor-pointer text-xs text-muted-foreground py-1 select-none list-none flex items-center gap-1">
+                    <span className="group-open:rotate-90 transition-transform">›</span> Adicionar descrição
+                  </summary>
+                  <div className="pt-2">
+                    <Textarea
+                      id="description"
+                      placeholder="Detalhes desse gasto..."
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      className="rounded-xl resize-none h-20"
+                      disabled={isProcessing}
+                    />
+                  </div>
+                </details>
 
-                {/* Submit Buttons */}
-                <div className="flex gap-3 pt-2">
+                {/* Sticky action */}
+                <div className="flex gap-2 pt-2 sticky bottom-0 bg-card">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={onClose}
-                    className="flex-1 rounded-2xl h-11"
+                    className="flex-1 h-11 rounded-xl"
                     disabled={isProcessing}
                   >
                     Cancelar
                   </Button>
                   <Button
                     type="submit"
-                    className="flex-1 rounded-2xl h-11 bg-accent hover:bg-accent/90"
+                    className="flex-[1.4] h-11 rounded-xl bg-accent hover:bg-accent/90"
                     disabled={isProcessing}
                   >
                     {isProcessing ? 'Salvando...' : 'Adicionar'}

@@ -167,6 +167,36 @@
   }
 }
 
+/* Mobile: sombras e blurs mais leves para reduzir peso visual e melhorar perf */
+@media (max-width: 640px) {
+  .glass-card,
+  .glass-elevated {
+    box-shadow: 0 2px 10px hsl(220 70% 1% / 0.35);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .light .glass-card,
+  .light .glass-elevated {
+    box-shadow: 0 2px 8px hsl(218 50% 12% / 0.06);
+  }
+  .shadow-glow,
+  .shadow-glow-accent {
+    box-shadow: none;
+  }
+}
+
+/* Respeita a preferência do sistema por menos movimento */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 @layer utilities {
   .glass-card {
     background: var(--gradient-card);
