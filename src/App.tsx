@@ -22,6 +22,7 @@ const Reminders = lazy(() => import("@/pages/Reminders"));
 const Loans = lazy(() => import("@/pages/Loans"));
 const Accounts = lazy(() => import("@/pages/Accounts"));
 const JoinWallet = lazy(() => import("@/pages/JoinWallet"));
+const WhatsApp = lazy(() => import("@/pages/WhatsApp"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -91,6 +92,7 @@ function AppRoutes() {
           <Route path="/lembretes" element={<Reminders />} />
           <Route path="/emprestimos" element={<Loans />} />
           <Route path="/contas" element={<Accounts />} />
+          <Route path="/whatsapp" element={<WhatsApp />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
