@@ -15,6 +15,7 @@ import {
   Eye,
   EyeOff,
   Wallet,
+  MessageCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -111,6 +112,20 @@ export default function AppLayout() {
               <span className="font-medium text-sm">{item.label}</span>
             </NavLink>
           ))}
+          <NavLink
+            to="/whatsapp"
+            className={({ isActive }) =>
+              cn(
+                'flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200',
+                isActive
+                  ? 'bg-primary/10 text-primary border border-primary/20'
+                  : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+              )
+            }
+          >
+            <MessageCircle className="w-5 h-5 stroke-[1.5]" />
+            <span className="font-medium text-sm">WhatsApp</span>
+          </NavLink>
         </nav>
 
         <div className="p-4 border-t border-sidebar-border">
