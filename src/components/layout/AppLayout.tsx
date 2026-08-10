@@ -190,6 +190,18 @@ export default function AppLayout() {
             <span className="text-gradient">Flow</span>
           </h1>
           <div className="flex items-center gap-1">
+            <NavLink
+              to="/whatsapp"
+              className={({ isActive }) =>
+                cn(
+                  'h-9 w-9 rounded-full flex items-center justify-center transition-colors',
+                  isActive ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:bg-white/5'
+                )
+              }
+              aria-label="WhatsApp"
+            >
+              <MessageCircle className="w-5 h-5 stroke-[1.5]" />
+            </NavLink>
             <Button
               variant="ghost"
               size="icon"
