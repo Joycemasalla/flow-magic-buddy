@@ -229,7 +229,7 @@ Deno.serve(async (req) => {
       const end = localDateString();
       const { data: rows, error } = await supabase
         .from("transactions")
-        .select("amount, type, category, description, date")
+        .select("amount, type, category, description, date, is_loan")
         .eq("user_id", link.user_id)
         .gte("date", start)
         .lte("date", end)
