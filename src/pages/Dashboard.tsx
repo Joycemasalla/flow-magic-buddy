@@ -52,6 +52,8 @@ export default function Dashboard() {
   const { toast } = useToast();
   
   const [periodFilter, setPeriodFilter] = useState<PeriodFilter>('month');
+  const [customRange, setCustomRange] = useState<DateRange | undefined>();
+  const [isRangeOpen, setIsRangeOpen] = useState(false);
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
   const [showCharts, setShowCharts] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
