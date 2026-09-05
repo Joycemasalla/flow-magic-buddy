@@ -6,7 +6,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useWallet } from '@/contexts/WalletContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { isToday, subDays, startOfMonth, startOfYear, isWithinInterval, startOfDay, endOfDay, subMonths, subYears, endOfMonth, endOfYear } from 'date-fns';
+import { isToday, subDays, startOfMonth, startOfYear, isWithinInterval, startOfDay, endOfDay, subMonths, subYears, endOfMonth, endOfYear, format } from 'date-fns';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { CalendarDays } from 'lucide-react';
+import type { DateRange } from 'react-day-picker';
 import SummaryCards from '@/components/dashboard/SummaryCards';
 import CategoryChart from '@/components/dashboard/CategoryChart';
 import EvolutionChart from '@/components/dashboard/EvolutionChart';
@@ -23,11 +26,11 @@ import { FilterPill, FilterPillRow } from '@/components/ui/FilterPill';
 import { cn } from '@/lib/utils';
 import { SlidersHorizontal, Landmark, Handshake } from 'lucide-react';
 
-type PeriodFilter = 'today' | 'week' | 'month' | 'year' | 'all';
+type PeriodFilter = 'today' | 'week' | 'month' | 'year' | 'all' | 'custom';
 type TypeFilter = 'all' | 'income' | 'expense';
 type ProfileMode = 'personal' | 'couple';
 
-const periodLabels: Record<PeriodFilter, string> = {
+const periodLabels: Record<Exclude<PeriodFilter, 'custom'>, string> = {
   today: 'Hoje',
   week: '7 dias',
   month: 'Mês',
@@ -48,6 +51,8 @@ export default function Dashboard() {
   const { toast } = useToast();
   
   const [periodFilter, setPeriodFilter] = useState<PeriodFilter>('month');
+  const [customRange, setCustomRange] = useState<DateRange | undefined>();
+  const [isRangeOpen, setIsRangeOpen] = useState(false);
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
   const [showCharts, setShowCharts] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
@@ -85,11 +90,18 @@ export default function Dashboard() {
             start: startOfYear(now),
             end: endOfDay(now),
           });
+        case 'custom': {
+          if (!customRange?.from) return true;
+          return isWithinInterval(tDate, {
+            start: startOfDay(customRange.from),
+            end: endOfDay(customRange.to ?? customRange.from),
+          });
+        }
         default:
           return true;
       }
     });
-  }, [transactions, periodFilter, typeFilter]);
+  }, [transactions, periodFilter, typeFilter, customRange]);
 
   const stats = useMemo(() => {
     const income = filteredTransactions
@@ -205,9 +217,9 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Período — pills compactas */}
+      {/* Período — pills compactas + calendário personalizado */}
       <FilterPillRow>
-        {(Object.keys(periodLabels) as PeriodFilter[]).map((period) => (
+        {(Object.keys(periodLabels) as (keyof typeof periodLabels)[]).map((period) => (
           <FilterPill
             key={period}
             active={periodFilter === period}
@@ -216,6 +228,38 @@ export default function Dashboard() {
             {periodLabels[period]}
           </FilterPill>
         ))}
+        <Popover open={isRangeOpen} onOpenChange={setIsRangeOpen}>
+          <PopoverTrigger asChild>
+            <span>
+              <FilterPill
+                className="flex items-center gap-1.5"
+                active={periodFilter === 'custom'}
+                onClick={() => {
+                  setPeriodFilter('custom');
+                  setIsRangeOpen(true);
+                }}
+              >
+                <CalendarDays className="w-3.5 h-3.5" />
+                {periodFilter === 'custom' && customRange?.from
+                  ? `${format(customRange.from, 'dd/MM')} – ${format(customRange.to ?? customRange.from, 'dd/MM')}`
+                  : 'Período'}
+              </FilterPill>
+            </span>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="w-auto p-0 rounded-2xl z-[70]">
+            <CalendarComponent
+              mode="range"
+              selected={customRange}
+              onSelect={(range) => {
+                setCustomRange(range);
+                setPeriodFilter('custom');
+                if (range?.from && range?.to) setIsRangeOpen(false);
+              }}
+              numberOfMonths={1}
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
       </FilterPillRow>
 
       {/* Summary Cards */}
@@ -338,7 +382,11 @@ export default function Dashboard() {
         onClose={() => setIsReportOpen(false)}
         transactions={filteredTransactions}
         stats={stats}
-        period={periodLabels[periodFilter]}
+        period={periodFilter === 'custom'
+          ? customRange?.from
+            ? `${format(customRange.from, 'dd/MM/yyyy')} – ${format(customRange.to ?? customRange.from, 'dd/MM/yyyy')}`
+            : 'Personalizado'
+          : periodLabels[periodFilter]}
       />
     </div>
   );

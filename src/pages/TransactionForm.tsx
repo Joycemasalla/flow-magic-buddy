@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn, toLocalDateString } from '@/lib/utils';
 import AccountPicker from '@/components/accounts/AccountPicker';
+import { DatePickerField } from '@/components/ui/DatePickerField';
 
 const categoryEmojis: Record<TransactionCategory, string> = {
   salary: '💰',
@@ -230,12 +231,7 @@ export default function TransactionForm() {
         {/* Date */}
         <div className="space-y-2">
           <Label className="text-sm">Data</Label>
-          <Input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="h-12"
-          />
+          <DatePickerField value={date} onChange={setDate} />
         </div>
 
         {/* Account */}

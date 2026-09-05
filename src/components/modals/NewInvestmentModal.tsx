@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { DatePickerField } from '@/components/ui/DatePickerField';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
 import { useTransactions } from '@/contexts/TransactionContext';
@@ -438,10 +439,9 @@ export default function NewInvestmentModal({ isOpen, onClose, editingInvestment 
             </div>
             <div className="space-y-2">
               <Label>Vencimento</Label>
-              <Input
-                type="date"
+              <DatePickerField
                 value={tesouroDireto.vencimento}
-                onChange={(e) => setTesouroDireto({ ...tesouroDireto, vencimento: e.target.value })}
+                onChange={(v) => setTesouroDireto({ ...tesouroDireto, vencimento: v })}
               />
             </div>
           </>
@@ -552,10 +552,9 @@ export default function NewInvestmentModal({ isOpen, onClose, editingInvestment 
             </div>
             <div className="space-y-2">
               <Label>Vencimento</Label>
-              <Input
-                type="date"
+              <DatePickerField
                 value={rendaFixa.vencimento}
-                onChange={(e) => setRendaFixa({ ...rendaFixa, vencimento: e.target.value })}
+                onChange={(v) => setRendaFixa({ ...rendaFixa, vencimento: v })}
               />
             </div>
           </>
