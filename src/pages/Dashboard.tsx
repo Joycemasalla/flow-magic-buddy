@@ -6,7 +6,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useWallet } from '@/contexts/WalletContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { isToday, subDays, startOfMonth, startOfYear, isWithinInterval, startOfDay, endOfDay, subMonths, subYears, endOfMonth, endOfYear } from 'date-fns';
+import { isToday, subDays, startOfMonth, startOfYear, isWithinInterval, startOfDay, endOfDay, subMonths, subYears, endOfMonth, endOfYear, format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { CalendarDays } from 'lucide-react';
+import type { DateRange } from 'react-day-picker';
 import SummaryCards from '@/components/dashboard/SummaryCards';
 import CategoryChart from '@/components/dashboard/CategoryChart';
 import EvolutionChart from '@/components/dashboard/EvolutionChart';
@@ -23,11 +27,11 @@ import { FilterPill, FilterPillRow } from '@/components/ui/FilterPill';
 import { cn } from '@/lib/utils';
 import { SlidersHorizontal, Landmark, Handshake } from 'lucide-react';
 
-type PeriodFilter = 'today' | 'week' | 'month' | 'year' | 'all';
+type PeriodFilter = 'today' | 'week' | 'month' | 'year' | 'all' | 'custom';
 type TypeFilter = 'all' | 'income' | 'expense';
 type ProfileMode = 'personal' | 'couple';
 
-const periodLabels: Record<PeriodFilter, string> = {
+const periodLabels: Record<Exclude<PeriodFilter, 'custom'>, string> = {
   today: 'Hoje',
   week: '7 dias',
   month: 'Mês',
