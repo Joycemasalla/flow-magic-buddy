@@ -233,6 +233,7 @@ export default function Dashboard() {
           <PopoverTrigger asChild>
             <span>
               <FilterPill
+                className="flex items-center gap-1.5"
                 active={periodFilter === 'custom'}
                 onClick={() => {
                   setPeriodFilter('custom');
