@@ -91,11 +91,18 @@ export default function Dashboard() {
             start: startOfYear(now),
             end: endOfDay(now),
           });
+        case 'custom': {
+          if (!customRange?.from) return true;
+          return isWithinInterval(tDate, {
+            start: startOfDay(customRange.from),
+            end: endOfDay(customRange.to ?? customRange.from),
+          });
+        }
         default:
           return true;
       }
     });
-  }, [transactions, periodFilter, typeFilter]);
+  }, [transactions, periodFilter, typeFilter, customRange]);
 
   const stats = useMemo(() => {
     const income = filteredTransactions
