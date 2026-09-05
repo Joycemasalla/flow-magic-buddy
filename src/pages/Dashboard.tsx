@@ -218,9 +218,9 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Período — pills compactas */}
+      {/* Período — pills compactas + calendário personalizado */}
       <FilterPillRow>
-        {(Object.keys(periodLabels) as PeriodFilter[]).map((period) => (
+        {(Object.keys(periodLabels) as (keyof typeof periodLabels)[]).map((period) => (
           <FilterPill
             key={period}
             active={periodFilter === period}
@@ -229,6 +229,37 @@ export default function Dashboard() {
             {periodLabels[period]}
           </FilterPill>
         ))}
+        <Popover open={isRangeOpen} onOpenChange={setIsRangeOpen}>
+          <PopoverTrigger asChild>
+            <span>
+              <FilterPill
+                active={periodFilter === 'custom'}
+                onClick={() => {
+                  setPeriodFilter('custom');
+                  setIsRangeOpen(true);
+                }}
+              >
+                <CalendarDays className="w-3.5 h-3.5" />
+                {periodFilter === 'custom' && customRange?.from
+                  ? `${format(customRange.from, 'dd/MM')} – ${format(customRange.to ?? customRange.from, 'dd/MM')}`
+                  : 'Período'}
+              </FilterPill>
+            </span>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="w-auto p-0 rounded-2xl z-[70]">
+            <CalendarComponent
+              mode="range"
+              selected={customRange}
+              onSelect={(range) => {
+                setCustomRange(range);
+                setPeriodFilter('custom');
+                if (range?.from && range?.to) setIsRangeOpen(false);
+              }}
+              numberOfMonths={1}
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
       </FilterPillRow>
 
       {/* Summary Cards */}
