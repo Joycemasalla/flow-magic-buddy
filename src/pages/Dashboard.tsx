@@ -383,7 +383,11 @@ export default function Dashboard() {
         onClose={() => setIsReportOpen(false)}
         transactions={filteredTransactions}
         stats={stats}
-        period={periodLabels[periodFilter]}
+        period={periodFilter === 'custom'
+          ? customRange?.from
+            ? `${format(customRange.from, 'dd/MM/yyyy')} – ${format(customRange.to ?? customRange.from, 'dd/MM/yyyy')}`
+            : 'Personalizado'
+          : periodLabels[periodFilter]}
       />
     </div>
   );
