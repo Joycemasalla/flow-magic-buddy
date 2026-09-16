@@ -78,14 +78,38 @@ export default function Loans() {
   const { toast } = useToast();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingLoan, setEditingLoan] = useState<Transaction | null>(null);
   const [selectedLoan, setSelectedLoan] = useState<Transaction | null>(null);
   const [tab, setTab] = useState<'receive' | 'pay' | 'done'>('receive');
 
   const [loanType, setLoanType] = useState<'given' | 'received'>('given');
   const [person, setPerson] = useState('');
   const [amount, setAmount] = useState('');
+  const [paidAmount, setPaidAmount] = useState('');
   const [description, setDescription] = useState('');
   const [loanDate, setLoanDate] = useState<Date>(new Date());
+
+  const openNewLoan = () => {
+    setEditingLoan(null);
+    setLoanType('given');
+    setPerson('');
+    setAmount('');
+    setPaidAmount('');
+    setDescription('');
+    setLoanDate(new Date());
+    setIsModalOpen(true);
+  };
+
+  const openEditLoan = (loan: Transaction) => {
+    setEditingLoan(loan);
+    setLoanType(loan.type === 'expense' ? 'given' : 'received');
+    setPerson(loan.loanPerson ?? '');
+    setAmount(String(loan.amount).replace('.', ','));
+    setPaidAmount(loan.loanPaidAmount ? String(loan.loanPaidAmount).replace('.', ',') : '');
+    setDescription(loan.description ?? '');
+    setLoanDate(new Date(loan.date + 'T12:00:00'));
+    setIsModalOpen(true);
+  };
 
   const loans = useMemo(() => transactions.filter((t) => t.isLoan), [transactions]);
   const remaining = (l: Transaction) => Math.max(0, l.amount - (l.loanPaidAmount ?? 0));
@@ -121,12 +145,38 @@ export default function Loans() {
       return;
     }
 
+    const dateStr = `${loanDate.getFullYear()}-${String(loanDate.getMonth() + 1).padStart(2, '0')}-${String(loanDate.getDate()).padStart(2, '0')}`;
+
+    if (editingLoan) {
+      const parsedPaid = Math.max(0, Math.min(parsedAmount, parseFloat(paidAmount.replace(',', '.')) || 0));
+      const isFullySettled = parsedPaid >= parsedAmount;
+      const newType = loanType === 'given' ? 'expense' : 'income';
+
+      updateTransaction(editingLoan.id, {
+        type: newType,
+        amount: parsedAmount,
+        description: description || `Empréstimo - ${person}`,
+        date: dateStr,
+        loanPerson: person,
+        loanPaidAmount: parsedPaid,
+        loanStatus: isFullySettled ? (newType === 'expense' ? 'received' : 'paid') : 'pending',
+        loanSettledDate: isFullySettled
+          ? editingLoan.loanSettledDate ?? dateStr
+          : undefined,
+      });
+
+      toast({ title: '✏️ Empréstimo atualizado', description: `${person}: R$ ${parsedAmount.toFixed(2)}` });
+      setIsModalOpen(false);
+      setEditingLoan(null);
+      return;
+    }
+
     addTransaction({
       type: loanType === 'given' ? 'expense' : 'income',
       category: 'loan',
       amount: parsedAmount,
       description: description || `Empréstimo - ${person}`,
-      date: `${loanDate.getFullYear()}-${String(loanDate.getMonth() + 1).padStart(2, '0')}-${String(loanDate.getDate()).padStart(2, '0')}`,
+      date: dateStr,
       isLoan: true,
       loanPerson: person,
       loanStatus: 'pending',
@@ -138,7 +188,7 @@ export default function Loans() {
     });
 
     setIsModalOpen(false);
-    setPerson(''); setAmount(''); setDescription(''); setLoanDate(new Date());
+    setPerson(''); setAmount(''); setPaidAmount(''); setDescription(''); setLoanDate(new Date());
   };
 
   const handleRegisterPayment = (loan: Transaction, paidValue: number, settleAll: boolean) => {
@@ -200,7 +250,7 @@ export default function Loans() {
         transition={{ delay: index * 0.03 }}
       >
         <SwipeableCard
-          onEdit={() => setSelectedLoan(loan)}
+          onEdit={() => openEditLoan(loan)}
           onDelete={() => {
             deleteTransaction(loan.id);
             toast({ title: 'Empréstimo excluído' });
@@ -304,7 +354,7 @@ export default function Loans() {
           <p className="text-sm text-muted-foreground truncate">Controle o que entra e sai</p>
         </motion.div>
 
-        <Button onClick={() => setIsModalOpen(true)} className="min-h-[44px] shrink-0">
+        <Button onClick={openNewLoan} className="min-h-[44px] shrink-0">
           <Plus className="w-4 h-4 sm:mr-2" />
           <span className="hidden sm:inline">Novo</span>
         </Button>
@@ -368,7 +418,7 @@ export default function Loans() {
           <p className="text-sm text-muted-foreground mb-4">
             Registre empréstimos dados ou recebidos e acompanhe o status.
           </p>
-          <Button onClick={() => setIsModalOpen(true)} className="min-h-[44px]">
+          <Button onClick={openNewLoan} className="min-h-[44px]">
             <Plus className="w-4 h-4 mr-2" />
             Adicionar Empréstimo
           </Button>
@@ -393,10 +443,16 @@ export default function Loans() {
       )}
 
       {/* Modal — bottom-sheet friendly */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+      <Dialog
+        open={isModalOpen}
+        onOpenChange={(open) => {
+          setIsModalOpen(open);
+          if (!open) setEditingLoan(null);
+        }}
+      >
         <DialogContent className="max-w-[calc(100vw-1rem)] sm:max-w-lg mx-auto top-4 translate-y-0 sm:top-1/2 sm:-translate-y-1/2 max-h-[calc(100dvh-2rem)] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Novo Empréstimo</DialogTitle>
+            <DialogTitle>{editingLoan ? 'Editar Empréstimo' : 'Novo Empréstimo'}</DialogTitle>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -453,6 +509,26 @@ export default function Loans() {
               </div>
             </div>
 
+            {editingLoan && (
+              <div className="space-y-2">
+                <Label>{loanType === 'given' ? 'Já recebido de volta' : 'Já pago'}</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R$</span>
+                  <Input
+                    type="text"
+                    inputMode="decimal"
+                    value={paidAmount}
+                    onChange={(e) => setPaidAmount(e.target.value)}
+                    placeholder="0,00"
+                    className="pl-10"
+                  />
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Ao igualar o valor total, o empréstimo é marcado como quitado.
+                </p>
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label>Data</Label>
               <Popover>
@@ -485,7 +561,7 @@ export default function Loans() {
             </div>
 
             <Button type="submit" className="w-full min-h-[44px]">
-              Adicionar Empréstimo
+              {editingLoan ? 'Salvar alterações' : 'Adicionar Empréstimo'}
             </Button>
           </form>
         </DialogContent>
