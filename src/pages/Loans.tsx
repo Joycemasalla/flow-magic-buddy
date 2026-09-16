@@ -78,14 +78,38 @@ export default function Loans() {
   const { toast } = useToast();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingLoan, setEditingLoan] = useState<Transaction | null>(null);
   const [selectedLoan, setSelectedLoan] = useState<Transaction | null>(null);
   const [tab, setTab] = useState<'receive' | 'pay' | 'done'>('receive');
 
   const [loanType, setLoanType] = useState<'given' | 'received'>('given');
   const [person, setPerson] = useState('');
   const [amount, setAmount] = useState('');
+  const [paidAmount, setPaidAmount] = useState('');
   const [description, setDescription] = useState('');
   const [loanDate, setLoanDate] = useState<Date>(new Date());
+
+  const openNewLoan = () => {
+    setEditingLoan(null);
+    setLoanType('given');
+    setPerson('');
+    setAmount('');
+    setPaidAmount('');
+    setDescription('');
+    setLoanDate(new Date());
+    setIsModalOpen(true);
+  };
+
+  const openEditLoan = (loan: Transaction) => {
+    setEditingLoan(loan);
+    setLoanType(loan.type === 'expense' ? 'given' : 'received');
+    setPerson(loan.loanPerson ?? '');
+    setAmount(String(loan.amount).replace('.', ','));
+    setPaidAmount(loan.loanPaidAmount ? String(loan.loanPaidAmount).replace('.', ',') : '');
+    setDescription(loan.description ?? '');
+    setLoanDate(new Date(loan.date + 'T12:00:00'));
+    setIsModalOpen(true);
+  };
 
   const loans = useMemo(() => transactions.filter((t) => t.isLoan), [transactions]);
   const remaining = (l: Transaction) => Math.max(0, l.amount - (l.loanPaidAmount ?? 0));
