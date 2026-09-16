@@ -250,7 +250,7 @@ export default function Loans() {
         transition={{ delay: index * 0.03 }}
       >
         <SwipeableCard
-          onEdit={() => setSelectedLoan(loan)}
+          onEdit={() => openEditLoan(loan)}
           onDelete={() => {
             deleteTransaction(loan.id);
             toast({ title: 'Empréstimo excluído' });
@@ -354,7 +354,7 @@ export default function Loans() {
           <p className="text-sm text-muted-foreground truncate">Controle o que entra e sai</p>
         </motion.div>
 
-        <Button onClick={() => setIsModalOpen(true)} className="min-h-[44px] shrink-0">
+        <Button onClick={openNewLoan} className="min-h-[44px] shrink-0">
           <Plus className="w-4 h-4 sm:mr-2" />
           <span className="hidden sm:inline">Novo</span>
         </Button>
@@ -418,7 +418,7 @@ export default function Loans() {
           <p className="text-sm text-muted-foreground mb-4">
             Registre empréstimos dados ou recebidos e acompanhe o status.
           </p>
-          <Button onClick={() => setIsModalOpen(true)} className="min-h-[44px]">
+          <Button onClick={openNewLoan} className="min-h-[44px]">
             <Plus className="w-4 h-4 mr-2" />
             Adicionar Empréstimo
           </Button>
@@ -443,10 +443,16 @@ export default function Loans() {
       )}
 
       {/* Modal — bottom-sheet friendly */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+      <Dialog
+        open={isModalOpen}
+        onOpenChange={(open) => {
+          setIsModalOpen(open);
+          if (!open) setEditingLoan(null);
+        }}
+      >
         <DialogContent className="max-w-[calc(100vw-1rem)] sm:max-w-lg mx-auto top-4 translate-y-0 sm:top-1/2 sm:-translate-y-1/2 max-h-[calc(100dvh-2rem)] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Novo Empréstimo</DialogTitle>
+            <DialogTitle>{editingLoan ? 'Editar Empréstimo' : 'Novo Empréstimo'}</DialogTitle>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -500,7 +506,28 @@ export default function Loans() {
                   className="pl-10"
                   required
                 />
+            </div>
+
+            {editingLoan && (
+              <div className="space-y-2">
+                <Label>{loanType === 'given' ? 'Já recebido de volta' : 'Já pago'}</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R$</span>
+                  <Input
+                    type="text"
+                    inputMode="decimal"
+                    value={paidAmount}
+                    onChange={(e) => setPaidAmount(e.target.value)}
+                    placeholder="0,00"
+                    className="pl-10"
+                  />
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Ao igualar o valor total, o empréstimo é marcado como quitado.
+                </p>
               </div>
+            )}
+
             </div>
 
             <div className="space-y-2">
@@ -535,7 +562,7 @@ export default function Loans() {
             </div>
 
             <Button type="submit" className="w-full min-h-[44px]">
-              Adicionar Empréstimo
+              {editingLoan ? 'Salvar alterações' : 'Adicionar Empréstimo'}
             </Button>
           </form>
         </DialogContent>
