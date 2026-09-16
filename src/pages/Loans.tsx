@@ -529,8 +529,6 @@ export default function Loans() {
               </div>
             )}
 
-            </div>
-
             <div className="space-y-2">
               <Label>Data</Label>
               <Popover>
