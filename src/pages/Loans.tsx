@@ -506,6 +506,7 @@ export default function Loans() {
                   className="pl-10"
                   required
                 />
+              </div>
             </div>
 
             {editingLoan && (
