@@ -145,12 +145,38 @@ export default function Loans() {
       return;
     }
 
+    const dateStr = `${loanDate.getFullYear()}-${String(loanDate.getMonth() + 1).padStart(2, '0')}-${String(loanDate.getDate()).padStart(2, '0')}`;
+
+    if (editingLoan) {
+      const parsedPaid = Math.max(0, Math.min(parsedAmount, parseFloat(paidAmount.replace(',', '.')) || 0));
+      const isFullySettled = parsedPaid >= parsedAmount;
+      const newType = loanType === 'given' ? 'expense' : 'income';
+
+      updateTransaction(editingLoan.id, {
+        type: newType,
+        amount: parsedAmount,
+        description: description || `Empréstimo - ${person}`,
+        date: dateStr,
+        loanPerson: person,
+        loanPaidAmount: parsedPaid,
+        loanStatus: isFullySettled ? (newType === 'expense' ? 'received' : 'paid') : 'pending',
+        loanSettledDate: isFullySettled
+          ? editingLoan.loanSettledDate ?? dateStr
+          : undefined,
+      });
+
+      toast({ title: '✏️ Empréstimo atualizado', description: `${person}: R$ ${parsedAmount.toFixed(2)}` });
+      setIsModalOpen(false);
+      setEditingLoan(null);
+      return;
+    }
+
     addTransaction({
       type: loanType === 'given' ? 'expense' : 'income',
       category: 'loan',
       amount: parsedAmount,
       description: description || `Empréstimo - ${person}`,
-      date: `${loanDate.getFullYear()}-${String(loanDate.getMonth() + 1).padStart(2, '0')}-${String(loanDate.getDate()).padStart(2, '0')}`,
+      date: dateStr,
       isLoan: true,
       loanPerson: person,
       loanStatus: 'pending',
@@ -162,7 +188,7 @@ export default function Loans() {
     });
 
     setIsModalOpen(false);
-    setPerson(''); setAmount(''); setDescription(''); setLoanDate(new Date());
+    setPerson(''); setAmount(''); setPaidAmount(''); setDescription(''); setLoanDate(new Date());
   };
 
   const handleRegisterPayment = (loan: Transaction, paidValue: number, settleAll: boolean) => {
