@@ -10,7 +10,7 @@
 
 ## 📱 O que é o app (resumo)
 
-O MoneyFlow Pro nasceu para resolver um problema simples: **saber para onde o dinheiro está indo semplanilhas complicadas**. Ele oferece:
+O MoneyFlow Pro nasceu para resolver um problema simples: **saber para onde o dinheiro está indo sem planilhas complicadas**. Ele oferece:
 
 - **Painel (Dashboard)** — saldo, receitas e despesas do período com comparativo vs. mês anterior, gráfico de evolução semanal, despesas por categoria, lista de transações agrupadas por dia e exportação de relatórios em **PNG/PDF**.
 - **Transações** — CRUD completo com categorias, descrição, data (calendário próprio em pt-BR) e vínculo com contas bancárias.
