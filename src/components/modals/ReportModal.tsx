@@ -1,7 +1,7 @@
 import { parseLocalDate } from '@/lib/finance/dates';
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { X, Download, FileImage, FileText, TrendingUp, TrendingDown, Wallet, Loader2 } from 'lucide-react';
+import { X, Download, FileImage, FileText, FileSpreadsheet, TrendingUp, TrendingDown, Wallet, Loader2 } from 'lucide-react';
 import { Transaction, categoryLabels, categoryColors } from '@/types/transaction';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -160,6 +160,33 @@ export default function ReportModal({
     }
   };
 
+  const handleExportCSV = () => {
+    const csvRows = [];
+    csvRows.push(['Data', 'Descrição', 'Categoria', 'Tipo', 'Valor'].join(','));
+
+    filteredTransactions.forEach(t => {
+      const date = t.date;
+      const desc = t.description.replace(/"/g, '""');
+      const category = categoryLabels[t.category as keyof typeof categoryLabels] || t.category;
+      const type = t.type === 'income' ? 'Receita' : 'Despesa';
+      const amount = t.amount.toString().replace('.', ',');
+      
+      csvRows.push([date, `"${desc}"`, `"${category}"`, type, amount].join(','));
+    });
+
+    const csvContent = "\uFEFF" + csvRows.join('\n'); // UTF-8 BOM for Excel
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `extrato-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    link.click();
+    
+    toast({
+      title: 'CSV exportado!',
+      description: 'O arquivo foi salvo no seu dispositivo.',
+    });
+  };
+
   const formatCurrency = (value: number) => {
     return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
@@ -213,6 +240,24 @@ export default function ReportModal({
                       <span className="hidden sm:inline">PDF</span>
                     </>
                   )}
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleExportCSV}
+                  disabled={isExporting}
+                  className="h-9 px-2 sm:px-3 bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <FileSpreadsheet className="w-4 h-4 sm:mr-1" />
+                  <span className="hidden sm:inline">CSV</span>
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleExportCSV}
+                  disabled={isExporting}
+                  className="h-9 px-2 sm:px-3 bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <FileSpreadsheet className="w-4 h-4 sm:mr-1" />
+                  <span className="hidden sm:inline">CSV</span>
                 </Button>
               </div>
             </div>
