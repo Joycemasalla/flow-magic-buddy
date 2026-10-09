@@ -99,12 +99,17 @@ export default function SummaryCards({
             <PrivacyValue value={Math.abs(balance)} />
           </AutoFitText>
           {balance < 0 && (
-            <p className="text-[11px] text-expense mt-1.5 font-semibold">Saldo negativo</p>
+            <p className="text-[11px] text-expense mt-1.5 font-semibold">
+              Negativo no período — confira se todas as receitas foram registradas
+            </p>
           )}
           {totalSaved !== undefined && (
             <div className="mt-4 pt-3 border-t border-border/40 flex items-center justify-between gap-3 min-w-0">
               <span className="text-[11px] text-muted-foreground truncate">Patrimônio total (disponível + guardado)</span>
-              <PrivacyValue value={balance + totalSaved} className="text-sm font-bold tabular-nums shrink-0" />
+              <span className={cn('text-sm font-bold tabular-nums shrink-0', balance + totalSaved < 0 && 'text-expense')}>
+                {balance + totalSaved < 0 && '- '}
+                <PrivacyValue value={balance + totalSaved} />
+              </span>
             </div>
           )}
         </div>
