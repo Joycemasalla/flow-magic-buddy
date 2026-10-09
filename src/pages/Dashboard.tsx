@@ -128,7 +128,7 @@ export default function Dashboard() {
       .filter((t) => t.type === 'expense' && t.category === 'investment')
       .reduce((sum, t) => sum + t.amount, 0);
 
-    const excludedInvestments = 0;
+    const excludedInvestments = 0; // investimentos agora aparecem como "Guardado"
 
     const excludedLoans = !includeLoans
       ? filteredTransactions
