@@ -6,10 +6,19 @@ import { cn } from '@/lib/utils';
 interface CategoryChartProps {
   transactions: Transaction[];
   compact?: boolean;
+  includeLoans?: boolean;
 }
 
-export default function CategoryChart({ transactions, compact = false }: CategoryChartProps) {
-  const expenses = transactions.filter((t) => t.type === 'expense');
+export default function CategoryChart({ transactions, compact = false, includeLoans = true }: CategoryChartProps) {
+  const expenses = transactions.filter((t) => {
+    if (t.type !== 'expense') return false;
+    if (t.category === 'investment') return false;
+    if (t.isLoan) {
+      if (!includeLoans) return false;
+      if (t.loanStatus === 'received') return false;
+    }
+    return true;
+  });
   
   const categoryTotals = expenses.reduce((acc, t) => {
     acc[t.category] = (acc[t.category] || 0) + t.amount;

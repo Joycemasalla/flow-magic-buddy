@@ -6,6 +6,7 @@ import { useTransactions } from '@/contexts/TransactionContext';
 import { Account } from '@/types/account';
 import { toast } from '@/hooks/use-toast';
 import { toLocalDateString } from '@/lib/utils';
+import { calculateAccountBalance } from '@/lib/finance/rules';
 
 interface AccountContextType {
   accounts: Account[];
@@ -86,13 +87,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   const balances = useMemo(() => {
     const map: Record<string, number> = {};
     accounts.forEach((a) => {
-      map[a.id] = a.initialBalance;
-    });
-    transactions.forEach((t) => {
-      if (!t.accountId) return;
-      if (!(t.accountId in map)) return;
-      if (t.type === 'income') map[t.accountId] += t.amount;
-      else map[t.accountId] -= t.amount;
+      map[a.id] = a.initialBalance + calculateAccountBalance(transactions, a.id, false);
     });
     return map;
   }, [accounts, transactions]);

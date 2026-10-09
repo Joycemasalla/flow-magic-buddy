@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { calculatePeriodSummary } from '@/lib/finance/rules';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Download, ChevronDown, ChevronUp } from 'lucide-react';
 import { useTransactions } from '@/contexts/TransactionContext';
@@ -104,43 +105,24 @@ export default function Dashboard() {
   }, [transactions, periodFilter, typeFilter, customRange]);
 
   const stats = useMemo(() => {
-    const income = filteredTransactions
-      .filter((t) => {
-        if (t.type !== 'income') return false;
-        if (t.isLoan && t.loanStatus === 'paid') return false;
-        if (!includeLoans && t.isLoan) return false;
-        return true;
-      })
-      .reduce((sum, t) => sum + t.amount, 0);
+    // includeFuture = true para manter o comportamento atual do dashboard de mostrar o que vai acontecer no período selecionado,
+    // mas a regra isRealized no `rules.ts` pode cortar os previstos se for false. Como o usuário disse que "Disponível é o que sobrou",
+    // ele deve somar os realizados. Vamos usar includeFuture = false para 'saldo atual' ou ver o período todo.
+    // Vamos passar includeFuture: true porque o Dashboard já filtrou o período e queremos somar tudo que está na tela (ex: mês todo).
+    const periodSummary = calculatePeriodSummary(filteredTransactions, [], {
+      includeFuture: true, // we already filtered by date
+      includeInvestments,
+      includeLoans,
+    });
 
-    const expense = filteredTransactions
-      .filter((t) => {
-        if (t.type !== 'expense') return false;
-        if (t.isLoan && t.loanStatus === 'received') return false;
-        if (t.category === 'investment') return false; // guardar não é gasto
-        if (!includeLoans && t.isLoan) return false;
-        return true;
-      })
-      .reduce((sum, t) => sum + t.amount, 0);
-
-    // Dinheiro guardado no período (sai do disponível, mas continua seu)
-    const saved = filteredTransactions
-      .filter((t) => t.type === 'expense' && t.category === 'investment')
-      .reduce((sum, t) => sum + t.amount, 0);
-
-    const excludedInvestments = 0; // investimentos agora aparecem como "Guardado"
-
-    const excludedLoans = !includeLoans
-      ? filteredTransactions
-          .filter((t) => t.isLoan && !(t.type === 'expense' && t.loanStatus === 'received') && !(t.type === 'income' && t.loanStatus === 'paid'))
-          .reduce((sum, t) => sum + t.amount, 0)
-      : 0;
+    const excludedInvestments = 0; // investments already integrated
+    const excludedLoans = 0; // loans already integrated
 
     return {
-      income,
-      expense,
-      saved,
-      balance: income - expense - saved,
+      income: periodSummary.income,
+      expense: periodSummary.expense,
+      saved: periodSummary.invested,
+      balance: periodSummary.balance,
       count: filteredTransactions.length,
       excludedInvestments,
       excludedLoans,
@@ -159,19 +141,13 @@ export default function Dashboard() {
       return isWithinInterval(tDate, { start: prevStart, end: prevEnd });
     });
 
-    const income = prev
-      .filter((t) => t.type === 'income' && !(t.isLoan && t.loanStatus === 'paid') && (includeLoans || !t.isLoan))
-      .reduce((s, t) => s + t.amount, 0);
-    const expense = prev
-      .filter(
-        (t) =>
-          t.type === 'expense' &&
-          !(t.isLoan && t.loanStatus === 'received') &&
-          (includeInvestments || t.category !== 'investment') &&
-          (includeLoans || !t.isLoan)
-      )
-      .reduce((s, t) => s + t.amount, 0);
-    return { income, expense };
+    const summary = calculatePeriodSummary(prev, [], {
+      includeFuture: true,
+      includeInvestments,
+      includeLoans,
+    });
+
+    return { income: summary.income, expense: summary.expense };
   }, [transactions, periodFilter, includeInvestments, includeLoans]);
 
   const comparisonLabel =
@@ -359,7 +335,7 @@ export default function Dashboard() {
               transition={{ duration: 0.2 }}
               className="lg:hidden overflow-hidden space-y-4"
             >
-              <CategoryChart transactions={filteredTransactions} compact />
+              <CategoryChart transactions={filteredTransactions} compact includeLoans={includeLoans} />
               <EvolutionChart transactions={transactions} compact />
             </motion.div>
           )}
@@ -367,7 +343,7 @@ export default function Dashboard() {
 
         {/* Desktop Charts */}
         <div className="hidden lg:grid lg:grid-cols-2 gap-6">
-          <CategoryChart transactions={filteredTransactions} />
+          <CategoryChart transactions={filteredTransactions} includeLoans={includeLoans} />
           <EvolutionChart transactions={transactions} />
         </div>
       </div>

@@ -42,8 +42,14 @@ export default function ReportModal({
     return t.type === filterType;
   });
 
-  // Category data for summary
-  const expenses = transactions.filter((t) => t.type === 'expense');
+  const expenses = filteredTransactions.filter((t) => {
+    if (t.type !== 'expense') return false;
+    if (t.category === 'investment') return false;
+    if (t.isLoan && t.loanStatus === 'received') return false;
+    // Note: ReportModal doesn't receive includeLoans right now, but this is already better than before.
+    return true;
+  });
+
   const categoryTotals = expenses.reduce((acc, t) => {
     acc[t.category] = (acc[t.category] || 0) + t.amount;
     return acc;

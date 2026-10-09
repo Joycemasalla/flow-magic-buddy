@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { useTransactions } from '@/contexts/TransactionContext';
 import { useToast } from '@/hooks/use-toast';
 import TransactionList from '@/components/dashboard/TransactionList';
+import { calculatePeriodSummary } from '@/lib/finance/rules';
+import { formatBRL } from '@/lib/finance/money';
 import { cn } from '@/lib/utils';
 
 type FilterType = 'all' | 'income' | 'expense';
@@ -20,27 +22,24 @@ export default function Transactions() {
   const { toast } = useToast();
   const [tab, setTab] = useState<FilterType>('all');
 
-  const { filtered, totalIncome, totalExpense, counts } = useMemo(() => {
-    let totalIncome = 0;
-    let totalExpense = 0;
+  const { filtered, summary, counts } = useMemo(() => {
+    const summary = calculatePeriodSummary(transactions, [], {
+      includeFuture: true,
+      includeInvestments: true,
+      includeLoans: true,
+    });
+
     let incomeCount = 0;
     let expenseCount = 0;
-
     for (const t of transactions) {
-      if (t.type === 'income') {
-        totalIncome += t.amount;
-        incomeCount++;
-      } else {
-        totalExpense += t.amount;
-        expenseCount++;
-      }
+      if (t.type === 'income') incomeCount++;
+      else expenseCount++;
     }
 
     const filtered = tab === 'all' ? transactions : transactions.filter((t) => t.type === tab);
     return {
       filtered,
-      totalIncome,
-      totalExpense,
+      summary,
       counts: { all: transactions.length, income: incomeCount, expense: expenseCount },
     };
   }, [transactions, tab]);
@@ -71,14 +70,14 @@ export default function Transactions() {
           <div className="min-w-0">
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Receitas</p>
             <p className="text-lg sm:text-xl font-bold font-display truncate text-income">
-              R$ {totalIncome.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              {formatBRL(summary.income)}
             </p>
             <p className="text-[11px] text-muted-foreground mt-0.5">{counts.income} registro(s)</p>
           </div>
           <div className="min-w-0 text-right">
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Despesas</p>
             <p className="text-lg sm:text-xl font-bold font-display truncate text-expense">
-              R$ {totalExpense.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              {formatBRL(summary.expense)}
             </p>
             <p className="text-[11px] text-muted-foreground mt-0.5">{counts.expense} registro(s)</p>
           </div>

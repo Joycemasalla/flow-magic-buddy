@@ -12,6 +12,8 @@ import { motion } from 'framer-motion';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { parseLocalDate } from '@/lib/finance/dates';
+import { calculatePeriodSummary } from '@/lib/finance/rules';
 
 interface EvolutionChartProps {
   transactions: Transaction[];
@@ -26,17 +28,18 @@ export default function EvolutionChart({ transactions, compact = false }: Evolut
     const dayEnd = endOfDay(date);
 
     const dayTransactions = transactions.filter((t) => {
-      const tDate = new Date(t.date);
+      const tDate = parseLocalDate(t.date);
       return tDate >= dayStart && tDate <= dayEnd;
     });
 
-    const income = dayTransactions
-      .filter((t) => t.type === 'income')
-      .reduce((sum, t) => sum + t.amount, 0);
+    const summary = calculatePeriodSummary(dayTransactions, [], {
+      includeFuture: true,
+      includeInvestments: true,
+      includeLoans: true,
+    });
 
-    const expense = dayTransactions
-      .filter((t) => t.type === 'expense')
-      .reduce((sum, t) => sum + t.amount, 0);
+    const income = summary.income;
+    const expense = summary.expense;
 
     // Dia abreviado em 3 letras: Dom, Seg, Ter, Qua, Qui, Sex, Sáb
     const dayMap = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
