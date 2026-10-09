@@ -117,18 +117,18 @@ export default function Dashboard() {
       .filter((t) => {
         if (t.type !== 'expense') return false;
         if (t.isLoan && t.loanStatus === 'received') return false;
-        if (!includeInvestments && t.category === 'investment') return false;
+        if (t.category === 'investment') return false; // guardar não é gasto
         if (!includeLoans && t.isLoan) return false;
         return true;
       })
       .reduce((sum, t) => sum + t.amount, 0);
 
-    // Calcula valores excluídos para exibir info
-    const excludedInvestments = !includeInvestments
-      ? filteredTransactions
-          .filter((t) => t.type === 'expense' && t.category === 'investment' && !(t.isLoan && t.loanStatus === 'received'))
-          .reduce((sum, t) => sum + t.amount, 0)
-      : 0;
+    // Dinheiro guardado no período (sai do disponível, mas continua seu)
+    const saved = filteredTransactions
+      .filter((t) => t.type === 'expense' && t.category === 'investment')
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    const excludedInvestments = 0; // investimentos agora aparecem como "Guardado"
 
     const excludedLoans = !includeLoans
       ? filteredTransactions
@@ -139,7 +139,8 @@ export default function Dashboard() {
     return {
       income,
       expense,
-      balance: income - expense,
+      saved,
+      balance: income - expense - saved,
       count: filteredTransactions.length,
       excludedInvestments,
       excludedLoans,
@@ -267,6 +268,9 @@ export default function Dashboard() {
         income={stats.income}
         expense={stats.expense}
         balance={stats.balance}
+        savedInPeriod={stats.saved}
+        totalSaved={investments.filter((i) => i.jaInvestido).reduce((s, i) => s + i.valorInvestido, 0)}
+        onSavedClick={() => navigate('/investimentos')}
         transactionCount={stats.count}
         onIncomeClick={() => setTypeFilter('income')}
         onExpenseClick={() => setTypeFilter('expense')}

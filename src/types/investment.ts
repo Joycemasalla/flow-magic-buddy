@@ -75,7 +75,7 @@ export const investmentTypeLabels: Record<InvestmentType, string> = {
   acoes: 'Ações',
   cripto: 'Cripto',
   fundos: 'Fundos',
-  poupanca: 'Poupança',
+  poupanca: 'Poupança / Reserva de emergência',
   outros: 'Outros',
 };
 

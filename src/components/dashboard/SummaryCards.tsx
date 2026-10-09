@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, Wallet, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, ArrowUpRight, ArrowDownRight, Minus, PiggyBank } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PrivacyValue } from '@/components/ui/PrivacyValue';
 import { AutoFitText } from '@/components/ui/AutoFitText';
@@ -18,6 +18,11 @@ interface SummaryCardsProps {
   previousIncome?: number;
   /** Label describing the comparison period (e.g. "vs mês passado") */
   comparisonLabel?: string;
+  /** Money moved to investments in the period */
+  savedInPeriod?: number;
+  /** Total currently invested (all time) */
+  totalSaved?: number;
+  onSavedClick?: () => void;
 }
 
 function Delta({ current, previous }: { current: number; previous?: number }) {
@@ -55,6 +60,9 @@ export default function SummaryCards({
   previousExpense,
   previousIncome,
   comparisonLabel,
+  savedInPeriod,
+  totalSaved,
+  onSavedClick,
 }: SummaryCardsProps) {
   return (
     <div className="space-y-3 max-w-full min-w-0 overflow-hidden">
@@ -70,7 +78,7 @@ export default function SummaryCards({
             <div className="flex items-center gap-2 min-w-0">
               <Wallet className="w-4 h-4 text-primary stroke-[1.75]" />
               <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
-                Saldo
+                Disponível
               </p>
             </div>
             {comparisonLabel && (
@@ -93,8 +101,30 @@ export default function SummaryCards({
           {balance < 0 && (
             <p className="text-[11px] text-expense mt-1.5 font-semibold">Saldo negativo</p>
           )}
+          {totalSaved !== undefined && (
+            <div className="mt-4 pt-3 border-t border-border/40 flex items-center justify-between gap-3 min-w-0">
+              <span className="text-[11px] text-muted-foreground truncate">Patrimônio total (disponível + guardado)</span>
+              <PrivacyValue value={balance + totalSaved} className="text-sm font-bold tabular-nums shrink-0" />
+            </div>
+          )}
         </div>
       </motion.div>
+
+      {totalSaved !== undefined && (
+        <button
+          onClick={onSavedClick}
+          className="glass-card w-full min-w-0 rounded-2xl p-3.5 text-left flex items-center gap-3 active:scale-[0.98] transition-colors hover:border-primary/30"
+        >
+          <PiggyBank className="w-4 h-4 text-primary stroke-[2] shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Guardado</p>
+            <p className="text-[11px] text-muted-foreground truncate">
+              Neste período: <PrivacyValue value={savedInPeriod ?? 0} className="font-semibold text-foreground" />
+            </p>
+          </div>
+          <PrivacyValue value={totalSaved} className="font-bold font-display text-primary tabular-nums shrink-0" />
+        </button>
+      )}
 
       {/* Receitas / Despesas — cards leves */}
       <div className="grid min-w-0 grid-cols-2 gap-3">
