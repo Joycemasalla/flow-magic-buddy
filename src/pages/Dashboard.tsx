@@ -1,13 +1,14 @@
 import { useState, useMemo } from 'react';
 import { calculatePeriodSummary } from '@/lib/finance/rules';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, ChevronDown, ChevronUp } from 'lucide-react';
+import { Download, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTransactions } from '@/contexts/TransactionContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWallet } from '@/contexts/WalletContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { isToday, subDays, startOfMonth, startOfYear, isWithinInterval, startOfDay, endOfDay, subMonths, subYears, endOfMonth, endOfYear, format } from 'date-fns';
+import { isToday, subDays, startOfMonth, startOfYear, isWithinInterval, startOfDay, endOfDay, subMonths, subYears, endOfMonth, endOfYear, format, addMonths } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { CalendarDays } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
@@ -53,6 +54,7 @@ export default function Dashboard() {
   const { toast } = useToast();
   
   const [periodFilter, setPeriodFilter] = useState<PeriodFilter>('month');
+  const [currentMonth, setCurrentMonth] = useState(new Date());
   const [customRange, setCustomRange] = useState<DateRange | undefined>();
   const [isRangeOpen, setIsRangeOpen] = useState(false);
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
@@ -84,8 +86,8 @@ export default function Dashboard() {
           });
         case 'month':
           return isWithinInterval(tDate, {
-            start: startOfMonth(now),
-            end: endOfDay(now),
+            start: startOfMonth(currentMonth),
+            end: endOfMonth(currentMonth),
           });
         case 'year':
           return isWithinInterval(tDate, {
@@ -103,7 +105,7 @@ export default function Dashboard() {
           return true;
       }
     });
-  }, [transactions, periodFilter, typeFilter, customRange]);
+  }, [transactions, periodFilter, typeFilter, customRange, currentMonth]);
 
   const stats = useMemo(() => {
     // includeFuture = true para manter o comportamento atual do dashboard de mostrar o que vai acontecer no período selecionado,
@@ -134,8 +136,8 @@ export default function Dashboard() {
   const previousStats = useMemo(() => {
     if (periodFilter !== 'month' && periodFilter !== 'year') return null;
     const now = new Date();
-    const prevStart = periodFilter === 'month' ? startOfMonth(subMonths(now, 1)) : startOfYear(subYears(now, 1));
-    const prevEnd = periodFilter === 'month' ? endOfMonth(subMonths(now, 1)) : endOfYear(subYears(now, 1));
+    const prevStart = periodFilter === 'month' ? startOfMonth(subMonths(currentMonth, 1)) : startOfYear(subYears(now, 1));
+    const prevEnd = periodFilter === 'month' ? endOfMonth(subMonths(currentMonth, 1)) : endOfYear(subYears(now, 1));
 
     const prev = transactions.filter((t) => {
       const tDate = parseLocalDate(t.date);
@@ -149,7 +151,7 @@ export default function Dashboard() {
     });
 
     return { income: summary.income, expense: summary.expense };
-  }, [transactions, periodFilter, includeInvestments, includeLoans]);
+  }, [transactions, periodFilter, includeInvestments, includeLoans, currentMonth]);
 
   const comparisonLabel =
     periodFilter === 'month' ? 'vs mês passado' : periodFilter === 'year' ? 'vs ano passado' : undefined;
@@ -196,49 +198,93 @@ export default function Dashboard() {
       </div>
 
       {/* Período — pills compactas + calendário personalizado */}
-      <FilterPillRow>
-        {(Object.keys(periodLabels) as (keyof typeof periodLabels)[]).map((period) => (
-          <FilterPill
-            key={period}
-            active={periodFilter === period}
-            onClick={() => setPeriodFilter(period)}
-          >
-            {periodLabels[period]}
-          </FilterPill>
-        ))}
-        <Popover open={isRangeOpen} onOpenChange={setIsRangeOpen}>
-          <PopoverTrigger asChild>
-            <span>
-              <FilterPill
-                className="flex items-center gap-1.5"
-                active={periodFilter === 'custom'}
-                onClick={() => {
-                  setPeriodFilter('custom');
-                  setIsRangeOpen(true);
-                }}
-              >
-                <CalendarDays className="w-3.5 h-3.5" />
-                {periodFilter === 'custom' && customRange?.from
-                  ? `${format(customRange.from, 'dd/MM')} – ${format(customRange.to ?? customRange.from, 'dd/MM')}`
-                  : 'Período'}
-              </FilterPill>
-            </span>
-          </PopoverTrigger>
-          <PopoverContent align="start" className="w-auto p-0 rounded-2xl z-[70]">
-            <CalendarComponent
-              mode="range"
-              selected={customRange}
-              onSelect={(range) => {
-                setCustomRange(range);
-                setPeriodFilter('custom');
-                if (range?.from && range?.to) setIsRangeOpen(false);
+      <div className="space-y-3">
+        <FilterPillRow>
+          {(Object.keys(periodLabels) as (keyof typeof periodLabels)[]).map((period) => (
+            <FilterPill
+              key={period}
+              active={periodFilter === period}
+              onClick={() => {
+                setPeriodFilter(period);
+                if (period === 'month') setCurrentMonth(new Date());
               }}
-              numberOfMonths={1}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
-      </FilterPillRow>
+            >
+              {periodLabels[period]}
+            </FilterPill>
+          ))}
+          <Popover open={isRangeOpen} onOpenChange={setIsRangeOpen}>
+            <PopoverTrigger asChild>
+              <span>
+                <FilterPill
+                  className="flex items-center gap-1.5"
+                  active={periodFilter === 'custom'}
+                  onClick={() => {
+                    setPeriodFilter('custom');
+                    setIsRangeOpen(true);
+                  }}
+                >
+                  <CalendarDays className="w-3.5 h-3.5" />
+                  {periodFilter === 'custom' && customRange?.from
+                    ? `${format(customRange.from, 'dd/MM')} – ${format(customRange.to ?? customRange.from, 'dd/MM')}`
+                    : 'Período'}
+                </FilterPill>
+              </span>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-auto p-0 rounded-2xl z-[70]">
+              <CalendarComponent
+                mode="range"
+                selected={customRange}
+                onSelect={(range) => {
+                  setCustomRange(range);
+                  setPeriodFilter('custom');
+                  if (range?.from && range?.to) setIsRangeOpen(false);
+                }}
+                numberOfMonths={1}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </FilterPillRow>
+
+        {/* Month Navigator */}
+        <AnimatePresence mode="popLayout">
+          {periodFilter === 'month' && (
+            <motion.div
+              initial={{ opacity: 0, height: 0, scale: 0.95 }}
+              animate={{ opacity: 1, height: 'auto', scale: 1 }}
+              exit={{ opacity: 0, height: 0, scale: 0.95 }}
+              className="flex justify-center"
+            >
+              <div className="flex items-center justify-between w-full max-w-[260px] bg-muted/40 p-1 rounded-2xl border border-border/50">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-xl shrink-0"
+                  onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <div className="flex flex-col items-center justify-center -space-y-0.5">
+                  <span className="text-sm font-semibold capitalize tracking-tight">
+                    {format(currentMonth, 'MMMM', { locale: ptBR })}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                    {format(currentMonth, 'yyyy')}
+                  </span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-xl shrink-0"
+                  onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       {/* Summary Cards */}
       <SummaryCards
