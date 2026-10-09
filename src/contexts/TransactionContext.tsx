@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react'; // v2
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react'; // v2
 import { Transaction, Reminder, TransactionCategory } from '@/types/transaction';
 import { Investment, InvestmentType } from '@/types/investment';
 import { validateInvestmentDetails } from '@/lib/investmentValidation';
@@ -36,6 +36,9 @@ const TransactionContext = createContext<TransactionContextType | undefined>(und
 
 
 
+// Meses de histórico carregados na 1ª fase (o restante vem em segundo plano)
+const RECENT_MONTHS = 13;
+
 const validInvestmentTypes: InvestmentType[] = [
   'tesouro_direto', 'renda_fixa', 'acoes', 'cripto', 'fundos', 'poupanca', 'outros'
 ];
@@ -49,6 +52,8 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [loading, setLoading] = useState(true);
+  const fetchRequestRef = useRef(0);
+  const hasLoadedRef = useRef(false);
 
   useEffect(() => {
     if (user) {
@@ -208,23 +213,59 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
   // com o RLS e causa 403. Deixar o RLS filtrar automaticamente.
   // Para modo pessoal: filtrar apenas wallet_id IS NULL.
   // Para modo carteira: filtrar apenas wallet_id = activeWalletId.
+  const mapTransaction = (t: any): Transaction => ({
+    id: t.id,
+    type: t.type as 'income' | 'expense',
+    category: t.category || 'other',
+    amount: Number(t.amount),
+    description: t.description,
+    date: t.date,
+    createdAt: t.created_at,
+    isLoan: t.is_loan || false,
+    loanPerson: t.loan_person || undefined,
+    loanStatus: t.loan_status || undefined,
+    loanSettledDate: t.loan_settled_date || undefined,
+    loanPaidAmount: t.loan_paid_amount != null ? Number(t.loan_paid_amount) : 0,
+    accountId: t.account_id || null,
+    isTransfer: t.is_transfer || false,
+    linkedTransactionId: t.linked_transaction_id || undefined,
+  });
+
+  // PERFORMANCE:
+  // 1) As 4 consultas (categorias, transações, lembretes, investimentos) rodam em PARALELO.
+  // 2) As transações são carregadas em 2 fases: primeiro os últimos RECENT_MONTHS meses
+  //    (o app já abre), depois o histórico antigo é buscado em segundo plano e mesclado.
+  // RLS filtra por usuário automaticamente; aqui só filtramos a carteira.
   const fetchData = async () => {
     if (!user) return;
-    setLoading(true);
+    const requestId = ++fetchRequestRef.current;
+    // Só mostra "loading" na primeira carga; refetches (realtime) não travam a tela
+    if (!hasLoadedRef.current) setLoading(true);
 
     try {
+      const scopeWallet = <T extends { eq: any; is: any }>(q: T): T =>
+        activeWalletId ? q.eq('wallet_id', activeWalletId) : q.is('wallet_id', null);
+
+      const cutoff = new Date();
+      cutoff.setMonth(cutoff.getMonth() - RECENT_MONTHS);
+      cutoff.setDate(1);
+      const cutoffStr = toLocalDateString(cutoff);
+
+      const [categoriesRes, recentRes, remindersRes, investmentsRes] = await Promise.all([
+        scopeWallet(supabase.from('custom_categories').select('*')),
+        scopeWallet(
+          supabase.from('transactions').select('*').gte('date', cutoffStr).order('date', { ascending: false })
+        ),
+        scopeWallet(supabase.from('reminders').select('*').order('due_date', { ascending: true })),
+        scopeWallet(supabase.from('investments').select('*').order('created_at', { ascending: false })),
+      ]);
+
+      if (requestId !== fetchRequestRef.current) return; // resposta antiga, descarta
 
       // ---- CUSTOM CATEGORIES ----
-      let categoriesQuery = supabase.from('custom_categories').select('*');
-      if (activeWalletId) {
-        categoriesQuery = categoriesQuery.eq('wallet_id', activeWalletId);
-      } else {
-        categoriesQuery = categoriesQuery.is('wallet_id', null);
-      }
-      const { data: categoriesData } = await categoriesQuery;
-      if (categoriesData) {
+      if (categoriesRes.data) {
         import('@/types/transaction').then(m => {
-          categoriesData.forEach(cat => {
+          categoriesRes.data!.forEach((cat: any) => {
             m.categoryLabels[cat.name] = cat.name;
             if (cat.color) m.categoryColors[cat.name] = cat.color;
             if (cat.icon) m.categoryIcons[cat.name] = cat.icon;
@@ -232,113 +273,42 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
         });
       }
 
-      // ---- TRANSACTIONS ----
-      let transactionsQuery = supabase
-        .from('transactions')
-        .select('*')
-        .order('date', { ascending: false });
-
-      if (activeWalletId) {
-        transactionsQuery = transactionsQuery.eq('wallet_id', activeWalletId);
-      } else {
-        // Modo pessoal: apenas registros sem wallet
-        // O RLS garante que só retorna registros do usuário autenticado
-        transactionsQuery = transactionsQuery.is('wallet_id', null);
-      }
-
-      const { data: transactionsData, error: transactionsError } = await transactionsQuery;
-
-      if (transactionsError) {
-        if (import.meta.env.DEV) console.error('Error fetching transactions:', transactionsError);
-      }
-
-      if (transactionsData) {
-        setTransactions(
-          transactionsData.map((t: any) => {
-            const category = t.category || "other";
-            return {
-              id: t.id,
-              type: t.type as 'income' | 'expense',
-              category,
-              amount: Number(t.amount),
-              description: t.description,
-              date: t.date,
-              createdAt: t.created_at,
-              isLoan: t.is_loan || false,
-              loanPerson: t.loan_person || undefined,
-              loanStatus: t.loan_status || undefined,
-              loanSettledDate: t.loan_settled_date || undefined,
-              loanPaidAmount: t.loan_paid_amount != null ? Number(t.loan_paid_amount) : 0,
-              accountId: t.account_id || null,
-              isTransfer: t.is_transfer || false,
-              linkedTransactionId: t.linked_transaction_id || undefined,
-            };
-          })
-        );
+      // ---- TRANSACTIONS (fase 1: recentes) ----
+      if (recentRes.error && import.meta.env.DEV) console.error('Error fetching transactions:', recentRes.error);
+      const recent = recentRes.data ? recentRes.data.map(mapTransaction) : null;
+      if (recent) {
+        const firstLoad = !hasLoadedRef.current;
+        setTransactions((prev) => firstLoad ? recent : [...recent, ...prev.filter((t) => t.date < cutoffStr)]);
       }
 
       // ---- REMINDERS ----
-      let remindersQuery = supabase
-        .from('reminders')
-        .select('*')
-        .order('due_date', { ascending: true });
-
-      if (activeWalletId) {
-        remindersQuery = remindersQuery.eq('wallet_id', activeWalletId);
-      } else {
-        remindersQuery = remindersQuery.is('wallet_id', null);
-      }
-
-      const { data: remindersData, error: remindersError } = await remindersQuery;
-
-      if (remindersError) {
-        if (import.meta.env.DEV) console.error('Error fetching reminders:', remindersError);
-      }
-
-      if (remindersData) {
+      if (remindersRes.error && import.meta.env.DEV) console.error('Error fetching reminders:', remindersRes.error);
+      if (remindersRes.data) {
         setReminders(
-          remindersData.map((r: any) => {
-            const category = r.category || "other";
-            return {
-              id: r.id,
-              title: r.title,
-              description: r.title,
-              amount: Number(r.amount),
-              type: r.is_recurring ? 'monthly' as const : 'single' as const,
-              dueDay: parseLocalDate(r.due_date).getDate(),
-              category,
-              isActive: !r.is_paid,
-              alertDaysBefore: r.alert_days_before ?? 3,
-              lastPaidMonth: r.last_paid_month ?? null,
-              createdAt: r.created_at,
-            };
-          })
+          remindersRes.data.map((r: any) => ({
+            id: r.id,
+            title: r.title,
+            description: r.title,
+            amount: Number(r.amount),
+            type: r.is_recurring ? 'monthly' as const : 'single' as const,
+            dueDay: parseLocalDate(r.due_date).getDate(),
+            category: r.category || 'other',
+            isActive: !r.is_paid,
+            alertDaysBefore: r.alert_days_before ?? 3,
+            lastPaidMonth: r.last_paid_month ?? null,
+            lastTransactionId: r.last_transaction_id ?? null,
+            createdAt: r.created_at,
+          }))
         );
       }
 
       // ---- INVESTMENTS ----
-      let investmentsQuery = supabase
-        .from('investments')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (activeWalletId) {
-        investmentsQuery = investmentsQuery.eq('wallet_id', activeWalletId);
-      } else {
-        investmentsQuery = investmentsQuery.is('wallet_id', null);
-      }
-
-      const { data: investmentsData, error: investmentsError } = await investmentsQuery;
-
-      if (investmentsError) {
-        if (import.meta.env.DEV) console.error('Error fetching investments:', investmentsError);
-      }
-
-      if (investmentsData) {
+      if (investmentsRes.error && import.meta.env.DEV) console.error('Error fetching investments:', investmentsRes.error);
+      if (investmentsRes.data) {
         setInvestments(
-          investmentsData.map((i: any) => {
-            const tipo = validInvestmentTypes.includes(i.type as InvestmentType) 
-              ? (i.type as InvestmentType) 
+          investmentsRes.data.map((i: any) => {
+            const tipo = validInvestmentTypes.includes(i.type as InvestmentType)
+              ? (i.type as InvestmentType)
               : 'outros';
             return {
               id: i.id,
@@ -350,17 +320,40 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
               descricao: i.description || undefined,
               detalhesEspecificos: i.specific_details || undefined,
               createdAt: i.created_at,
+              transactionId: i.transaction_id || undefined,
             };
           })
         );
+      }
+
+      // App já pode abrir: libera a tela antes do histórico antigo chegar
+      hasLoadedRef.current = true;
+      setLoading(false);
+
+      // ---- TRANSACTIONS (fase 2: histórico antigo, em segundo plano) ----
+      if (recent) {
+        const olderRes = await scopeWallet(
+          supabase.from('transactions').select('*').lt('date', cutoffStr).order('date', { ascending: false })
+        );
+        if (requestId !== fetchRequestRef.current) return;
+        if (olderRes.error) {
+          if (import.meta.env.DEV) console.error('Error fetching older transactions:', olderRes.error);
+        } else if (olderRes.data && olderRes.data.length > 0) {
+          const older = olderRes.data.map(mapTransaction);
+          setTransactions((prev) => {
+            const keep = prev.filter((t) => t.date >= cutoffStr || t.id.startsWith('temp_'));
+            return [...keep, ...older.filter((t) => !keep.some((k) => k.id === t.id))];
+          });
+        }
       }
     } catch (error) {
       if (import.meta.env.DEV) console.error('Error fetching data:', error);
       loadFromCache();
     } finally {
-      setLoading(false);
+      if (requestId === fetchRequestRef.current) setLoading(false);
     }
   };
+
 
   const addTransaction = async (transaction: Omit<Transaction, 'id' | 'createdAt'>) => {
     if (!user) return;
