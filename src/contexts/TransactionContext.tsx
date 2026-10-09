@@ -9,6 +9,7 @@ import { useOnlineStatus, setOfflineCache, getOfflineCache } from '@/hooks/useOf
 import { useOfflineQueue, generateTempId, OfflineOperation } from '@/hooks/useOfflineQueue';
 import { toast } from '@/hooks/use-toast';
 import { toLocalDateString } from '@/lib/utils';
+import { parseLocalDate } from '@/lib/finance/dates';
 
 interface TransactionContextType {
   transactions: Transaction[];

@@ -1,3 +1,4 @@
+import { parseLocalDate } from '@/lib/finance/dates';
 import { memo, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SwipeableCard } from '@/components/ui/SwipeableCard';

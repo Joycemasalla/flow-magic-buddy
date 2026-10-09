@@ -1,3 +1,4 @@
+import { parseLocalDate } from '@/lib/finance/dates';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';

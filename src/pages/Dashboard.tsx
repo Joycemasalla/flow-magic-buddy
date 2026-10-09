@@ -24,7 +24,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { FilterPill, FilterPillRow } from '@/components/ui/FilterPill';
-import { cn, parseLocalDate } from '@/lib/utils';
+import { cn } from '@/lib/utils';
+import { parseLocalDate } from '@/lib/finance/dates';
 import { SlidersHorizontal, Landmark, Handshake } from 'lucide-react';
 
 type PeriodFilter = 'today' | 'week' | 'month' | 'year' | 'all' | 'custom';
