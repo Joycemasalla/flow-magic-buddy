@@ -61,7 +61,7 @@ export default function QuickRecordModal({ isOpen, onClose }: QuickRecordModalPr
   }, [isOpen]);
 
   const handleAmountSubmit = () => {
-    const parsedAmount = parseFloat(amount.replace(',', '.'));
+    const parsedAmount = parseBRL(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
       toast({
         title: 'Valor inválido',
@@ -77,7 +77,7 @@ export default function QuickRecordModal({ isOpen, onClose }: QuickRecordModalPr
     setCategory(selectedCategory);
     setIsProcessing(true);
 
-    const parsedAmount = parseFloat(amount.replace(',', '.'));
+    const parsedAmount = parseBRL(amount);
     const categoryLabel = categoryLabels[selectedCategory];
 
     addTransaction({
@@ -317,7 +317,7 @@ export default function QuickRecordModal({ isOpen, onClose }: QuickRecordModalPr
                           'text-xl sm:text-2xl font-bold',
                           type === 'income' ? 'text-income' : 'text-expense'
                         )}>
-                          {type === 'income' ? '+' : '-'} R$ {parseFloat(amount.replace(',', '.')).toFixed(2)}
+                          {type === 'income' ? '+' : '-'} R$ {parseBRL(amount).toFixed(2)}
                         </span>
                       </div>
                       {!isToday && (

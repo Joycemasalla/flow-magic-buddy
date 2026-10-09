@@ -71,7 +71,7 @@ export default function AccountFormSheet({ open, onClose, editing }: Props) {
 
   const handleSubmit = async () => {
     if (!name.trim()) return;
-    const parsed = parseFloat(initialBalance.replace(',', '.')) || 0;
+    const parsed = parseBRL(initialBalance) || 0;
     const finalLogo = visualMode === 'logo' ? logoUrl : null;
     setSaving(true);
     if (editing) {

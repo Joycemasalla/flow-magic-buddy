@@ -28,7 +28,7 @@ export default function AdjustBalanceSheet({ open, onClose, account }: Props) {
   const current = balances[account.id] ?? 0;
 
   const handleSubmit = async () => {
-    const parsed = parseFloat(value.replace(',', '.'));
+    const parsed = parseBRL(value);
     if (isNaN(parsed)) return;
     setSaving(true);
     await adjustBalance(account.id, parsed);

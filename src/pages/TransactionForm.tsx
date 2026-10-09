@@ -61,7 +61,7 @@ export default function TransactionForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const parsedAmount = parseFloat(amount.replace(',', '.'));
+    const parsedAmount = parseBRL(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
       toast({
         title: 'Valor inválido',
@@ -94,7 +94,7 @@ export default function TransactionForm() {
       
       // If recurring, create transactions for the next 11 months
       if (isRecurring) {
-        const baseDate = new Date(date);
+        const baseDate = parseLocalDate(date);
         for (let i = 1; i <= 11; i++) {
           const futureDate = new Date(baseDate);
           futureDate.setMonth(futureDate.getMonth() + i);

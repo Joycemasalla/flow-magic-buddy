@@ -62,5 +62,13 @@ export function useOfflineQueue() {
     saveQueue([]);
   }, []);
 
-  return { queue, pendingCount, enqueue, clearQueue, isSyncing, setIsSyncing, isOnline, syncingRef };
+  const removeFromQueue = useCallback((opId: string) => {
+    setQueue((prev) => {
+      const updated = prev.filter(op => op.id !== opId);
+      saveQueue(updated);
+      return updated;
+    });
+  }, []);
+
+  return { queue, pendingCount, enqueue, clearQueue, removeFromQueue, isSyncing, setIsSyncing, isOnline, syncingRef };
 }

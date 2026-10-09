@@ -17,7 +17,7 @@ interface DatePickerFieldProps {
 /** Campo de data padronizado do app: botão + popover com calendário (pt-BR). */
 export function DatePickerField({ value, onChange, placeholder = 'Selecionar data', className }: DatePickerFieldProps) {
   const [open, setOpen] = useState(false);
-  const selected = value ? new Date(value + 'T12:00:00') : undefined;
+  const selected = value ? parseLocalDate(value) : undefined;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

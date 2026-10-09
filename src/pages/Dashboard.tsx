@@ -63,7 +63,7 @@ export default function Dashboard() {
 
   const filteredTransactions = useMemo(() => {
     return transactions.filter((t) => {
-      const tDate = new Date(t.date + 'T12:00:00');
+      const tDate = parseLocalDate(t.date);
       const now = new Date();
 
       // Filtro por tipo
@@ -155,7 +155,7 @@ export default function Dashboard() {
     const prevEnd = periodFilter === 'month' ? endOfMonth(subMonths(now, 1)) : endOfYear(subYears(now, 1));
 
     const prev = transactions.filter((t) => {
-      const tDate = new Date(t.date + 'T12:00:00');
+      const tDate = parseLocalDate(t.date);
       return isWithinInterval(tDate, { start: prevStart, end: prevEnd });
     });
 

@@ -149,7 +149,7 @@ export default function TransactionDetailsModal({ transaction, onClose }: Transa
                   <div>
                     <p className="text-xs text-muted-foreground">Data</p>
                     <p className="font-medium">
-                      {format(new Date(transaction.date + 'T12:00:00'), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                      {format(parseLocalDate(transaction.date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                     </p>
                   </div>
                 </div>
@@ -224,7 +224,7 @@ export default function TransactionDetailsModal({ transaction, onClose }: Transa
                             {transaction.type === 'expense' ? 'Recebido em' : 'Pago em'}
                           </p>
                           <p className="font-medium">
-                            {format(new Date(transaction.loanSettledDate + 'T12:00:00'), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                            {format(parseLocalDate(transaction.loanSettledDate), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                           </p>
                         </div>
                       </div>

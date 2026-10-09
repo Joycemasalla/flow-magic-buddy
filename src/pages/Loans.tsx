@@ -36,7 +36,7 @@ function PartialPaymentForm({
   const [value, setValue] = useState('');
 
   const handleSubmit = (settleAll: boolean) => {
-    const parsed = parseFloat(value.replace(',', '.')) || 0;
+    const parsed = parseBRL(value) || 0;
     onConfirm(parsed, settleAll);
     setValue('');
   };
@@ -107,7 +107,7 @@ export default function Loans() {
     setAmount(String(loan.amount).replace('.', ','));
     setPaidAmount(loan.loanPaidAmount ? String(loan.loanPaidAmount).replace('.', ',') : '');
     setDescription(loan.description ?? '');
-    setLoanDate(new Date(loan.date + 'T12:00:00'));
+    setLoanDate(parseLocalDate(loan.date));
     setIsModalOpen(true);
   };
 
@@ -135,7 +135,7 @@ export default function Loans() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const parsedAmount = parseFloat(amount.replace(',', '.'));
+    const parsedAmount = parseBRL(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
       toast({ title: 'Valor inválido', description: 'Digite um valor maior que zero.', variant: 'destructive' });
       return;
@@ -148,7 +148,7 @@ export default function Loans() {
     const dateStr = `${loanDate.getFullYear()}-${String(loanDate.getMonth() + 1).padStart(2, '0')}-${String(loanDate.getDate()).padStart(2, '0')}`;
 
     if (editingLoan) {
-      const parsedPaid = Math.max(0, Math.min(parsedAmount, parseFloat(paidAmount.replace(',', '.')) || 0));
+      const parsedPaid = Math.max(0, Math.min(parsedAmount, parseBRL(paidAmount) || 0));
       const isFullySettled = parsedPaid >= parsedAmount;
       const newType = loanType === 'given' ? 'expense' : 'income';
 
@@ -268,7 +268,7 @@ export default function Loans() {
                 {loan.loanPerson}
               </h3>
               <p className="text-xs text-muted-foreground truncate mt-0.5">
-                {isGiven ? 'Você emprestou' : 'Você pegou'} · {format(new Date(loan.date + 'T12:00:00'), "dd/MM/yy")}
+                {isGiven ? 'Você emprestou' : 'Você pegou'} · {format(parseLocalDate(loan.date), "dd/MM/yy")}
               </p>
             </div>
             <div className={cn('flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-semibold shrink-0', status.bg, status.color)}>
@@ -333,7 +333,7 @@ export default function Loans() {
           {!isPending && loan.loanSettledDate && (
             <p className="mt-2 text-[11px] text-income/80 flex items-center gap-1">
               <Check className="w-3 h-3" />
-              Quitado em {format(new Date(loan.loanSettledDate + 'T12:00:00'), "dd/MM/yy")}
+              Quitado em {format(parseLocalDate(loan.loanSettledDate), "dd/MM/yy")}
             </p>
           )}
         </SwipeableCard>

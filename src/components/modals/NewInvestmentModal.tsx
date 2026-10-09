@@ -115,7 +115,7 @@ export default function NewInvestmentModal({ isOpen, onClose, editingInvestment 
         setNome(editingInvestment.nome);
         setValor(editingInvestment.valorInvestido.toString().replace('.', ','));
         setDescricao(editingInvestment.descricao || '');
-        setSelectedDate(new Date(editingInvestment.dataInvestimento));
+        setSelectedDate(parseLocalDate(editingInvestment.dataInvestimento));
         setJaInvestido(editingInvestment.jaInvestido);
         setStep('basic');
 
@@ -210,7 +210,7 @@ export default function NewInvestmentModal({ isOpen, onClose, editingInvestment 
     if (!selectedType) return;
     setIsProcessing(true);
 
-    const parsedValor = parseFloat(valor.replace(',', '.'));
+    const parsedValor = parseBRL(valor);
     const investmentDate = toLocalDateString(selectedDate);
 
     if (isEditing && editingInvestment) {
@@ -644,7 +644,7 @@ export default function NewInvestmentModal({ isOpen, onClose, editingInvestment 
   };
 
   const renderConfirmation = () => {
-    const parsedValor = parseFloat(valor.replace(',', '.')) || 0;
+    const parsedValor = parseBRL(valor) || 0;
 
     return (
       <motion.div

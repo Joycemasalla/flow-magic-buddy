@@ -48,7 +48,7 @@ export default function NewLoanModal({ isOpen, onClose }: NewLoanModalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const parsedAmount = parseFloat(amount.replace(',', '.'));
+    const parsedAmount = parseBRL(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
       toast({
         title: 'Valor inválido',

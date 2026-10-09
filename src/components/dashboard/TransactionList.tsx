@@ -149,7 +149,7 @@ export default function TransactionList({
   }, [transactions]);
 
   const formatDateLabel = (dateStr: string) => {
-    const date = new Date(dateStr + 'T12:00:00');
+    const date = parseLocalDate(dateStr);
     if (isToday(date)) return 'Hoje';
     if (isYesterday(date)) return 'Ontem';
     return format(date, "EEE, d 'de' MMM", { locale: ptBR });

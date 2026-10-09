@@ -67,7 +67,7 @@ export default function NewReminderModal({ isOpen, onClose }: NewReminderModalPr
       return;
     }
 
-    const parsedAmount = parseFloat(amount.replace(',', '.'));
+    const parsedAmount = parseBRL(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
       toast({
         title: 'Valor inválido',

@@ -150,33 +150,22 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   const acceptInvite = async (token: string) => {
     if (!user) return { success: false, error: 'Faça login primeiro' };
-    // Find invite
-    const { data: invite, error: inviteErr } = await supabase
-      .from('wallet_invites')
-      .select('*')
-      .eq('token', token)
-      .maybeSingle();
-    if (inviteErr || !invite) return { success: false, error: 'Convite inválido' };
-    if (invite.used_at) return { success: false, error: 'Convite já utilizado' };
-    if (new Date(invite.expires_at) < new Date()) return { success: false, error: 'Convite expirado' };
-
-    // Add as member
-    const { error: memberErr } = await supabase
-      .from('wallet_members')
-      .insert({ wallet_id: invite.wallet_id, user_id: user.id, role: 'member' });
-    if (memberErr && !memberErr.message.includes('duplicate')) {
-      return { success: false, error: memberErr.message };
+    
+    const { data, error } = await supabase.rpc('accept_wallet_invite', { invite_token: token });
+    
+    if (error) {
+      return { success: false, error: error.message };
     }
 
-    // Mark invite used
-    await supabase
-      .from('wallet_invites')
-      .update({ used_at: new Date().toISOString(), used_by: user.id })
-      .eq('id', invite.id);
-
     await refreshWallets();
-    setActiveWalletId(invite.wallet_id);
-    return { success: true, walletId: invite.wallet_id };
+    
+    // The RPC returns { success: true, wallet_id: "..." }
+    const walletId = (data as any)?.wallet_id;
+    if (walletId) {
+      setActiveWalletId(walletId);
+    }
+    
+    return { success: true, walletId };
   };
 
   const value = React.useMemo(

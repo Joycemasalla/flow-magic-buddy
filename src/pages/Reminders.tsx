@@ -79,7 +79,7 @@ export default function Reminders() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const parsedAmount = parseFloat(amount.replace(',', '.'));
+    const parsedAmount = parseBRL(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
       toast({ title: 'Valor inválido', description: 'Digite um valor maior que zero.', variant: 'destructive' });
       return;

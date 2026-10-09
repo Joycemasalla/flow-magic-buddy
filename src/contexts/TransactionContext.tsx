@@ -46,7 +46,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const { activeWalletId } = useWallet();
   const isOnline = useOnlineStatus();
-  const { queue, pendingCount, enqueue, clearQueue, isSyncing, setIsSyncing, syncingRef } = useOfflineQueue();
+  const { queue, pendingCount, enqueue, clearQueue, removeFromQueue, isSyncing, setIsSyncing, syncingRef } = useOfflineQueue();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [investments, setInvestments] = useState<Investment[]>([]);
@@ -136,6 +136,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     for (const op of currentQueue) {
       try {
         await processOperation(op);
+        removeFromQueue(op.id);
         successCount++;
       } catch (err) {
         if (import.meta.env.DEV) console.error('Sync error for op:', op.id, err);
@@ -144,7 +145,6 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     }
 
     if (successCount > 0) {
-      clearQueue();
       await fetchData();
       toast({
         title: 'Sincronizado!',
@@ -290,7 +290,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
               description: r.title,
               amount: Number(r.amount),
               type: r.is_recurring ? 'monthly' as const : 'single' as const,
-              dueDay: new Date(r.due_date).getDate(),
+              dueDay: parseLocalDate(r.due_date).getDate(),
               category,
               isActive: !r.is_paid,
               alertDaysBefore: r.alert_days_before ?? 3,
@@ -503,7 +503,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       const newReminder: Reminder = {
         id: d.id, title: d.title, description: d.title,
         amount: Number(d.amount), type: d.is_recurring ? 'monthly' : 'single',
-        dueDay: new Date(d.due_date).getDate(), category,
+        dueDay: parseLocalDate(d.due_date).getDate(), category,
         isActive: !d.is_paid,
         alertDaysBefore: d.alert_days_before ?? 3,
         lastPaidMonth: d.last_paid_month ?? null,

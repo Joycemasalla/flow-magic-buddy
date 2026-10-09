@@ -322,7 +322,7 @@ export default function ReportModal({
                 {sortedDates.slice(0, 10).map((date) => (
                   <div key={date}>
                     <p className="text-[10px] font-medium text-gray-400 mb-1 uppercase">
-                      {format(new Date(date), "dd MMM", { locale: ptBR })}
+                      {format(parseLocalDate(date), "dd MMM", { locale: ptBR })}
                     </p>
                     <div className="space-y-1">
                       {groupedTransactions[date].map((t) => (
