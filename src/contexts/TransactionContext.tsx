@@ -34,10 +34,7 @@ interface TransactionContextType {
 
 const TransactionContext = createContext<TransactionContextType | undefined>(undefined);
 
-const validCategories: TransactionCategory[] = [
-  'salary', 'food', 'transport', 'shopping', 'health', 
-  'entertainment', 'bills', 'education', 'investment', 'loan', 'other'
-];
+
 
 const validInvestmentTypes: InvestmentType[] = [
   'tesouro_direto', 'renda_fixa', 'acoes', 'cripto', 'fundos', 'poupanca', 'outros'
@@ -216,6 +213,25 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     setLoading(true);
 
     try {
+
+      // ---- CUSTOM CATEGORIES ----
+      let categoriesQuery = supabase.from('custom_categories').select('*');
+      if (activeWalletId) {
+        categoriesQuery = categoriesQuery.eq('wallet_id', activeWalletId);
+      } else {
+        categoriesQuery = categoriesQuery.is('wallet_id', null);
+      }
+      const { data: categoriesData } = await categoriesQuery;
+      if (categoriesData) {
+        import('@/types/transaction').then(m => {
+          categoriesData.forEach(cat => {
+            m.categoryLabels[cat.name] = cat.name;
+            if (cat.color) m.categoryColors[cat.name] = cat.color;
+            if (cat.icon) m.categoryIcons[cat.name] = cat.icon;
+          });
+        });
+      }
+
       // ---- TRANSACTIONS ----
       let transactionsQuery = supabase
         .from('transactions')
@@ -239,9 +255,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       if (transactionsData) {
         setTransactions(
           transactionsData.map((t: any) => {
-            const category = validCategories.includes(t.category as TransactionCategory) 
-              ? (t.category as TransactionCategory) 
-              : 'other';
+            const category = t.category || "other";
             return {
               id: t.id,
               type: t.type as 'income' | 'expense',
@@ -284,9 +298,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       if (remindersData) {
         setReminders(
           remindersData.map((r: any) => {
-            const category = validCategories.includes(r.category as TransactionCategory) 
-              ? (r.category as TransactionCategory) 
-              : 'other';
+            const category = r.category || "other";
             return {
               id: r.id,
               title: r.title,
@@ -397,8 +409,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
 
     if (data) {
       const d = data as any;
-      const category = validCategories.includes(d.category as TransactionCategory) 
-        ? (d.category as TransactionCategory) : 'other';
+      const category = d.category || "other";
       const newTransaction: Transaction = {
         id: d.id, type: d.type as 'income' | 'expense', category,
         amount: Number(d.amount), description: d.description, date: d.date,
@@ -519,8 +530,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
 
     if (data) {
       const d = data as any;
-      const category = validCategories.includes(d.category as TransactionCategory) 
-        ? (d.category as TransactionCategory) : 'other';
+      const category = d.category || "other";
       const newReminder: Reminder = {
         id: d.id, title: d.title, description: d.title,
         amount: Number(d.amount), type: d.is_recurring ? 'monthly' : 'single',

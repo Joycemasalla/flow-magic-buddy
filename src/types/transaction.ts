@@ -1,17 +1,6 @@
 export type TransactionType = 'income' | 'expense';
 
-export type TransactionCategory = 
-  | 'salary' 
-  | 'food' 
-  | 'transport' 
-  | 'shopping' 
-  | 'health' 
-  | 'entertainment' 
-  | 'bills' 
-  | 'education' 
-  | 'investment' 
-  | 'loan' 
-  | 'other';
+export type TransactionCategory = string;
 
 export interface Transaction {
   id: string;
@@ -51,7 +40,7 @@ export interface Reminder {
   createdAt: string;
 }
 
-export const categoryLabels: Record<TransactionCategory, string> = {
+export const categoryLabels: Record<string, string> = {
   salary: 'Salário',
   food: 'Alimentação',
   transport: 'Transporte',
@@ -65,7 +54,7 @@ export const categoryLabels: Record<TransactionCategory, string> = {
   other: 'Outros',
 };
 
-export const categoryIcons: Record<TransactionCategory, string> = {
+export const categoryIcons: Record<string, string> = {
   salary: 'Wallet',
   food: 'UtensilsCrossed',
   transport: 'Car',
@@ -79,7 +68,7 @@ export const categoryIcons: Record<TransactionCategory, string> = {
   other: 'MoreHorizontal',
 };
 
-export const categoryColors: Record<TransactionCategory, string> = {
+export const categoryColors: Record<string, string> = {
   salary: 'hsl(160 84% 39%)',
   food: 'hsl(38 92% 50%)',
   transport: 'hsl(200 84% 50%)',

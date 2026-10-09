@@ -34,6 +34,7 @@ const navItems = [
   { path: '/investimentos', icon: TrendingUp, label: 'Investimentos', mobileLabel: 'Invest.' },
   { path: '/lembretes', icon: Bell, label: 'Gastos Mensais', mobileLabel: 'Mensais' },
   { path: '/emprestimos', icon: HandCoins, label: 'Empréstimos', mobileLabel: 'Emprést.' },
+  { path: '/orcamentos', icon: Receipt, label: 'Orçamentos', mobileLabel: 'Orçam.' },
 ];
 
 export default function AppLayout() {
