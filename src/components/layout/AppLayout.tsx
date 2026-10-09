@@ -271,6 +271,7 @@ export default function AppLayout() {
         </div>
       </nav>
 
+      {!location.pathname.startsWith('/transacoes/') && (<>
       {/* Floating Action Button - Mobile with Contextual Icon */}
       <motion.button
         whileTap={{ scale: 0.92 }}
@@ -292,6 +293,7 @@ export default function AppLayout() {
       >
         <getCurrentFabIcon.icon className="w-6 h-6 stroke-[1.5]" />
       </motion.button>
+      </>)}
 
       {/* Quick Record Modal */}
       <QuickRecordModal
