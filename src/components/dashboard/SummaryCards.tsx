@@ -96,7 +96,7 @@ export default function SummaryCards({
               balance >= 0 ? 'text-foreground' : 'text-expense'
             )}
           >
-            <PrivacyValue value={Math.abs(balance)} />
+            {balance < 0 && "- "}<PrivacyValue value={Math.abs(balance)} />
           </AutoFitText>
           {balance < 0 && (
             <p className="text-[11px] text-expense mt-1.5 font-semibold">
