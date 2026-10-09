@@ -243,7 +243,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     if (!hasLoadedRef.current) setLoading(true);
 
     try {
-      const scopeWallet = <T extends { eq: any; is: any }>(q: T): T =>
+      const scopeWallet = (q: any): any =>
         activeWalletId ? q.eq('wallet_id', activeWalletId) : q.is('wallet_id', null);
 
       const cutoff = new Date();
