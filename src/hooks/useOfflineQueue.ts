@@ -62,6 +62,19 @@ export function useOfflineQueue() {
     saveQueue([]);
   }, []);
 
+  const updateInQueue = useCallback((tempId: string, payload: any) => {
+    setQueue(prev => {
+      const updated = prev.map(op => {
+        if (op.tempId === tempId || op.id === tempId) {
+          return { ...op, payload: { ...op.payload, ...payload } };
+        }
+        return op;
+      });
+      saveQueue(updated);
+      return updated;
+    });
+  }, []);
+
   const removeFromQueue = useCallback((opId: string) => {
     setQueue((prev) => {
       const updated = prev.filter(op => op.id !== opId);
@@ -70,5 +83,5 @@ export function useOfflineQueue() {
     });
   }, []);
 
-  return { queue, pendingCount, enqueue, clearQueue, removeFromQueue, isSyncing, setIsSyncing, isOnline, syncingRef };
+  return { queue, pendingCount, enqueue, clearQueue, removeFromQueue, isSyncing, setIsSyncing, isOnline, syncingRef, updateInQueue };
 }
