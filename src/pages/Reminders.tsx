@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { SwipeableCard } from '@/components/ui/SwipeableCard';
+import { parseBRL } from '@/lib/finance/money';
 
 const currentMonthKey = () => {
   const now = new Date();
@@ -42,7 +43,7 @@ const getDaysUntilDue = (dueDay: number) => {
 };
 
 export default function Reminders() {
-  const { reminders, addReminder, updateReminder, deleteReminder, markReminderAsPaid } = useTransactions();
+  const { reminders, addReminder, updateReminder, deleteReminder, markReminderAsPaid, deleteTransaction } = useTransactions();
   const { toast } = useToast();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -120,8 +121,11 @@ export default function Reminders() {
     toast({ title: 'Gasto removido' });
   };
 
-  const handleUndoPaid = (r: Reminder) => {
-    updateReminder(r.id, { lastPaidMonth: null });
+  const handleUndoPaid = async (r: Reminder) => {
+    if (r.lastTransactionId) {
+      await deleteTransaction(r.lastTransactionId);
+    }
+    await updateReminder(r.id, { lastPaidMonth: null, lastTransactionId: null });
     toast({ title: 'Marcado como pendente novamente' });
   };
 

@@ -255,6 +255,8 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
               loanSettledDate: t.loan_settled_date || undefined,
               loanPaidAmount: t.loan_paid_amount != null ? Number(t.loan_paid_amount) : 0,
               accountId: t.account_id || null,
+              isTransfer: t.is_transfer || false,
+              linkedTransactionId: t.linked_transaction_id || undefined,
             };
           })
         );
@@ -362,6 +364,8 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       loan_settled_date: transaction.loanSettledDate || null,
       loan_paid_amount: transaction.loanPaidAmount ?? 0,
       account_id: transaction.accountId || null,
+      is_transfer: transaction.isTransfer || false,
+      linked_transaction_id: transaction.linkedTransactionId || null,
       wallet_id: activeWalletId || null,
     };
 
@@ -402,6 +406,8 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
         loanSettledDate: d.loan_settled_date || undefined,
         loanPaidAmount: d.loan_paid_amount != null ? Number(d.loan_paid_amount) : 0,
         accountId: d.account_id || null,
+        isTransfer: d.is_transfer || false,
+        linkedTransactionId: d.linked_transaction_id || undefined,
       };
       setTransactions((prev) => [newTransaction, ...prev]);
       return d.id;
@@ -423,6 +429,8 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     if (updates.loanSettledDate !== undefined) updateData.loan_settled_date = updates.loanSettledDate;
     if (updates.loanPaidAmount !== undefined) updateData.loan_paid_amount = updates.loanPaidAmount;
     if (updates.accountId !== undefined) updateData.account_id = updates.accountId;
+    if (updates.isTransfer !== undefined) updateData.is_transfer = updates.isTransfer;
+    if (updates.linkedTransactionId !== undefined) updateData.linked_transaction_id = updates.linkedTransactionId;
 
     setTransactions((prev) => prev.map((t) => (t.id === id ? { ...t, ...updates } : t)));
 
@@ -440,17 +448,29 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
   const deleteTransaction = async (id: string) => {
     if (!user) return;
 
-    setTransactions((prev) => prev.filter((t) => t.id !== id));
+    const tToDelete = transactions.find((t) => t.id === id);
+    const linkedId = tToDelete?.linkedTransactionId;
+    const isParent = transactions.some((t) => t.linkedTransactionId === id);
+
+    setTransactions((prev) => prev.filter((t) => t.id !== id && t.linkedTransactionId !== id && t.id !== linkedId));
 
     if (!isOnline) {
       if (!id.startsWith('temp_')) {
         enqueue({ table: 'transactions', action: 'delete', entityId: id });
+        if (linkedId && !linkedId.startsWith('temp_')) {
+           enqueue({ table: 'transactions', action: 'delete', entityId: linkedId });
+        }
       }
       return;
     }
 
     const { error } = await supabase.from('transactions').delete().eq('id', id);
     if (error && import.meta.env.DEV) console.error('Error deleting transaction:', error);
+    
+    if (linkedId) {
+      const { error: err2 } = await supabase.from('transactions').delete().eq('id', linkedId);
+      if (err2 && import.meta.env.DEV) console.error('Error deleting linked transaction:', err2);
+    }
   };
 
   const addReminder = async (reminder: Omit<Reminder, 'id' | 'createdAt'>) => {
@@ -507,6 +527,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
         isActive: !d.is_paid,
         alertDaysBefore: d.alert_days_before ?? 3,
         lastPaidMonth: d.last_paid_month ?? null,
+        lastTransactionId: d.last_transaction_id ?? null,
         createdAt: d.created_at,
       };
       setReminders((prev) => [newReminder, ...prev]);
@@ -524,6 +545,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     if (updates.isActive !== undefined) updateData.is_paid = !updates.isActive;
     if (updates.alertDaysBefore !== undefined) updateData.alert_days_before = updates.alertDaysBefore;
     if (updates.lastPaidMonth !== undefined) updateData.last_paid_month = updates.lastPaidMonth;
+    if (updates.lastTransactionId !== undefined) updateData.last_transaction_id = updates.lastTransactionId;
     if (updates.dueDay) {
       const dueDate = new Date();
       dueDate.setDate(updates.dueDay);
@@ -563,20 +585,21 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     const reminder = reminders.find((r) => r.id === id);
     if (!reminder || !user) return;
 
-    await addTransaction({
+    const transactionId = await addTransaction({
       type: 'expense',
       category: reminder.category,
       amount: reminder.amount,
       description: reminder.title,
       date: toLocalDateString(),
       isLoan: false,
+      accountId: activeWalletId || undefined, // vincula a carteira se estiver em uma
     });
 
     // Marca o mês atual como pago. No próximo mês o gasto reaparece automaticamente
     // (porque last_paid_month != mês corrente).
     const now = new Date();
     const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-    await updateReminder(id, { lastPaidMonth: currentMonth });
+    await updateReminder(id, { lastPaidMonth: currentMonth, lastTransactionId: transactionId });
 
     toast({
       title: 'Gasto pago!',
@@ -597,6 +620,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       description: investment.descricao || null,
       specific_details: validateInvestmentDetails(investment.tipo, investment.detalhesEspecificos) || null,
       wallet_id: activeWalletId || null,
+      transaction_id: investment.transactionId || null,
     };
 
     if (!isOnline) {
@@ -630,6 +654,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
         valorInvestido: Number(d.initial_value), dataInvestimento: d.start_date,
         jaInvestido: d.status === 'completed', descricao: d.description || undefined,
         detalhesEspecificos: d.specific_details || undefined, createdAt: d.created_at,
+        transactionId: d.transaction_id || undefined,
       };
       setInvestments((prev) => [newInvestment, ...prev]);
     }
@@ -652,6 +677,9 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       const tipo = updates.tipo || investments.find(i => i.id === id)?.tipo || 'outros';
       updateData.specific_details = validateInvestmentDetails(tipo, updates.detalhesEspecificos) || null;
     }
+    if (updates.transactionId !== undefined) {
+      updateData.transaction_id = updates.transactionId;
+    }
 
     setInvestments((prev) => prev.map((i) => (i.id === id ? { ...i, ...updates } : i)));
 
@@ -669,7 +697,12 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
   const deleteInvestment = async (id: string) => {
     if (!user) return;
 
+    const investment = investments.find((i) => i.id === id);
     setInvestments((prev) => prev.filter((i) => i.id !== id));
+
+    if (investment?.transactionId) {
+      await deleteTransaction(investment.transactionId);
+    }
 
     if (!isOnline) {
       if (!id.startsWith('temp_')) {

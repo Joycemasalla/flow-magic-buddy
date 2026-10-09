@@ -27,6 +27,8 @@ export interface Transaction {
   /** Total já pago/recebido para empréstimos com quitação parcial. */
   loanPaidAmount?: number;
   accountId?: string | null;
+  isTransfer?: boolean;
+  linkedTransactionId?: string;
   tags?: string[]; // For profile modes like 'casal' (couple)
   createdAt: string;
 }
@@ -44,6 +46,8 @@ export interface Reminder {
   alertDaysBefore: number;
   /** Último mês (YYYY-MM) em que foi marcado como pago. */
   lastPaidMonth?: string | null;
+  /** Transação gerada pelo último pagamento. */
+  lastTransactionId?: string | null;
   createdAt: string;
 }
 

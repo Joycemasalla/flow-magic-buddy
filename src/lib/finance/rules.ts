@@ -58,6 +58,10 @@ export function calculatePeriodSummary(
       if (t.type === 'income') loansReceived += t.amount;
     }
 
+    if (t.isTransfer) {
+      continue;
+    }
+
     if (t.type === 'income') {
       income += t.amount;
     } else {

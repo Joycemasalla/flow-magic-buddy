@@ -214,6 +214,14 @@ export default function NewInvestmentModal({ isOpen, onClose, editingInvestment 
     const investmentDate = toLocalDateString(selectedDate);
 
     if (isEditing && editingInvestment) {
+      if (editingInvestment.transactionId) {
+        await updateTransaction(editingInvestment.transactionId, {
+          amount: parsedValor,
+          description: nome,
+          date: investmentDate,
+        });
+      }
+
       // Update existing investment
       await updateInvestment(editingInvestment.id, {
         nome,
