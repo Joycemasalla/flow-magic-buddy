@@ -146,7 +146,7 @@ export default function Budgets() {
               <div key={budget.id} className="bg-white p-5 rounded-xl border border-border shadow-sm relative group overflow-hidden">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg" style={{ backgroundColor: \`\${color}20\`, color }}>
+                    <div className="p-2 rounded-lg" style={{ backgroundColor: `${color}20`, color }}>
                       <Icon className="w-5 h-5" />
                     </div>
                     <div>
