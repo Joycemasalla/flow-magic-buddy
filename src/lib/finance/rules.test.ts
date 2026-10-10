@@ -62,7 +62,7 @@ describe('calculatePeriodSummary', () => {
       }
     ] as unknown as Transaction[];
 
-    const summary = calculatePeriodSummary(transactions, investments);
+    const summary = calculatePeriodSummary(transactions as unknown as Transaction[], investments);
     
     // Agora o comportamento está CORRETO
     expect(summary.invested).toBe(1000); // ✅ Apenas 1000 contabilizado pelas transações
