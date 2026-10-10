@@ -103,7 +103,7 @@ export default function NewInvestmentModal({ isOpen, onClose, editingInvestment 
     quantidade: 0,
   });
 
-  const { addInvestment, addTransaction, updateInvestment } = useTransactions();
+  const { addInvestment, addTransaction, updateInvestment, updateTransaction } = useTransactions();
   const { toast } = useToast();
 
   const isEditing = !!editingInvestment;

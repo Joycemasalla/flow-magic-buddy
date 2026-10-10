@@ -43,7 +43,7 @@ export default function Transactions() {
     }
 
     if (selectedAccount !== 'all') {
-      result = result.filter((t) => t.account_id === selectedAccount);
+      result = result.filter((t) => t.accountId === selectedAccount);
     }
 
     if (selectedCategory !== 'all') {
