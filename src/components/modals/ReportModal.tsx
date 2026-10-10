@@ -18,6 +18,10 @@ interface ReportModalProps {
     income: number;
     expense: number;
     balance: number;
+    saved?: number;
+    count?: number;
+    excludedInvestments?: number;
+    excludedLoans?: number;
   };
   period: string;
 }
