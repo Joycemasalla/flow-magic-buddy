@@ -82,7 +82,7 @@ export default function AppLayout() {
   return (
     <div className="min-h-screen flex flex-col w-full overflow-x-hidden">
       <OfflineBanner />
-      <div className="flex flex-1">
+      <div className="flex flex-1 min-w-0">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex flex-col w-64 bg-sidebar border-r border-sidebar-border">
         <div className="p-6 space-y-1">

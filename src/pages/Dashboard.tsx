@@ -354,12 +354,12 @@ export default function Dashboard() {
 
       {/* Seções Adicionais */}
       <div className="grid gap-6 md:grid-cols-2">
-        <div className="space-y-6">
+        <div className="space-y-6 min-w-0">
           <AttentionList transactions={monthTransactions} />
           <CategoryBarList transactions={monthTransactions} />
         </div>
         
-        <div className="space-y-6">
+        <div className="space-y-6 min-w-0">
           {/* NetWorth Strip */}
           <NetWorthStrip />
           
