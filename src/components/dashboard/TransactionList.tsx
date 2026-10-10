@@ -43,6 +43,7 @@ interface TransactionListProps {
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
   pendingIds?: Set<string>;
+  hideTitle?: boolean;
 }
 
 interface SwipeableItemProps {
@@ -68,7 +69,7 @@ const SwipeableItem = memo(function SwipeableItem({ transaction, onEdit, onDelet
       onDelete={onDelete}
       onClick={onViewDetails}
       className={cn(
-        'flex items-center gap-3 sm:gap-4 px-4 py-4 sm:p-5 rounded-2xl border transition-all',
+        'flex items-center gap-2.5 sm:gap-4 p-3 sm:p-5 rounded-2xl border transition-all',
         isSettledLoan
           ? 'bg-income/8 border-income/20 hover:border-income/30'
           : 'glass-elevated border-border/40 hover:border-border/60'
@@ -76,7 +77,7 @@ const SwipeableItem = memo(function SwipeableItem({ transaction, onEdit, onDelet
     >
       <div
         className={cn(
-          'w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center flex-shrink-0 transition-all',
+          'w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center flex-shrink-0 transition-all',
           isSettledLoan && 'bg-income/15',
           !isSettledLoan && isIncome && 'bg-income/12',
           !isSettledLoan && !isIncome && 'bg-expense/12'
@@ -132,6 +133,7 @@ export default function TransactionList({
   onEdit,
   onDelete,
   pendingIds,
+  hideTitle = false,
 }: TransactionListProps) {
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
 
@@ -177,9 +179,9 @@ export default function TransactionList({
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="space-y-6 max-w-full overflow-hidden"
+        className="space-y-4 w-full min-w-0"
       >
-        <h3 className="text-base font-semibold">Transações</h3>
+        {!hideTitle && <h3 className="text-base font-semibold">Transações</h3>}
         <div className="space-y-6">
           {sortedDates.map((date) => (
             <div key={date}>

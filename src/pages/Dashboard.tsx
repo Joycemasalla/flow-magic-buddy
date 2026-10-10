@@ -42,16 +42,16 @@ function SpendingHero({ spent, expected, income }: { spent: number, expected: nu
   const progress = income > 0 ? Math.min((spent / income) * 100, 100) : 0;
   
   return (
-    <div className="glass-card rounded-3xl p-6 text-center space-y-4">
+    <div className="glass-card rounded-3xl p-4 sm:p-6 text-center space-y-4">
       <div className="space-y-1">
         <p className="text-xs font-semibold tracking-wider uppercase text-muted-foreground">Gastos do Mês</p>
-        <div className="flex items-baseline justify-center gap-1">
-          <span className="text-3xl sm:text-4xl font-display font-bold text-expense">
+        <div className="flex items-baseline justify-center gap-1 flex-wrap">
+          <span className="text-2xl sm:text-4xl font-display font-bold text-expense break-all">
             R$ {spent.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
           </span>
         </div>
         {expected > 0 && (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             + R$ {expected.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} previstos
           </p>
         )}
@@ -64,9 +64,9 @@ function SpendingHero({ spent, expected, income }: { spent: number, expected: nu
         />
       </div>
 
-      <div className="flex justify-between text-xs text-muted-foreground">
-        <span>Receitas: R$ {income.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-        <span>Restante: R$ {Math.max(income - totalExpense, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+        <span className="truncate">Receitas: R$ {income.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+        <span className="truncate">Restante: R$ {Math.max(income - totalExpense, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
       </div>
     </div>
   );
@@ -85,9 +85,9 @@ function CategoryBarList({ transactions }: { transactions: Transaction[] }) {
   if (sorted.length === 0) return null;
 
   return (
-    <div className="glass-card rounded-2xl p-5 space-y-4">
+    <div className="glass-card rounded-2xl p-4 sm:p-5 space-y-4">
       <h3 className="font-semibold text-sm text-foreground flex items-center gap-2">
-        <Icons.PieChart className="w-4 h-4 text-muted-foreground" />
+        <Icons.PieChart className="w-4 h-4 text-muted-foreground shrink-0" />
         Maiores Despesas
       </h3>
       <div className="space-y-3">
@@ -100,12 +100,12 @@ function CategoryBarList({ transactions }: { transactions: Transaction[] }) {
 
           return (
             <div key={cat} className="space-y-1">
-              <div className="flex justify-between text-xs">
-                <span className="flex items-center gap-1.5 font-medium">
-                  <Icon className="w-3.5 h-3.5" style={{ color }} />
-                  {label}
+              <div className="flex items-center justify-between text-xs gap-2">
+                <span className="flex items-center gap-1.5 font-medium min-w-0 truncate">
+                  <Icon className="w-3.5 h-3.5 shrink-0" style={{ color }} />
+                  <span className="truncate">{label}</span>
                 </span>
-                <span className="font-semibold">R$ {amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                <span className="font-semibold shrink-0">R$ {amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
               </div>
               <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
                 <div className="h-full rounded-full" style={{ width: `${percent}%`, backgroundColor: color }} />
@@ -147,9 +147,9 @@ function AttentionList({ transactions }: { transactions: Transaction[] }) {
   if (urgentReminders.length === 0 && overBudgets.length === 0) return null;
 
   return (
-    <div className="glass-card rounded-2xl p-5 space-y-4">
+    <div className="glass-card rounded-2xl p-4 sm:p-5 space-y-4">
       <h3 className="font-semibold text-sm text-foreground flex items-center gap-2">
-        <AlertTriangle className="w-4 h-4 text-warning" />
+        <AlertTriangle className="w-4 h-4 text-warning shrink-0" />
         Fique de Olho
       </h3>
       <div className="space-y-3">
@@ -160,7 +160,7 @@ function AttentionList({ transactions }: { transactions: Transaction[] }) {
           const isLate = diff < 0;
 
           return (
-            <div key={r.id} className="flex justify-between items-center p-2.5 rounded-xl bg-muted/40 border border-border/50">
+            <div key={r.id} className="flex justify-between items-center p-2.5 rounded-xl bg-muted/40 border border-border/50 gap-2">
               <div className="flex flex-col min-w-0">
                 <span className="text-sm font-medium truncate">{r.title}</span>
                 <span className={cn("text-[11px] font-semibold", isLate ? 'text-expense' : 'text-warning')}>
@@ -176,10 +176,10 @@ function AttentionList({ transactions }: { transactions: Transaction[] }) {
         {overBudgets.map(b => {
           const spent = spentByCategory[b.category] || 0;
           return (
-             <div key={`budget-${b.id}`} className="flex justify-between items-center p-2.5 rounded-xl bg-expense/10 border border-expense/20">
+             <div key={`budget-${b.id}`} className="flex justify-between items-center p-2.5 rounded-xl bg-expense/10 border border-expense/20 gap-2">
                <div className="flex flex-col min-w-0">
                  <span className="text-sm font-medium text-expense truncate">Orçamento excedido</span>
-                 <span className="text-[11px] text-expense/80">{categoryLabels[b.category] || b.category}</span>
+                 <span className="text-[11px] text-expense/80 truncate">{categoryLabels[b.category] || b.category}</span>
                </div>
                <span className="font-semibold text-sm text-expense shrink-0">
                  R$ {(spent - b.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} acima
@@ -201,14 +201,14 @@ function NetWorthStrip() {
   const netWorth = totalAccounts + totalInvested;
 
   return (
-    <div className="glass-card rounded-2xl p-4 flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        <div className="p-2 bg-income/10 rounded-xl">
+    <div className="glass-card rounded-2xl p-4 flex items-center justify-between gap-3">
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="p-2 bg-income/10 rounded-xl shrink-0">
           <Landmark className="w-5 h-5 text-income" />
         </div>
-        <div className="flex flex-col">
-          <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Patrimônio Total</span>
-          <span className="text-lg font-bold font-display text-foreground">
+        <div className="flex flex-col min-w-0">
+          <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold truncate">Patrimônio Total</span>
+          <span className="text-base sm:text-lg font-bold font-display text-foreground truncate">
             R$ {netWorth.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
           </span>
         </div>
@@ -252,7 +252,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="space-y-6 max-w-full overflow-hidden pb-28 lg:pb-4">
+    <div className="space-y-6 w-full min-w-0 pb-28 lg:pb-4">
       {/* Header */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex-1 min-w-0">
@@ -266,7 +266,7 @@ export default function Dashboard() {
             {activeWallet ? activeWallet.name : 'Minha carteira'}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <ProfileSwitcher />
           <Button variant="outline" size="sm" onClick={() => setIsReportOpen(true)} className="min-h-[40px] px-3 rounded-2xl">
             <Download className="w-4 h-4 sm:mr-2 stroke-[1.5]" />
@@ -293,28 +293,27 @@ export default function Dashboard() {
         </div>
         
         <div className="space-y-6">
-          {/* NetWorth Strip pode ir aqui em cima no desktop ou no final */}
+          {/* NetWorth Strip */}
           <NetWorthStrip />
           
-          <div className="glass-card rounded-2xl p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-sm text-foreground flex items-center gap-2">
-                <Icons.ArrowRightLeft className="w-4 h-4 text-muted-foreground" />
-                Transações do Mês
+          <div className="glass-card rounded-2xl p-4 sm:p-5 space-y-4">
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="font-semibold text-sm text-foreground flex items-center gap-2 min-w-0">
+                <Icons.ArrowRightLeft className="w-4 h-4 text-muted-foreground shrink-0" />
+                <span className="truncate">Transações do Mês</span>
               </h3>
-              <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => navigate('/transacoes/nova')}>
+              <Button variant="ghost" size="sm" className="h-8 text-xs shrink-0" onClick={() => navigate('/transacoes/nova')}>
                 <Plus className="w-3.5 h-3.5 mr-1" /> Adicionar
               </Button>
             </div>
             {/* Reuso do TransactionList focado apenas no mês atual */}
-            <div className="-mx-5">
-              <TransactionList
-                transactions={monthTransactions}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                pendingIds={pendingTransactionIds}
-              />
-            </div>
+            <TransactionList
+              transactions={monthTransactions}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              pendingIds={pendingTransactionIds}
+              hideTitle
+            />
           </div>
         </div>
       </div>

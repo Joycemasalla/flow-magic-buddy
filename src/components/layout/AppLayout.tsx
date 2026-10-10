@@ -213,9 +213,9 @@ export default function AppLayout() {
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 safe-area-bottom px-3 pb-2 pt-1">
-        <div className="glass-elevated rounded-3xl mx-auto max-w-md px-2">
-          <div className="flex justify-around items-center h-16 px-1">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 safe-area-bottom px-2 pb-2 pt-1">
+        <div className="glass-elevated rounded-3xl mx-auto max-w-md px-1 overflow-x-auto no-scrollbar">
+          <div className="flex justify-between items-center h-16 px-1 gap-0.5 min-w-0">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
               return (
@@ -223,7 +223,7 @@ export default function AppLayout() {
                   key={item.path}
                   to={item.path}
                   className={cn(
-                    'relative flex flex-col items-center justify-center py-2 px-2 min-w-[52px] rounded-2xl transition-all duration-300',
+                    'relative flex flex-col items-center justify-center py-1.5 px-1 min-w-0 flex-1 rounded-2xl transition-all duration-300',
                     isActive ? 'text-primary' : 'text-muted-foreground'
                   )}
                 >
@@ -235,7 +235,7 @@ export default function AppLayout() {
                     />
                   )}
                   <item.icon className={cn('w-5 h-5 mb-0.5 relative z-10 transition-transform stroke-[1.5]', isActive && 'scale-110')} />
-                  <span className="text-[10px] font-medium leading-tight text-center relative z-10">
+                  <span className="text-[9px] sm:text-[10px] font-medium leading-tight text-center relative z-10 truncate w-full">
                     {item.mobileLabel}
                   </span>
                 </NavLink>
