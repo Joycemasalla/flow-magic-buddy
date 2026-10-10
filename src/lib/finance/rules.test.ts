@@ -9,7 +9,7 @@ describe('calculatePeriodSummary', () => {
   const future = format(addDays(new Date(), 5), 'yyyy-MM-dd');
 
   it('Corrige Bug B.2-1: Empréstimos não entram como receita/despesa, apenas como loan', () => {
-    const transactions: Transaction[] = [
+    const transactions = [
       {
         id: '1',
         type: 'income',
@@ -23,7 +23,7 @@ describe('calculatePeriodSummary', () => {
         paymentMethod: 'pix',
         userId: 'user1'
       }
-    ];
+    ] as unknown as Transaction[];
 
     const summary = calculatePeriodSummary(transactions, []);
     
@@ -33,7 +33,7 @@ describe('calculatePeriodSummary', () => {
   });
 
   it('Corrige Bug B.2-16: Não soma duplamente os aportes', () => {
-    const transactions: Transaction[] = [
+    const transactions = [
       {
         id: '1',
         type: 'expense',
@@ -49,18 +49,18 @@ describe('calculatePeriodSummary', () => {
       }
     ];
 
-    const investments: Investment[] = [
+    const investments = [
       {
         id: '1',
         nome: 'CDB',
-        tipo: 'RENDA_FIXA',
+        tipo: 'renda_fixa',
         valorInvestido: 1000,
         valorAtual: 1000,
         dataInvestimento: today,
         vencimento: '',
         userId: 'user1'
       }
-    ];
+    ] as unknown as Transaction[];
 
     const summary = calculatePeriodSummary(transactions, investments);
     
@@ -69,11 +69,11 @@ describe('calculatePeriodSummary', () => {
   });
 
   it('Separa realizado e previsto corretamente', () => {
-    const transactions: Transaction[] = [
-      { id: '1', type: 'income', amount: 3000, date: today, category: 'salario', isLoan: false, isTransfer: false, userId: 'u1' } as Transaction,
-      { id: '2', type: 'expense', amount: 500, date: today, category: 'food', isLoan: false, isTransfer: false, userId: 'u1' } as Transaction,
-      { id: '3', type: 'expense', amount: 200, date: future, category: 'food', isLoan: false, isTransfer: false, userId: 'u1' } as Transaction, // futuro
-    ];
+    const transactions = [
+      { id: '1', type: 'income', amount: 3000, date: today, category: 'salario', isLoan: false, isTransfer: false, userId: 'u1' },
+      { id: '2', type: 'expense', amount: 500, date: today, category: 'food', isLoan: false, isTransfer: false, userId: 'u1' },
+      { id: '3', type: 'expense', amount: 200, date: future, category: 'food', isLoan: false, isTransfer: false, userId: 'u1' }, // futuro
+    ] as unknown as Transaction[];
 
     const summary = calculatePeriodSummary(transactions, []);
     
