@@ -70,6 +70,82 @@ export type Database = {
           },
         ]
       }
+      budgets: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          id: string
+          user_id: string
+          wallet_id: string | null
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          id?: string
+          user_id: string
+          wallet_id?: string | null
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+          wallet_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budgets_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custom_categories: {
+        Row: {
+          color: string | null
+          created_at: string
+          icon: string | null
+          id: string
+          name: string
+          type: string
+          user_id: string
+          wallet_id: string | null
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name: string
+          type: string
+          user_id: string
+          wallet_id?: string | null
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name?: string
+          type?: string
+          user_id?: string
+          wallet_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_categories_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investments: {
         Row: {
           created_at: string
@@ -82,6 +158,7 @@ export type Database = {
           specific_details: Json | null
           start_date: string
           status: string
+          transaction_id: string | null
           type: string
           updated_at: string
           user_id: string
@@ -98,6 +175,7 @@ export type Database = {
           specific_details?: Json | null
           start_date: string
           status?: string
+          transaction_id?: string | null
           type: string
           updated_at?: string
           user_id: string
@@ -114,12 +192,20 @@ export type Database = {
           specific_details?: Json | null
           start_date?: string
           status?: string
+          transaction_id?: string | null
           type?: string
           updated_at?: string
           user_id?: string
           wallet_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "investments_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "investments_wallet_id_fkey"
             columns: ["wallet_id"]
@@ -140,6 +226,7 @@ export type Database = {
           is_paid: boolean
           is_recurring: boolean
           last_paid_month: string | null
+          last_transaction_id: string | null
           title: string
           updated_at: string
           user_id: string
@@ -155,6 +242,7 @@ export type Database = {
           is_paid?: boolean
           is_recurring?: boolean
           last_paid_month?: string | null
+          last_transaction_id?: string | null
           title: string
           updated_at?: string
           user_id: string
@@ -170,12 +258,20 @@ export type Database = {
           is_paid?: boolean
           is_recurring?: boolean
           last_paid_month?: string | null
+          last_transaction_id?: string | null
           title?: string
           updated_at?: string
           user_id?: string
           wallet_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "reminders_last_transaction_id_fkey"
+            columns: ["last_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "reminders_wallet_id_fkey"
             columns: ["wallet_id"]
@@ -195,6 +291,8 @@ export type Database = {
           description: string
           id: string
           is_loan: boolean | null
+          is_transfer: boolean | null
+          linked_transaction_id: string | null
           loan_paid_amount: number
           loan_person: string | null
           loan_settled_date: string | null
@@ -213,6 +311,8 @@ export type Database = {
           description: string
           id?: string
           is_loan?: boolean | null
+          is_transfer?: boolean | null
+          linked_transaction_id?: string | null
           loan_paid_amount?: number
           loan_person?: string | null
           loan_settled_date?: string | null
@@ -231,6 +331,8 @@ export type Database = {
           description?: string
           id?: string
           is_loan?: boolean | null
+          is_transfer?: boolean | null
+          linked_transaction_id?: string | null
           loan_paid_amount?: number
           loan_person?: string | null
           loan_settled_date?: string | null
@@ -246,6 +348,13 @@ export type Database = {
             columns: ["account_id"]
             isOneToOne: false
             referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_linked_transaction_id_fkey"
+            columns: ["linked_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
             referencedColumns: ["id"]
           },
           {
@@ -357,7 +466,36 @@ export type Database = {
         }
         Relationships: []
       }
-
+      whatsapp_links: {
+        Row: {
+          created_at: string
+          id: string
+          link_code: string
+          phone: string | null
+          updated_at: string
+          user_id: string
+          verified_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          link_code: string
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+          verified_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          link_code?: string
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

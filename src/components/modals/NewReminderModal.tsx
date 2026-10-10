@@ -1,3 +1,4 @@
+import { parseBRL } from '@/lib/finance/money';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Bell } from 'lucide-react';

@@ -1,5 +1,5 @@
 import { Transaction } from '@/types/transaction';
-import { Investment } from '@/contexts/TransactionContext';
+import { Investment } from '@/types/investment';
 
 export interface PeriodSummary {
   income: number;

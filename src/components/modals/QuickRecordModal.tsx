@@ -9,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useTransactions } from '@/contexts/TransactionContext';
 import { useToast } from '@/hooks/use-toast';
 import { TransactionCategory, TransactionType, categoryLabels } from '@/types/transaction';
+import { parseBRL } from '@/lib/finance/money';
 import { cn, toLocalDateString } from '@/lib/utils';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -87,7 +88,7 @@ export default function QuickRecordModal({ isOpen, onClose }: QuickRecordModalPr
     const categoryLabel = categoryLabels[selectedCategory];
 
     addTransaction({
-      type,
+      type: (type === 'transfer' ? 'expense' : type) as TransactionType,
       amount: parsedAmount,
       category: selectedCategory,
       description: description || categoryLabel,

@@ -1,3 +1,4 @@
+import { parseBRL } from '@/lib/finance/money';
 import { useState, useEffect } from 'react';
 import * as LucideIcons from 'lucide-react';
 import { Check, Image as ImageIcon, Shapes } from 'lucide-react';

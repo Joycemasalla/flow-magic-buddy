@@ -17,6 +17,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { useTransactions } from '@/contexts/TransactionContext';
 import { useToast } from '@/hooks/use-toast';
+import { parseBRL } from '@/lib/finance/money';
 import { cn } from '@/lib/utils';
 
 interface NewLoanModalProps {

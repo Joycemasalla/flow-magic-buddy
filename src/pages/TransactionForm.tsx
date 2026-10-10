@@ -1,4 +1,5 @@
 import { parseLocalDate } from '@/lib/finance/dates';
+import { parseBRL } from '@/lib/finance/money';
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';

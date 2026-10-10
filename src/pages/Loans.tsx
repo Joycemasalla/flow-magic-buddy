@@ -1,4 +1,5 @@
 import { parseLocalDate } from '@/lib/finance/dates';
+import { parseBRL } from '@/lib/finance/money';
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, HandCoins, ArrowUpRight, ArrowDownLeft, Check, Clock, CalendarIcon, CheckCircle2 } from 'lucide-react';

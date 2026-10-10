@@ -1,3 +1,4 @@
+import { parseBRL } from '@/lib/finance/money';
 import { parseLocalDate } from '@/lib/finance/dates';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -103,7 +104,7 @@ export default function NewInvestmentModal({ isOpen, onClose, editingInvestment 
     quantidade: 0,
   });
 
-  const { addInvestment, addTransaction, updateInvestment } = useTransactions();
+  const { addInvestment, addTransaction, updateInvestment, updateTransaction } = useTransactions();
   const { toast } = useToast();
 
   const isEditing = !!editingInvestment;
