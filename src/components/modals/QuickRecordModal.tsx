@@ -88,7 +88,7 @@ export default function QuickRecordModal({ isOpen, onClose }: QuickRecordModalPr
     const categoryLabel = categoryLabels[selectedCategory];
 
     addTransaction({
-      type,
+      type: (type === 'transfer' ? 'expense' : type) as TransactionType,
       amount: parsedAmount,
       category: selectedCategory,
       description: description || categoryLabel,

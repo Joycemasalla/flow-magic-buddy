@@ -151,7 +151,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const acceptInvite = async (token: string) => {
     if (!user) return { success: false, error: 'Faça login primeiro' };
     
-    const { data, error } = await supabase.rpc('accept_wallet_invite', { invite_token: token });
+    const { data, error } = await (supabase.rpc as any)('accept_wallet_invite', { invite_token: token });
     
     if (error) {
       return { success: false, error: error.message };

@@ -1,3 +1,4 @@
+import { parseBRL } from '@/lib/finance/money';
 import { parseLocalDate } from '@/lib/finance/dates';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
