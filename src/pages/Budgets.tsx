@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useBudgets } from "@/contexts/BudgetContext";
 import { useTransactions } from "@/contexts/TransactionContext";
 import { categoryLabels, categoryColors, categoryIcons } from "@/types/transaction";
-import { calculatePeriodSummary } from "@/lib/finance/rules";
+import { parseBRL } from "@/lib/finance/money";
 import * as Icons from "lucide-react";
 
 export default function Budgets() {
@@ -21,12 +21,13 @@ export default function Budgets() {
   const [amount, setAmount] = useState("");
 
   const handleSave = async () => {
-    if (!category || !amount) return;
+    const parsedAmount = parseBRL(amount);
+    if (!category || isNaN(parsedAmount) || parsedAmount <= 0) return;
     try {
       if (editingBudget) {
-        await updateBudget(editingBudget, { category, amount: Number(amount) });
+        await updateBudget(editingBudget, { category, amount: parsedAmount });
       } else {
-        await addBudget({ category, amount: Number(amount) });
+        await addBudget({ category, amount: parsedAmount });
       }
       setIsAddOpen(false);
       setEditingBudget(null);
@@ -44,12 +45,14 @@ export default function Budgets() {
     setIsAddOpen(true);
   };
 
-  // Calcula gastos reais das transações (somente no mês atual)
+  // Calcula gastos reais das transações (somente no mês atual e local)
   const now = new Date();
   const currentMonthTransactions = transactions.filter(t => {
     if (t.type !== 'expense' || t.isTransfer) return false;
-    const date = new Date(t.date);
-    return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+    const [yearStr, monthStr] = t.date.split('-');
+    const tYear = parseInt(yearStr, 10);
+    const tMonth = parseInt(monthStr, 10) - 1; // 0-indexed
+    return tMonth === now.getMonth() && tYear === now.getFullYear();
   });
 
   const spentByCategory = useMemo(() => {
@@ -60,7 +63,10 @@ export default function Budgets() {
     return acc;
   }, [currentMonthTransactions]);
 
-  const allCategories = Object.keys(categoryLabels);
+  // Apenas categorias que fazem sentido para orçamento (gastos reais)
+  const allCategories = Object.keys(categoryLabels).filter(
+    cat => !['salary', 'investment', 'loan', 'other'].includes(cat)
+  );
 
   return (
     <div className="space-y-6 pb-24 max-w-4xl mx-auto">
@@ -106,8 +112,8 @@ export default function Budgets() {
               <div className="space-y-2">
                 <Label>Limite Mensal (R$)</Label>
                 <Input
-                  type="number"
-                  step="0.01"
+                  type="text"
+                  inputMode="decimal"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="0,00"
@@ -124,7 +130,7 @@ export default function Budgets() {
       {loading ? (
         <div className="text-center py-8 text-muted-foreground">Carregando...</div>
       ) : budgets.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-xl border border-border shadow-sm">
+        <div className="text-center py-12 bg-card rounded-xl border border-border shadow-sm">
           <Wallet className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
           <h3 className="text-lg font-medium text-foreground">Nenhum orçamento</h3>
           <p className="text-muted-foreground mt-1 max-w-sm mx-auto">
@@ -143,20 +149,20 @@ export default function Budgets() {
             const color = categoryColors[budget.category] || '#666';
 
             return (
-              <div key={budget.id} className="bg-white p-5 rounded-xl border border-border shadow-sm relative group overflow-hidden">
+              <div key={budget.id} className="bg-card p-5 rounded-xl border border-border shadow-sm relative group overflow-hidden">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg" style={{ backgroundColor: `${color}20`, color }}>
                       <Icon className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900">{label}</h3>
+                      <h3 className="font-semibold text-foreground">{label}</h3>
                       <p className="text-xs text-muted-foreground">
-                        {isOver ? "Lmite excedido" : "Dentro do limite"}
+                        {isOver ? "Limite excedido" : "Dentro do limite"}
                       </p>
                     </div>
                   </div>
-                  <div className="flex opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(budget)}>
                       <Pencil className="w-4 h-4 text-muted-foreground" />
                     </Button>
@@ -168,7 +174,7 @@ export default function Budgets() {
 
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="font-medium text-gray-900">
+                    <span className="font-medium text-foreground">
                       R$ {spent.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </span>
                     <span className="text-muted-foreground">

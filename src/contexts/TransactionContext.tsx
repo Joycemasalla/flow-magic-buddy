@@ -25,7 +25,7 @@ interface TransactionContextType {
   addReminder: (reminder: Omit<Reminder, 'id' | 'createdAt'>) => Promise<void>;
   updateReminder: (id: string, reminder: Partial<Reminder>) => Promise<void>;
   deleteReminder: (id: string) => Promise<void>;
-  markReminderAsPaid: (id: string) => Promise<void>;
+  markReminderAsPaid: (id: string, accountId?: string, date?: string) => Promise<void>;
   addInvestment: (investment: Omit<Investment, 'id' | 'createdAt'>) => Promise<void>;
   updateInvestment: (id: string, investment: Partial<Investment>) => Promise<void>;
   deleteInvestment: (id: string) => Promise<void>;
@@ -585,7 +585,7 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     if (error && import.meta.env.DEV) console.error('Error deleting reminder:', error);
   };
 
-  const markReminderAsPaid = async (id: string) => {
+  const markReminderAsPaid = async (id: string, accountId?: string, date?: string) => {
     const reminder = reminders.find((r) => r.id === id);
     if (!reminder || !user) return;
 
@@ -594,9 +594,9 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       category: reminder.category,
       amount: reminder.amount,
       description: reminder.title,
-      date: toLocalDateString(),
+      date: date || toLocalDateString(),
       isLoan: false,
-      accountId: activeWalletId || undefined, // vincula a carteira se estiver em uma
+      accountId: accountId || undefined,
     });
 
     // Marca o mês atual como pago. No próximo mês o gasto reaparece automaticamente

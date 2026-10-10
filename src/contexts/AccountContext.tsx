@@ -164,7 +164,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     const acc = accounts.find((a) => a.id === accountId);
     await addTransaction({
       type: diff > 0 ? 'income' : 'expense',
-      category: 'other',
+      category: 'adjustment',
       amount: Math.abs(diff),
       description: `Ajuste de saldo${acc ? ' - ' + acc.name : ''}`,
       date: toLocalDateString(),

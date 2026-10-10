@@ -1,102 +1,104 @@
 import { Transaction } from '@/types/transaction';
 import { Investment } from '@/types/investment';
+import { classifyTransaction } from './classify';
+import { format } from 'date-fns';
 
 export interface PeriodSummary {
   income: number;
   expense: number;
   invested: number;
   balance: number;
-  // Loan impact
-  loansGiven: number; // Empréstimos concedidos (saída)
-  loansReceived: number; // Empréstimos recebidos/devolvidos (entrada)
+  
+  realizedIncome: number;
+  expectedIncome: number;
+  
+  realizedExpense: number;
+  expectedExpense: number;
+
+  loansGiven: number;
+  loansReceived: number;
 }
 
 /**
  * Filtra transações que ocorreram até a data limite (por padrão, hoje).
- * Lançamentos com data futura não são contabilizados no "saldo atual" ou "disponível atual",
- * a menos que se deseje ver a projeção.
+ * Agora considera a data local corretamente e inclui o próprio dia.
  */
 export function isRealized(dateStr: string, limitDate: Date = new Date()): boolean {
-  const d = new Date(dateStr + 'T00:00:00');
-  d.setHours(23, 59, 59, 999);
-  return d.getTime() <= limitDate.getTime();
+  const limitDateStr = format(limitDate, 'yyyy-MM-dd');
+  return dateStr <= limitDateStr;
 }
 
 /**
  * Calcula o resumo financeiro de um conjunto de transações e investimentos.
- * @param transactions As transações já filtradas pelo período desejado
- * @param investments Os investimentos já filtrados pelo período desejado
- * @param includeFuture Se deve incluir lançamentos futuros
+ * Utiliza a fonte da verdade de classificação: classifyTransaction.
  */
-export function calculatePeriodSummary(
+export function summarizePeriod(
   transactions: Transaction[],
   investments: Investment[],
   options: {
-    includeFuture?: boolean;
     includeLoans?: boolean;
     includeInvestments?: boolean;
   } = {}
 ): PeriodSummary {
-  const { includeFuture = false, includeLoans = true, includeInvestments = true } = options;
+  const { includeLoans = true, includeInvestments = true } = options;
   const limitDate = new Date();
 
-  let income = 0;
-  let expense = 0;
+  let realizedIncome = 0;
+  let expectedIncome = 0;
+  let realizedExpense = 0;
+  let expectedExpense = 0;
+  
   let loansGiven = 0;
   let loansReceived = 0;
   let invested = 0;
 
   for (const t of transactions) {
-    if (!includeFuture && !isRealized(t.date, limitDate)) {
-      continue;
-    }
+    const isPastOrToday = isRealized(t.date, limitDate);
+    const nature = classifyTransaction(t);
+    const amt = t.amount;
 
-    if (t.isLoan) {
-      if (!includeLoans) continue;
-      // Empréstimo dado (expense) ou devolvido (income)
-      if (t.type === 'expense') loansGiven += t.amount;
-      if (t.type === 'income') loansReceived += t.amount;
-    }
-
-    if (t.isTransfer) {
-      continue;
-    }
-
-    if (t.type === 'income') {
-      income += t.amount;
-    } else {
-      if (t.category === 'investment') {
-        if (!includeInvestments) continue;
-        invested += t.amount;
-      } else {
-        expense += t.amount;
+    if (nature === 'income') {
+      if (isPastOrToday) realizedIncome += amt;
+      else expectedIncome += amt;
+    } else if (nature === 'expense' || nature === 'loan_interest') {
+      if (isPastOrToday) realizedExpense += amt;
+      else expectedExpense += amt;
+    } else if (nature === 'investment_aporte') {
+      if (includeInvestments && isPastOrToday) invested += amt;
+    } else if (nature === 'investment_resgate') {
+      // Resgate entra nas contas, mas não conta como receita (a não ser que se queira)
+    } else if (nature === 'loan_principal') {
+      if (includeLoans) {
+        if (t.type === 'expense') loansGiven += amt;
+        if (t.type === 'income') loansReceived += amt;
       }
     }
+    // 'transfer' e 'adjustment' são ignorados dos totais de receita e despesa
   }
 
-  // Investimentos reais (da tabela investments)
-  for (const inv of investments) {
-    if (!includeFuture && !isRealized(inv.dataInvestimento, limitDate)) {
-      continue;
-    }
-    if (includeInvestments) {
-      invested += inv.valorInvestido;
-    }
-  }
+  // BUG B.2-16: A dupla soma. A fonte da verdade para o valor *Aportado* no período 
+  // são as transações de aporte. A tabela 'investments' serve para o Patrimônio.
+  // Portanto, ignoramos o array investments aqui para não somar 2 vezes.
+
+  const income = realizedIncome + expectedIncome;
+  const expense = realizedExpense + expectedExpense;
 
   return {
     income,
     expense,
+    realizedIncome,
+    expectedIncome,
+    realizedExpense,
+    expectedExpense,
     invested,
     loansGiven,
     loansReceived,
-    balance: income - expense - invested, // O que 'sobrou'
+    balance: realizedIncome - realizedExpense, 
   };
 }
 
-/**
- * Calcula o saldo real das contas, apenas com o que já foi realizado (<= hoje).
- */
+export const calculatePeriodSummary = summarizePeriod;
+
 export function calculateAccountBalance(
   transactions: Transaction[],
   accountId: string,
@@ -109,9 +111,10 @@ export function calculateAccountBalance(
     if (t.accountId !== accountId) continue;
     if (!includeFuture && !isRealized(t.date, limitDate)) continue;
 
+    // Todas as saídas/entradas afetam saldo, não importando a natureza
     if (t.type === 'income') {
       balance += t.amount;
-    } else {
+    } else if (t.type === 'expense') {
       balance -= t.amount;
     }
   }

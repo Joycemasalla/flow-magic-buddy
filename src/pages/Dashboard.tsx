@@ -1,175 +1,257 @@
 import { useState, useMemo } from 'react';
-import { calculatePeriodSummary } from '@/lib/finance/rules';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Download, ChevronLeft, ChevronRight, AlertTriangle, Flame, Clock, Landmark, Wallet, Plus } from 'lucide-react';
 import { useTransactions } from '@/contexts/TransactionContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWallet } from '@/contexts/WalletContext';
+import { useAccounts } from '@/contexts/AccountContext';
+import { useBudgets } from '@/contexts/BudgetContext';
 import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
-import { isToday, subDays, startOfMonth, startOfYear, isWithinInterval, startOfDay, endOfDay, subMonths, subYears, endOfMonth, endOfYear, format, addMonths } from 'date-fns';
+import { isWithinInterval, startOfMonth, endOfMonth, subMonths, addMonths, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { CalendarDays } from 'lucide-react';
-import type { DateRange } from 'react-day-picker';
-import SummaryCards from '@/components/dashboard/SummaryCards';
-import CategoryChart from '@/components/dashboard/CategoryChart';
-import EvolutionChart from '@/components/dashboard/EvolutionChart';
+import { parseLocalDate } from '@/lib/finance/dates';
+import { calculatePeriodSummary } from '@/lib/finance/rules';
 import TransactionList from '@/components/dashboard/TransactionList';
-import InvestmentSummary from '@/components/dashboard/InvestmentSummary';
-
 import ProfileSwitcher from '@/components/ProfileSwitcher';
 import ReportModal from '@/components/modals/ReportModal';
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { FilterPill, FilterPillRow } from '@/components/ui/FilterPill';
 import { cn } from '@/lib/utils';
-import { parseLocalDate } from '@/lib/finance/dates';
-import { SlidersHorizontal, Landmark, Handshake } from 'lucide-react';
+import { categoryLabels, categoryColors, categoryIcons, Transaction } from '@/types/transaction';
+import * as Icons from 'lucide-react';
 
-type PeriodFilter = 'today' | 'week' | 'month' | 'year' | 'all' | 'custom';
-type TypeFilter = 'all' | 'income' | 'expense';
-type ProfileMode = 'personal' | 'couple';
+function MonthSelector({ currentMonth, onChange }: { currentMonth: Date, onChange: (d: Date) => void }) {
+  return (
+    <div className="flex items-center justify-between w-full max-w-[260px] mx-auto bg-muted/40 p-1 rounded-2xl border border-border/50">
+      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl shrink-0" onClick={() => onChange(subMonths(currentMonth, 1))}>
+        <ChevronLeft className="h-4 w-4" />
+      </Button>
+      <div className="flex flex-col items-center justify-center -space-y-0.5">
+        <span className="text-sm font-semibold capitalize tracking-tight">{format(currentMonth, 'MMMM', { locale: ptBR })}</span>
+        <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{format(currentMonth, 'yyyy')}</span>
+      </div>
+      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl shrink-0" onClick={() => onChange(addMonths(currentMonth, 1))}>
+        <ChevronRight className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+}
 
-const periodLabels: Record<Exclude<PeriodFilter, 'custom'>, string> = {
-  today: 'Hoje',
-  week: '7 dias',
-  month: 'Mês',
-  year: 'Ano',
-  all: 'Tudo',
-};
+function SpendingHero({ spent, expected, income }: { spent: number, expected: number, income: number }) {
+  const totalExpense = spent + expected;
+  const progress = income > 0 ? Math.min((spent / income) * 100, 100) : 0;
+  
+  return (
+    <div className="glass-card rounded-3xl p-6 text-center space-y-4">
+      <div className="space-y-1">
+        <p className="text-xs font-semibold tracking-wider uppercase text-muted-foreground">Gastos do Mês</p>
+        <div className="flex items-baseline justify-center gap-1">
+          <span className="text-3xl sm:text-4xl font-display font-bold text-expense">
+            R$ {spent.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+          </span>
+        </div>
+        {expected > 0 && (
+          <p className="text-sm text-muted-foreground">
+            + R$ {expected.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} previstos
+          </p>
+        )}
+      </div>
 
-const typeLabels: Record<TypeFilter, string> = {
-  all: 'Todos',
-  income: 'Receitas',
-  expense: 'Despesas',
-};
+      <div className="h-3 w-full bg-secondary rounded-full overflow-hidden relative">
+        <div 
+          className={cn("h-full transition-all duration-700", progress > 90 ? 'bg-red-500' : 'bg-expense')}
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+
+      <div className="flex justify-between text-xs text-muted-foreground">
+        <span>Receitas: R$ {income.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+        <span>Restante: R$ {Math.max(income - totalExpense, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+      </div>
+    </div>
+  );
+}
+
+function CategoryBarList({ transactions }: { transactions: Transaction[] }) {
+  const expenses = transactions.filter(t => t.type === 'expense' && !t.isTransfer);
+  const byCategory = expenses.reduce((acc, t) => {
+    acc[t.category] = (acc[t.category] || 0) + t.amount;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const sorted = Object.entries(byCategory).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const max = sorted[0]?.[1] || 1;
+
+  if (sorted.length === 0) return null;
+
+  return (
+    <div className="glass-card rounded-2xl p-5 space-y-4">
+      <h3 className="font-semibold text-sm text-foreground flex items-center gap-2">
+        <Icons.PieChart className="w-4 h-4 text-muted-foreground" />
+        Maiores Despesas
+      </h3>
+      <div className="space-y-3">
+        {sorted.map(([cat, amount]) => {
+          const label = categoryLabels[cat] || cat;
+          const color = categoryColors[cat] || '#666';
+          const IconName = categoryIcons[cat] || 'MoreHorizontal';
+          const Icon = (Icons as any)[IconName] || Icons.MoreHorizontal;
+          const percent = (amount / max) * 100;
+
+          return (
+            <div key={cat} className="space-y-1">
+              <div className="flex justify-between text-xs">
+                <span className="flex items-center gap-1.5 font-medium">
+                  <Icon className="w-3.5 h-3.5" style={{ color }} />
+                  {label}
+                </span>
+                <span className="font-semibold">R$ {amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+              </div>
+              <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
+                <div className="h-full rounded-full" style={{ width: `${percent}%`, backgroundColor: color }} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function AttentionList({ transactions }: { transactions: Transaction[] }) {
+  const { reminders } = useTransactions();
+  const { budgets } = useBudgets();
+  
+  const now = new Date();
+  const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  
+  // Atrasadas ou próximos 5 dias
+  const urgentReminders = reminders.filter(r => {
+    if (!r.isActive || r.lastPaidMonth === currentMonthKey) return false;
+    const currentDay = now.getDate();
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const clampedDue = Math.min(r.dueDay, daysInMonth);
+    const diff = clampedDue - currentDay;
+    return diff <= 5; // Atrasadas (diff < 0) ou até 5 dias
+  }).sort((a, b) => a.dueDay - b.dueDay);
+
+  // Orçamentos estourados (no mês atual)
+  const currentMonthExpenses = transactions.filter(t => t.type === 'expense' && !t.isTransfer);
+  const spentByCategory = currentMonthExpenses.reduce((acc, t) => {
+    acc[t.category] = (acc[t.category] || 0) + t.amount;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const overBudgets = budgets.filter(b => (spentByCategory[b.category] || 0) > b.amount);
+
+  if (urgentReminders.length === 0 && overBudgets.length === 0) return null;
+
+  return (
+    <div className="glass-card rounded-2xl p-5 space-y-4">
+      <h3 className="font-semibold text-sm text-foreground flex items-center gap-2">
+        <AlertTriangle className="w-4 h-4 text-warning" />
+        Fique de Olho
+      </h3>
+      <div className="space-y-3">
+        {urgentReminders.map(r => {
+          const currentDay = now.getDate();
+          const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+          const diff = Math.min(r.dueDay, daysInMonth) - currentDay;
+          const isLate = diff < 0;
+
+          return (
+            <div key={r.id} className="flex justify-between items-center p-2.5 rounded-xl bg-muted/40 border border-border/50">
+              <div className="flex flex-col min-w-0">
+                <span className="text-sm font-medium truncate">{r.title}</span>
+                <span className={cn("text-[11px] font-semibold", isLate ? 'text-expense' : 'text-warning')}>
+                  {isLate ? `Atrasada (${Math.abs(diff)}d)` : diff === 0 ? 'Vence Hoje' : `Vence em ${diff}d`}
+                </span>
+              </div>
+              <span className="font-semibold text-sm text-expense shrink-0">
+                R$ {r.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </span>
+            </div>
+          );
+        })}
+        {overBudgets.map(b => {
+          const spent = spentByCategory[b.category] || 0;
+          return (
+             <div key={`budget-${b.id}`} className="flex justify-between items-center p-2.5 rounded-xl bg-expense/10 border border-expense/20">
+               <div className="flex flex-col min-w-0">
+                 <span className="text-sm font-medium text-expense truncate">Orçamento excedido</span>
+                 <span className="text-[11px] text-expense/80">{categoryLabels[b.category] || b.category}</span>
+               </div>
+               <span className="font-semibold text-sm text-expense shrink-0">
+                 R$ {(spent - b.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} acima
+               </span>
+             </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function NetWorthStrip() {
+  const { accounts } = useAccounts();
+  const { investments } = useTransactions();
+
+  const totalAccounts = accounts.reduce((s, a) => s + a.balance, 0);
+  const totalInvested = investments.filter(i => i.jaInvestido).reduce((s, i) => s + i.valorInvestido, 0);
+  const netWorth = totalAccounts + totalInvested;
+
+  return (
+    <div className="glass-card rounded-2xl p-4 flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <div className="p-2 bg-income/10 rounded-xl">
+          <Landmark className="w-5 h-5 text-income" />
+        </div>
+        <div className="flex flex-col">
+          <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Patrimônio Total</span>
+          <span className="text-lg font-bold font-display text-foreground">
+            R$ {netWorth.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Dashboard() {
-  const { transactions, investments, deleteTransaction, pendingTransactionIds } = useTransactions();
+  const { transactions, deleteTransaction, pendingTransactionIds } = useTransactions();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  
-  const [periodFilter, setPeriodFilter] = useState<PeriodFilter>('month');
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [customRange, setCustomRange] = useState<DateRange | undefined>();
-  const [isRangeOpen, setIsRangeOpen] = useState(false);
-  const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
-  const [showCharts, setShowCharts] = useState(false);
-  const [isReportOpen, setIsReportOpen] = useState(false);
-  const [includeInvestments, setIncludeInvestments] = useState(true);
-  const [includeLoans, setIncludeLoans] = useState(true);
   const { activeWalletId, wallets } = useWallet();
   const activeWallet = wallets.find((w) => w.id === activeWalletId);
 
-  const filteredTransactions = useMemo(() => {
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [isReportOpen, setIsReportOpen] = useState(false);
+
+  // Filtrar transações APENAS pelo mês atual selecionado
+  const monthTransactions = useMemo(() => {
     return transactions.filter((t) => {
       const tDate = parseLocalDate(t.date);
-      const now = new Date();
-
-      // Filtro por tipo
-      if (typeFilter !== 'all' && t.type !== typeFilter) {
-        return false;
-      }
-
-      // Filtro por período
-      switch (periodFilter) {
-        case 'today':
-          return isToday(tDate);
-        case 'week':
-          return isWithinInterval(tDate, {
-            start: startOfDay(subDays(now, 7)),
-            end: endOfDay(now),
-          });
-        case 'month':
-          return isWithinInterval(tDate, {
-            start: startOfMonth(currentMonth),
-            end: endOfMonth(currentMonth),
-          });
-        case 'year':
-          return isWithinInterval(tDate, {
-            start: startOfYear(now),
-            end: endOfDay(now),
-          });
-        case 'custom': {
-          if (!customRange?.from) return true;
-          return isWithinInterval(tDate, {
-            start: startOfDay(customRange.from),
-            end: endOfDay(customRange.to ?? customRange.from),
-          });
-        }
-        default:
-          return true;
-      }
+      return isWithinInterval(tDate, {
+        start: startOfMonth(currentMonth),
+        end: endOfMonth(currentMonth),
+      });
     });
-  }, [transactions, periodFilter, typeFilter, customRange, currentMonth]);
+  }, [transactions, currentMonth]);
 
-  const stats = useMemo(() => {
-    // includeFuture = true para manter o comportamento atual do dashboard de mostrar o que vai acontecer no período selecionado,
-    // mas a regra isRealized no `rules.ts` pode cortar os previstos se for false. Como o usuário disse que "Disponível é o que sobrou",
-    // ele deve somar os realizados. Vamos usar includeFuture = false para 'saldo atual' ou ver o período todo.
-    // Vamos passar includeFuture: true porque o Dashboard já filtrou o período e queremos somar tudo que está na tela (ex: mês todo).
-    const periodSummary = calculatePeriodSummary(filteredTransactions, [], {
-      includeFuture: true, // we already filtered by date
-      includeInvestments,
-      includeLoans,
-    });
+  // Resumo usando nossa rule engine (agora separamos realized vs expected)
+  const summary = useMemo(() => {
+    return calculatePeriodSummary(monthTransactions, [], { includeFuture: true, includeInvestments: true, includeLoans: true });
+  }, [monthTransactions]);
 
-    const excludedInvestments = 0; // investments already integrated
-    const excludedLoans = 0; // loans already integrated
-
-    return {
-      income: periodSummary.income,
-      expense: periodSummary.expense,
-      saved: periodSummary.invested,
-      balance: periodSummary.balance,
-      count: filteredTransactions.length,
-      excludedInvestments,
-      excludedLoans,
-    };
-  }, [filteredTransactions, includeInvestments, includeLoans]);
-
-  // Previous-period comparison (only meaningful for month/year)
-  const previousStats = useMemo(() => {
-    if (periodFilter !== 'month' && periodFilter !== 'year') return null;
-    const now = new Date();
-    const prevStart = periodFilter === 'month' ? startOfMonth(subMonths(currentMonth, 1)) : startOfYear(subYears(now, 1));
-    const prevEnd = periodFilter === 'month' ? endOfMonth(subMonths(currentMonth, 1)) : endOfYear(subYears(now, 1));
-
-    const prev = transactions.filter((t) => {
-      const tDate = parseLocalDate(t.date);
-      return isWithinInterval(tDate, { start: prevStart, end: prevEnd });
-    });
-
-    const summary = calculatePeriodSummary(prev, [], {
-      includeFuture: true,
-      includeInvestments,
-      includeLoans,
-    });
-
-    return { income: summary.income, expense: summary.expense };
-  }, [transactions, periodFilter, includeInvestments, includeLoans, currentMonth]);
-
-  const comparisonLabel =
-    periodFilter === 'month' ? 'vs mês passado' : periodFilter === 'year' ? 'vs ano passado' : undefined;
-
-  const handleEdit = (id: string) => {
-    navigate(`/transacoes/editar/${id}`);
-  };
-
+  const handleEdit = (id: string) => navigate(`/transacoes/editar/${id}`);
+  
   const handleDelete = (id: string) => {
     deleteTransaction(id);
-    toast({
-      title: 'Transação excluída',
-      description: 'A transação foi removida.',
-    });
+    toast({ title: 'Transação excluída' });
   };
 
   return (
-    <div className="space-y-4 max-w-full overflow-hidden pb-28 lg:pb-4">
+    <div className="space-y-6 max-w-full overflow-hidden pb-28 lg:pb-4">
       {/* Header */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex-1 min-w-0">
@@ -185,235 +267,72 @@ export default function Dashboard() {
         </div>
         <div className="flex items-center gap-2">
           <ProfileSwitcher />
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsReportOpen(true)}
-            className="min-h-[40px] px-3 rounded-2xl"
-          >
+          <Button variant="outline" size="sm" onClick={() => setIsReportOpen(true)} className="min-h-[40px] px-3 rounded-2xl">
             <Download className="w-4 h-4 sm:mr-2 stroke-[1.5]" />
             <span className="hidden sm:inline text-xs">Exportar</span>
           </Button>
         </div>
       </div>
 
-      {/* Período — pills compactas + calendário personalizado */}
-      <div className="space-y-3">
-        <FilterPillRow>
-          {(Object.keys(periodLabels) as (keyof typeof periodLabels)[]).map((period) => (
-            <FilterPill
-              key={period}
-              active={periodFilter === period}
-              onClick={() => {
-                setPeriodFilter(period);
-                if (period === 'month') setCurrentMonth(new Date());
-              }}
-            >
-              {periodLabels[period]}
-            </FilterPill>
-          ))}
-          <Popover open={isRangeOpen} onOpenChange={setIsRangeOpen}>
-            <PopoverTrigger asChild>
-              <span>
-                <FilterPill
-                  className="flex items-center gap-1.5"
-                  active={periodFilter === 'custom'}
-                  onClick={() => {
-                    setPeriodFilter('custom');
-                    setIsRangeOpen(true);
-                  }}
-                >
-                  <CalendarDays className="w-3.5 h-3.5" />
-                  {periodFilter === 'custom' && customRange?.from
-                    ? `${format(customRange.from, 'dd/MM')} – ${format(customRange.to ?? customRange.from, 'dd/MM')}`
-                    : 'Período'}
-                </FilterPill>
-              </span>
-            </PopoverTrigger>
-            <PopoverContent align="start" className="w-auto p-0 rounded-2xl z-[70]">
-              <CalendarComponent
-                mode="range"
-                selected={customRange}
-                onSelect={(range) => {
-                  setCustomRange(range);
-                  setPeriodFilter('custom');
-                  if (range?.from && range?.to) setIsRangeOpen(false);
-                }}
-                numberOfMonths={1}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-        </FilterPillRow>
+      {/* Navegação de Mês */}
+      <MonthSelector currentMonth={currentMonth} onChange={setCurrentMonth} />
 
-        {/* Month Navigator */}
-        <AnimatePresence mode="popLayout">
-          {periodFilter === 'month' && (
-            <motion.div
-              initial={{ opacity: 0, height: 0, scale: 0.95 }}
-              animate={{ opacity: 1, height: 'auto', scale: 1 }}
-              exit={{ opacity: 0, height: 0, scale: 0.95 }}
-              className="flex justify-center"
-            >
-              <div className="flex items-center justify-between w-full max-w-[260px] bg-muted/40 p-1 rounded-2xl border border-border/50">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 rounded-xl shrink-0"
-                  onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <div className="flex flex-col items-center justify-center -space-y-0.5">
-                  <span className="text-sm font-semibold capitalize tracking-tight">
-                    {format(currentMonth, 'MMMM', { locale: ptBR })}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-                    {format(currentMonth, 'yyyy')}
-                  </span>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 rounded-xl shrink-0"
-                  onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Summary Cards */}
-      <SummaryCards
-        income={stats.income}
-        expense={stats.expense}
-        balance={stats.balance}
-        savedInPeriod={stats.saved}
-        totalSaved={investments.filter((i) => i.jaInvestido).reduce((s, i) => s + i.valorInvestido, 0)}
-        onSavedClick={() => navigate('/investimentos')}
-        transactionCount={stats.count}
-        onIncomeClick={() => setTypeFilter('income')}
-        onExpenseClick={() => setTypeFilter('expense')}
-        previousIncome={previousStats?.income}
-        previousExpense={previousStats?.expense}
-        comparisonLabel={comparisonLabel}
+      {/* Hero: Visão Geral do Mês */}
+      <SpendingHero 
+        spent={summary.realizedExpense} 
+        expected={summary.expectedExpense} 
+        income={summary.realizedIncome + summary.expectedIncome} 
       />
 
-      {/* Tabs segmentadas de tipo — padrão do app */}
-      <div className="flex gap-2 p-1 rounded-2xl bg-muted/40 w-full">
-        {(Object.keys(typeLabels) as TypeFilter[]).map((type) => (
-          <button
-            key={type}
-            onClick={() => setTypeFilter(type)}
-            className={cn(
-              'flex-1 h-9 rounded-xl text-sm font-medium transition-colors',
-              typeFilter === type ? 'bg-background shadow-sm' : 'text-muted-foreground'
-            )}
-          >
-            {typeLabels[type]}
-          </button>
-        ))}
-      </div>
-
-      {/* Ajustes (extras) — dentro de Popover discreto */}
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-[11px] text-muted-foreground">
-          {!includeInvestments || !includeLoans ? (
-            <span className="text-warning">Alguns valores estão ocultos</span>
-          ) : (
-            <>Incluindo investimentos e empréstimos</>
-          )}
-        </p>
-        <Popover>
-          <PopoverTrigger asChild>
-            <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs text-muted-foreground border border-border/40 hover:text-foreground transition-colors">
-              <SlidersHorizontal className="w-3 h-3" />
-              Ajustes
-            </button>
-          </PopoverTrigger>
-          <PopoverContent align="end" className="w-64 p-3 space-y-3">
-            <div className="flex items-center justify-between gap-2">
-              <Label htmlFor="inc-inv" className="flex items-center gap-2 text-sm cursor-pointer">
-                <Landmark className="w-3.5 h-3.5 text-muted-foreground" />
-                Investimentos
-              </Label>
-              <Switch id="inc-inv" checked={includeInvestments} onCheckedChange={setIncludeInvestments} />
+      {/* Seções Adicionais */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <div className="space-y-6">
+          <AttentionList transactions={monthTransactions} />
+          <CategoryBarList transactions={monthTransactions} />
+        </div>
+        
+        <div className="space-y-6">
+          {/* NetWorth Strip pode ir aqui em cima no desktop ou no final */}
+          <NetWorthStrip />
+          
+          <div className="glass-card rounded-2xl p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-sm text-foreground flex items-center gap-2">
+                <Icons.ArrowRightLeft className="w-4 h-4 text-muted-foreground" />
+                Transações do Mês
+              </h3>
+              <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => navigate('/transacoes/nova')}>
+                <Plus className="w-3.5 h-3.5 mr-1" /> Adicionar
+              </Button>
             </div>
-            <div className="flex items-center justify-between gap-2">
-              <Label htmlFor="inc-loans" className="flex items-center gap-2 text-sm cursor-pointer">
-                <Handshake className="w-3.5 h-3.5 text-muted-foreground" />
-                Empréstimos
-              </Label>
-              <Switch id="inc-loans" checked={includeLoans} onCheckedChange={setIncludeLoans} />
+            {/* Reuso do TransactionList focado apenas no mês atual */}
+            <div className="-mx-5">
+              <TransactionList
+                transactions={monthTransactions}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                pendingIds={pendingTransactionIds}
+              />
             </div>
-          </PopoverContent>
-        </Popover>
-      </div>
-
-
-      {/* Investment Summary - Compact */}
-      <InvestmentSummary investments={investments} />
-
-      {/* Charts - Collapsible on mobile */}
-      <div className="space-y-4">
-        {/* Mobile Toggle */}
-        <button
-          onClick={() => setShowCharts(!showCharts)}
-          className="lg:hidden w-full flex items-center justify-between px-4 py-3 bg-muted/50 rounded-xl text-sm font-medium min-h-[44px] active:scale-[0.98] transition-transform"
-        >
-          <span>Ver Gráficos</span>
-          {showCharts ? (
-            <ChevronUp className="w-4 h-4" />
-          ) : (
-            <ChevronDown className="w-4 h-4" />
-          )}
-        </button>
-
-        {/* Mobile Charts (Collapsible) */}
-        <AnimatePresence>
-          {showCharts && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="lg:hidden overflow-hidden space-y-4"
-            >
-              <CategoryChart transactions={filteredTransactions} compact includeLoans={includeLoans} />
-              <EvolutionChart transactions={transactions} compact />
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Desktop Charts */}
-        <div className="hidden lg:grid lg:grid-cols-2 gap-6">
-          <CategoryChart transactions={filteredTransactions} includeLoans={includeLoans} />
-          <EvolutionChart transactions={transactions} />
+          </div>
         </div>
       </div>
-
-      {/* Transaction List */}
-      <TransactionList
-        transactions={filteredTransactions}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        pendingIds={pendingTransactionIds}
-      />
 
       {/* Report Modal */}
       <ReportModal
         isOpen={isReportOpen}
         onClose={() => setIsReportOpen(false)}
-        transactions={filteredTransactions}
-        stats={stats}
-        period={periodFilter === 'custom'
-          ? customRange?.from
-            ? `${format(customRange.from, 'dd/MM/yyyy')} – ${format(customRange.to ?? customRange.from, 'dd/MM/yyyy')}`
-            : 'Personalizado'
-          : periodLabels[periodFilter]}
+        transactions={monthTransactions}
+        stats={{
+          income: summary.income,
+          expense: summary.expense,
+          saved: summary.invested,
+          balance: summary.balance,
+          count: monthTransactions.length,
+          excludedInvestments: 0,
+          excludedLoans: 0
+        }}
+        period={format(currentMonth, 'MMMM yyyy', { locale: ptBR })}
       />
     </div>
   );

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Bell, Calendar, AlertTriangle, Clock, CheckCircle2, Flame, RotateCcw } from 'lucide-react';
 import { useTransactions } from '@/contexts/TransactionContext';
+import { useAccounts } from '@/contexts/AccountContext';
 import { useToast } from '@/hooks/use-toast';
 import { categoryLabels, TransactionCategory, Reminder } from '@/types/transaction';
 import { Button } from '@/components/ui/button';
@@ -21,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
+import { cn, toLocalDateString } from '@/lib/utils';
 import { SwipeableCard } from '@/components/ui/SwipeableCard';
 import { parseBRL } from '@/lib/finance/money';
 
@@ -37,17 +38,19 @@ const getDaysUntilDue = (dueDay: number) => {
   const currentDay = today.getDate();
   const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
   const clampedDue = Math.min(dueDay, daysInMonth);
-  if (clampedDue === currentDay) return 0;
-  if (clampedDue > currentDay) return clampedDue - currentDay;
-  return daysInMonth - currentDay + Math.min(dueDay, 31);
+  // Retorna os dias reais de diferença. Negativo = atrasada.
+  return clampedDue - currentDay;
 };
 
 export default function Reminders() {
   const { reminders, addReminder, updateReminder, deleteReminder, markReminderAsPaid, deleteTransaction } = useTransactions();
+  const { accounts } = useAccounts();
   const { toast } = useToast();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPayModalOpen, setIsPayModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [payingReminder, setPayingReminder] = useState<Reminder | null>(null);
   const [tab, setTab] = useState<'pending' | 'paid'>('pending');
 
   const [title, setTitle] = useState('');
@@ -56,6 +59,9 @@ export default function Reminders() {
   const [alertDays, setAlertDays] = useState('3');
   const [category, setCategory] = useState<TransactionCategory>('bills');
   const [isActive, setIsActive] = useState(true);
+
+  const [payDate, setPayDate] = useState(toLocalDateString());
+  const [payAccountId, setPayAccountId] = useState('');
 
   const resetForm = () => {
     setTitle(''); setAmount(''); setDueDay('10'); setAlertDays('3');
@@ -75,6 +81,23 @@ export default function Reminders() {
       resetForm();
     }
     setIsModalOpen(true);
+  };
+
+  const openPayModal = (reminder: Reminder) => {
+    setPayingReminder(reminder);
+    setPayDate(toLocalDateString());
+    // Auto-select first account if exists
+    setPayAccountId(accounts.length > 0 ? accounts[0].id : '');
+    setIsPayModalOpen(true);
+  };
+
+  const handlePay = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!payingReminder) return;
+    
+    markReminderAsPaid(payingReminder.id, payAccountId || undefined, payDate);
+    setIsPayModalOpen(false);
+    setPayingReminder(null);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -249,12 +272,15 @@ export default function Reminders() {
             const days = getDaysUntilDue(reminder.dueDay);
             const paidNow = isPaidThisMonth(reminder);
             const alertWindow = reminder.alertDaysBefore ?? 3;
-            const isAlerting = !paidNow && days <= alertWindow;
+            const isLate = days < 0;
+            const isAlerting = !paidNow && (days <= alertWindow || isLate);
             const isToday = !paidNow && days === 0;
 
             let status: { label: string; color: string; bg: string; Icon: typeof Clock };
             if (paidNow) {
               status = { label: 'Pago', color: 'text-income', bg: 'bg-income/10', Icon: CheckCircle2 };
+            } else if (isLate) {
+              status = { label: `Atrasada (${Math.abs(days)}d)`, color: 'text-expense', bg: 'bg-expense/15', Icon: AlertTriangle };
             } else if (isToday) {
               status = { label: 'Hoje', color: 'text-warning', bg: 'bg-warning/15', Icon: Flame };
             } else if (isAlerting) {
@@ -315,7 +341,7 @@ export default function Reminders() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={(e) => { e.stopPropagation(); markReminderAsPaid(reminder.id); }}
+                      onClick={(e) => { e.stopPropagation(); openPayModal(reminder); }}
                       className="h-8 px-3 text-xs text-income hover:text-income hover:bg-income/10"
                     >
                       <CheckCircle2 className="w-4 h-4 mr-1" />
@@ -327,7 +353,7 @@ export default function Reminders() {
                 {isAlerting && !paidNow && (
                   <p className="mt-2 text-[11px] text-expense/90 flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
-                    {days === 0 ? 'Vence hoje' : `Vence em ${days} ${days === 1 ? 'dia' : 'dias'}`}
+                    {days === 0 ? 'Vence hoje' : isLate ? `Venceu há ${Math.abs(days)} dias` : `Vence em ${days} ${days === 1 ? 'dia' : 'dias'}`}
                   </p>
                 )}
               </SwipeableCard>
@@ -336,7 +362,51 @@ export default function Reminders() {
         </div>
       )}
 
-      {/* Modal */}
+      {/* Pay Modal */}
+      <Dialog open={isPayModalOpen} onOpenChange={setIsPayModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Registrar Pagamento</DialogTitle>
+          </DialogHeader>
+          {payingReminder && (
+            <form onSubmit={handlePay} className="space-y-4 pt-4">
+              <div className="space-y-2">
+                <Label>Data do Pagamento</Label>
+                <Input
+                  type="date"
+                  value={payDate}
+                  onChange={(e) => setPayDate(e.target.value)}
+                  required
+                />
+              </div>
+
+              {accounts.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Conta</Label>
+                  <Select value={payAccountId} onValueChange={setPayAccountId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a conta" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {accounts.map(acc => (
+                        <SelectItem key={acc.id} value={acc.id}>
+                          {acc.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              <Button type="submit" className="w-full mt-4">
+                Confirmar Pagamento
+              </Button>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit/Add Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent>
           <DialogHeader>
@@ -356,19 +426,15 @@ export default function Reminders() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Valor</Label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">R$</span>
-                  <Input
-                    type="text"
-                    inputMode="decimal"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    placeholder="0,00"
-                    className="pl-9"
-                    required
-                  />
-                </div>
+                <Label>Valor (R$)</Label>
+                <Input
+                  type="text"
+                  inputMode="decimal"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  placeholder="0,00"
+                  required
+                />
               </div>
 
               <div className="space-y-2">
