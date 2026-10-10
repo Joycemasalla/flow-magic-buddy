@@ -8,7 +8,7 @@ import { useAccounts } from '@/contexts/AccountContext';
 import { useBudgets } from '@/contexts/BudgetContext';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { isWithinInterval, startOfMonth, endOfMonth, subMonths, addMonths, format } from 'date-fns';
+import { isWithinInterval, startOfMonth, endOfMonth, subMonths, addMonths, format, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { parseLocalDate } from '@/lib/finance/dates';
 import { calculatePeriodSummary } from '@/lib/finance/rules';
@@ -16,23 +16,76 @@ import TransactionList from '@/components/dashboard/TransactionList';
 import ProfileSwitcher from '@/components/ProfileSwitcher';
 import ReportModal from '@/components/modals/ReportModal';
 import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
 import { categoryLabels, categoryColors, categoryIcons, Transaction } from '@/types/transaction';
 import * as Icons from 'lucide-react';
 
-function MonthSelector({ currentMonth, onChange }: { currentMonth: Date, onChange: (d: Date) => void }) {
+function PeriodSelector({ 
+  currentMonth, 
+  onChangeMonth,
+  dateRange,
+  onChangeDateRange
+}: { 
+  currentMonth: Date; 
+  onChangeMonth: (d: Date) => void;
+  dateRange: DateRange | undefined;
+  onChangeDateRange: (r: DateRange | undefined) => void;
+}) {
   return (
-    <div className="flex items-center justify-between w-full max-w-[260px] mx-auto bg-muted/40 p-1 rounded-2xl border border-border/50">
-      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl shrink-0" onClick={() => onChange(subMonths(currentMonth, 1))}>
-        <ChevronLeft className="h-4 w-4" />
-      </Button>
-      <div className="flex flex-col items-center justify-center -space-y-0.5">
-        <span className="text-sm font-semibold capitalize tracking-tight">{format(currentMonth, 'MMMM', { locale: ptBR })}</span>
-        <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{format(currentMonth, 'yyyy')}</span>
+    <div className="flex flex-col items-center gap-2.5 w-full max-w-[260px] mx-auto">
+      <div className="flex items-center justify-between w-full bg-muted/40 p-1 rounded-2xl border border-border/50">
+        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl shrink-0" onClick={() => { onChangeMonth(subMonths(currentMonth, 1)); onChangeDateRange(undefined); }}>
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <div className="flex flex-col items-center justify-center -space-y-0.5">
+          <span className="text-sm font-semibold capitalize tracking-tight">{format(currentMonth, 'MMMM', { locale: ptBR })}</span>
+          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{format(currentMonth, 'yyyy')}</span>
+        </div>
+        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl shrink-0" onClick={() => { onChangeMonth(addMonths(currentMonth, 1)); onChangeDateRange(undefined); }}>
+          <ChevronRight className="h-4 w-4" />
+        </Button>
       </div>
-      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl shrink-0" onClick={() => onChange(addMonths(currentMonth, 1))}>
-        <ChevronRight className="h-4 w-4" />
-      </Button>
+
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button variant="outline" size="sm" className={cn("w-full h-8 text-xs rounded-xl", dateRange && "border-primary text-primary bg-primary/5")}>
+            <Icons.Calendar className="w-3.5 h-3.5 mr-2" />
+            <span className="flex-1 text-left">
+              {dateRange?.from ? (
+                dateRange.to ? (
+                  `${format(dateRange.from, 'dd/MM/yy')} até ${format(dateRange.to, 'dd/MM/yy')}`
+                ) : (
+                  format(dateRange.from, 'dd/MM/yy')
+                )
+              ) : (
+                "Filtrar por período"
+              )}
+            </span>
+            {dateRange?.from && (
+              <div 
+                className="ml-2 p-1 hover:bg-primary/20 rounded-full" 
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onChangeDateRange(undefined); }}
+              >
+                <Icons.X className="w-3 h-3" />
+              </div>
+            )}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="center">
+          <Calendar
+            initialFocus
+            mode="range"
+            defaultMonth={dateRange?.from || currentMonth}
+            selected={dateRange}
+            onSelect={onChangeDateRange}
+            numberOfMonths={1}
+            locale={ptBR}
+          />
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }
@@ -226,18 +279,27 @@ export default function Dashboard() {
   const activeWallet = wallets.find((w) => w.id === activeWalletId);
 
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [isReportOpen, setIsReportOpen] = useState(false);
 
-  // Filtrar transações APENAS pelo mês atual selecionado
+  // Filtrar transações pelo mês atual ou pelo período personalizado
   const monthTransactions = useMemo(() => {
     return transactions.filter((t) => {
       const tDate = parseLocalDate(t.date);
+
+      if (dateRange?.from) {
+        if (dateRange.to) {
+          return isWithinInterval(tDate, { start: startOfDay(dateRange.from), end: endOfDay(dateRange.to) });
+        }
+        return isWithinInterval(tDate, { start: startOfDay(dateRange.from), end: endOfDay(dateRange.from) });
+      }
+
       return isWithinInterval(tDate, {
         start: startOfMonth(currentMonth),
         end: endOfMonth(currentMonth),
       });
     });
-  }, [transactions, currentMonth]);
+  }, [transactions, currentMonth, dateRange]);
 
   // Resumo usando nossa rule engine (agora separamos realized vs expected)
   const summary = useMemo(() => {
@@ -275,8 +337,13 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Navegação de Mês */}
-      <MonthSelector currentMonth={currentMonth} onChange={setCurrentMonth} />
+      {/* Navegação de Mês / Período */}
+      <PeriodSelector 
+        currentMonth={currentMonth} 
+        onChangeMonth={setCurrentMonth}
+        dateRange={dateRange}
+        onChangeDateRange={setDateRange}
+      />
 
       {/* Hero: Visão Geral do Mês */}
       <SpendingHero 
