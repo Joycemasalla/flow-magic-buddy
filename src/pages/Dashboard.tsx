@@ -193,10 +193,10 @@ function AttentionList({ transactions }: { transactions: Transaction[] }) {
 }
 
 function NetWorthStrip() {
-  const { accounts } = useAccounts();
+  const { accounts, balances } = useAccounts();
   const { investments } = useTransactions();
 
-  const totalAccounts = accounts.reduce((s, a) => s + a.balance, 0);
+  const totalAccounts = accounts.reduce((s, a) => s + (balances[a.id] || 0), 0);
   const totalInvested = investments.filter(i => i.jaInvestido).reduce((s, i) => s + i.valorInvestido, 0);
   const netWorth = totalAccounts + totalInvested;
 

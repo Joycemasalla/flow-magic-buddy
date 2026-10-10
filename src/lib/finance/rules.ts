@@ -38,6 +38,7 @@ export function summarizePeriod(
   options: {
     includeLoans?: boolean;
     includeInvestments?: boolean;
+    includeFuture?: boolean;
   } = {}
 ): PeriodSummary {
   const { includeLoans = true, includeInvestments = true } = options;
