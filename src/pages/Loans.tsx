@@ -388,7 +388,7 @@ export default function Loans() {
 
       {/* Tabs */}
       {loans.length > 0 && (
-        <div className="flex gap-2 p-1 rounded-2xl bg-muted/40 w-full">
+        <div className="segmented">
           {([
             { id: 'receive' as const, label: `A receber (${toReceive.length})` },
             { id: 'pay' as const, label: `A pagar (${toPay.length})` },
@@ -399,7 +399,7 @@ export default function Loans() {
               onClick={() => setTab(t.id)}
               className={cn(
                 'flex-1 h-9 rounded-xl text-xs sm:text-sm font-medium transition-colors truncate px-2',
-                tab === t.id ? 'bg-background shadow-sm' : 'text-muted-foreground'
+                tab === t.id ? 'segmented-item-active' : ''
               )}
             >
               {t.label}

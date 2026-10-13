@@ -84,7 +84,7 @@ export default function Accounts() {
 
       {/* Tabs */}
       {accounts.length > 0 && (
-        <div className="flex gap-2 p-1 rounded-2xl bg-muted/40 w-full">
+        <div className="segmented">
           {([
             { id: 'active' as const, label: `Ativas (${active.length})` },
             { id: 'archived' as const, label: `Arquivadas (${archived.length})` },
@@ -93,8 +93,8 @@ export default function Accounts() {
               key={t.id}
               onClick={() => setTab(t.id)}
               className={cn(
-                'flex-1 h-9 rounded-xl text-sm font-medium transition-colors',
-                tab === t.id ? 'bg-background shadow-sm' : 'text-muted-foreground'
+                'segmented-item',
+                tab === t.id ? 'segmented-item-active' : ''
               )}
             >
               {t.label}

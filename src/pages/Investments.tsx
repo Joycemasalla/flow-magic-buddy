@@ -143,7 +143,7 @@ export default function Investments() {
 
       {/* Tabs segmentadas */}
       {investments.length > 0 && (
-        <div className="flex gap-2 p-1 rounded-2xl bg-muted/40 w-full">
+        <div className="segmented">
           {([
             { id: 'pending' as const, label: `Pendentes (${pending.length})` },
             { id: 'invested' as const, label: `Investidos (${invested.length})` },
@@ -152,8 +152,8 @@ export default function Investments() {
               key={t.id}
               onClick={() => setTab(t.id)}
               className={cn(
-                'flex-1 h-9 rounded-xl text-sm font-medium transition-colors',
-                tab === t.id ? 'bg-background shadow-sm' : 'text-muted-foreground'
+                'segmented-item',
+                tab === t.id ? 'segmented-item-active' : ''
               )}
             >
               {t.label}

@@ -219,7 +219,7 @@ export default function Reminders() {
 
       {/* Tabs simples */}
       {activeReminders.length > 0 && (
-        <div className="flex gap-2 p-1 rounded-2xl bg-muted/40 w-full">
+        <div className="segmented">
           {([
             { id: 'pending' as const, label: `A pagar (${pending.length})` },
             { id: 'paid' as const, label: `Pagos (${paid.length})` },
@@ -228,8 +228,8 @@ export default function Reminders() {
               key={t.id}
               onClick={() => setTab(t.id)}
               className={cn(
-                'flex-1 h-9 rounded-xl text-sm font-medium transition-colors',
-                tab === t.id ? 'bg-background shadow-sm' : 'text-muted-foreground'
+                'segmented-item',
+                tab === t.id ? 'segmented-item-active' : ''
               )}
             >
               {t.label}
