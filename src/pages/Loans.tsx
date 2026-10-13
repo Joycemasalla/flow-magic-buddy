@@ -352,13 +352,13 @@ export default function Loans() {
           animate={{ opacity: 1, y: 0 }}
           className="flex-1 min-w-0"
         >
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-display font-bold">Empréstimos</h1>
+          <h1 className="text-[26px] font-extrabold tracking-tight">Empréstimos</h1>
           <p className="text-sm text-muted-foreground truncate">Controle o que entra e sai</p>
         </motion.div>
 
         <Button onClick={openNewLoan} className="min-h-[44px] shrink-0">
-          <Plus className="w-4 h-4 sm:mr-2" />
-          <span className="hidden sm:inline">Novo</span>
+          <Plus className="w-4 h-4 mr-1.5" />
+          <span>Novo empréstimo</span>
         </Button>
       </div>
 

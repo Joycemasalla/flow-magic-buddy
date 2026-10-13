@@ -85,7 +85,7 @@ export default function Transactions() {
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="text-xl sm:text-2xl font-display font-bold">Transações</h1>
+        <h1 className="text-[26px] font-extrabold tracking-tight">Transações</h1>
         <p className="text-sm text-muted-foreground">Todas as suas movimentações</p>
       </motion.div>
 

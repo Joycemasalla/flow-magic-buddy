@@ -213,10 +213,6 @@ export default function TransactionList({
           ))}
         </div>
         
-        {/* Swipe Hint */}
-        <p className="text-center text-xs text-muted-foreground/60 lg:hidden font-medium">
-          ← Deslize para editar ou excluir
-        </p>
       </motion.div>
 
       {/* Transaction Details Modal */}

@@ -103,12 +103,12 @@ export default function Investments() {
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex-1 min-w-0">
-          <h1 className="text-xl sm:text-2xl font-display font-bold">Investimentos</h1>
+          <h1 className="text-[26px] font-extrabold tracking-tight">Investimentos</h1>
           <p className="text-sm text-muted-foreground truncate">Controle seus aportes</p>
         </motion.div>
         <Button onClick={() => setIsModalOpen(true)} className="min-h-[44px] shrink-0">
-          <Plus className="w-4 h-4 sm:mr-2" />
-          <span className="hidden sm:inline">Novo</span>
+          <Plus className="w-4 h-4 mr-1.5" />
+          <span>Novo aporte</span>
         </Button>
       </div>
 
