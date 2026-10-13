@@ -352,13 +352,13 @@ export default function Loans() {
           animate={{ opacity: 1, y: 0 }}
           className="flex-1 min-w-0"
         >
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-display font-bold">Empréstimos</h1>
+          <h1 className="text-[26px] font-extrabold tracking-tight">Empréstimos</h1>
           <p className="text-sm text-muted-foreground truncate">Controle o que entra e sai</p>
         </motion.div>
 
         <Button onClick={openNewLoan} className="min-h-[44px] shrink-0">
-          <Plus className="w-4 h-4 sm:mr-2" />
-          <span className="hidden sm:inline">Novo</span>
+          <Plus className="w-4 h-4 mr-1.5" />
+          <span>Novo empréstimo</span>
         </Button>
       </div>
 
@@ -388,7 +388,7 @@ export default function Loans() {
 
       {/* Tabs */}
       {loans.length > 0 && (
-        <div className="flex gap-2 p-1 rounded-2xl bg-muted/40 w-full">
+        <div className="segmented">
           {([
             { id: 'receive' as const, label: `A receber (${toReceive.length})` },
             { id: 'pay' as const, label: `A pagar (${toPay.length})` },
@@ -398,8 +398,8 @@ export default function Loans() {
               key={t.id}
               onClick={() => setTab(t.id)}
               className={cn(
-                'flex-1 h-9 rounded-xl text-xs sm:text-sm font-medium transition-colors truncate px-2',
-                tab === t.id ? 'bg-background shadow-sm' : 'text-muted-foreground'
+                'segmented-item truncate',
+                tab === t.id ? 'segmented-item-active' : ''
               )}
             >
               {t.label}

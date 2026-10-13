@@ -52,12 +52,12 @@ export default function Accounts() {
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <h1 className="text-xl sm:text-2xl font-display font-bold">Contas</h1>
+          <h1 className="text-[26px] font-extrabold tracking-tight">Contas</h1>
           <p className="text-sm text-muted-foreground truncate">Onde seu dinheiro está</p>
         </div>
         <Button onClick={openNew} className="min-h-[44px] shrink-0">
-          <Plus className="w-4 h-4 sm:mr-2" />
-          <span className="hidden sm:inline">Nova</span>
+          <Plus className="w-4 h-4 mr-1.5" />
+          <span>Nova conta</span>
         </Button>
       </div>
 
@@ -84,7 +84,7 @@ export default function Accounts() {
 
       {/* Tabs */}
       {accounts.length > 0 && (
-        <div className="flex gap-2 p-1 rounded-2xl bg-muted/40 w-full">
+        <div className="segmented">
           {([
             { id: 'active' as const, label: `Ativas (${active.length})` },
             { id: 'archived' as const, label: `Arquivadas (${archived.length})` },
@@ -93,8 +93,8 @@ export default function Accounts() {
               key={t.id}
               onClick={() => setTab(t.id)}
               className={cn(
-                'flex-1 h-9 rounded-xl text-sm font-medium transition-colors',
-                tab === t.id ? 'bg-background shadow-sm' : 'text-muted-foreground'
+                'segmented-item',
+                tab === t.id ? 'segmented-item-active' : ''
               )}
             >
               {t.label}

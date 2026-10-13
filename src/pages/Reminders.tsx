@@ -179,13 +179,13 @@ export default function Reminders() {
           animate={{ opacity: 1, y: 0 }}
           className="flex-1 min-w-0"
         >
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-display font-bold">Gastos Mensais</h1>
+          <h1 className="text-[26px] font-extrabold tracking-tight">Gastos Mensais</h1>
           <p className="text-sm text-muted-foreground truncate capitalize">{monthLabel}</p>
         </motion.div>
 
         <Button onClick={() => openModal()} className="min-h-[44px] shrink-0">
-          <Plus className="w-4 h-4 sm:mr-2" />
-          <span className="hidden sm:inline">Novo Gasto</span>
+          <Plus className="w-4 h-4 mr-1.5" />
+          <span>Nova conta a pagar</span>
         </Button>
       </div>
 
@@ -219,7 +219,7 @@ export default function Reminders() {
 
       {/* Tabs simples */}
       {activeReminders.length > 0 && (
-        <div className="flex gap-2 p-1 rounded-2xl bg-muted/40 w-full">
+        <div className="segmented">
           {([
             { id: 'pending' as const, label: `A pagar (${pending.length})` },
             { id: 'paid' as const, label: `Pagos (${paid.length})` },
@@ -228,8 +228,8 @@ export default function Reminders() {
               key={t.id}
               onClick={() => setTab(t.id)}
               className={cn(
-                'flex-1 h-9 rounded-xl text-sm font-medium transition-colors',
-                tab === t.id ? 'bg-background shadow-sm' : 'text-muted-foreground'
+                'segmented-item',
+                tab === t.id ? 'segmented-item-active' : ''
               )}
             >
               {t.label}

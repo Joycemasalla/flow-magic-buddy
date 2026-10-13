@@ -85,7 +85,7 @@ export default function Transactions() {
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="text-xl sm:text-2xl font-display font-bold">Transações</h1>
+        <h1 className="text-[26px] font-extrabold tracking-tight">Transações</h1>
         <p className="text-sm text-muted-foreground">Todas as suas movimentações</p>
       </motion.div>
 
@@ -114,14 +114,14 @@ export default function Transactions() {
       )}
 
       {/* Tabs segmentadas */}
-      <div className="flex gap-2 p-1 rounded-2xl bg-muted/40 w-full">
+      <div className="segmented">
         {(Object.keys(filterLabels) as FilterType[]).map((f) => (
           <button
             key={f}
             onClick={() => setTab(f)}
             className={cn(
-              'flex-1 h-9 rounded-xl text-sm font-medium transition-colors',
-              tab === f ? 'bg-background shadow-sm' : 'text-muted-foreground'
+              'segmented-item',
+              tab === f ? 'segmented-item-active' : ''
             )}
           >
             {filterLabels[f]} ({counts[f]})
@@ -151,7 +151,7 @@ export default function Transactions() {
 
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="rounded-xl px-3 border-border/40 gap-2">
+            <Button variant="outline" aria-label="Filtros" className="h-11 min-w-11 rounded-xl px-3 gap-2">
               <Filter className="w-4 h-4" />
               <span className="hidden sm:inline">Filtros</span>
               {activeFiltersCount > 0 && (

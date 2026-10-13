@@ -103,12 +103,12 @@ export default function Investments() {
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex-1 min-w-0">
-          <h1 className="text-xl sm:text-2xl font-display font-bold">Investimentos</h1>
+          <h1 className="text-[26px] font-extrabold tracking-tight">Investimentos</h1>
           <p className="text-sm text-muted-foreground truncate">Controle seus aportes</p>
         </motion.div>
         <Button onClick={() => setIsModalOpen(true)} className="min-h-[44px] shrink-0">
-          <Plus className="w-4 h-4 sm:mr-2" />
-          <span className="hidden sm:inline">Novo</span>
+          <Plus className="w-4 h-4 mr-1.5" />
+          <span>Novo aporte</span>
         </Button>
       </div>
 
@@ -143,7 +143,7 @@ export default function Investments() {
 
       {/* Tabs segmentadas */}
       {investments.length > 0 && (
-        <div className="flex gap-2 p-1 rounded-2xl bg-muted/40 w-full">
+        <div className="segmented">
           {([
             { id: 'pending' as const, label: `Pendentes (${pending.length})` },
             { id: 'invested' as const, label: `Investidos (${invested.length})` },
@@ -152,8 +152,8 @@ export default function Investments() {
               key={t.id}
               onClick={() => setTab(t.id)}
               className={cn(
-                'flex-1 h-9 rounded-xl text-sm font-medium transition-colors',
-                tab === t.id ? 'bg-background shadow-sm' : 'text-muted-foreground'
+                'segmented-item',
+                tab === t.id ? 'segmented-item-active' : ''
               )}
             >
               {t.label}
