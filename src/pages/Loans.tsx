@@ -398,7 +398,7 @@ export default function Loans() {
               key={t.id}
               onClick={() => setTab(t.id)}
               className={cn(
-                'flex-1 h-9 rounded-xl text-xs sm:text-sm font-medium transition-colors truncate px-2',
+                'segmented-item truncate',
                 tab === t.id ? 'segmented-item-active' : ''
               )}
             >
