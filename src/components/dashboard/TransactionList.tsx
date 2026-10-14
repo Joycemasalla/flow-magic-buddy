@@ -104,7 +104,9 @@ const SwipeableItem = memo(function SwipeableItem({ transaction, onEdit, onDelet
         <p className="text-xs text-muted-foreground/80 truncate font-medium mt-1">
           {isSettledLoan
             ? (transaction.type === 'expense' ? '✓ Recebido de volta' : '✓ Pago')
-            : categoryLabels[transaction.category]
+            : (transaction.description && transaction.description !== categoryLabels[transaction.category]
+                ? categoryLabels[transaction.category]
+                : format(parseLocalDate(transaction.date), 'dd/MM/yy'))
           }
         </p>
       </div>
