@@ -280,13 +280,13 @@ export default function Reminders() {
             if (paidNow) {
               status = { label: 'Pago', color: 'text-income', bg: 'bg-income/10', Icon: CheckCircle2 };
             } else if (isLate) {
-              status = { label: `Atrasada (${Math.abs(days)}d)`, color: 'text-expense', bg: 'bg-expense/15', Icon: AlertTriangle };
+              status = { label: `Atrasada há ${Math.abs(days)} ${Math.abs(days) === 1 ? 'dia' : 'dias'}`, color: 'text-expense', bg: 'bg-expense/10', Icon: AlertTriangle };
             } else if (isToday) {
-              status = { label: 'Hoje', color: 'text-warning', bg: 'bg-warning/15', Icon: Flame };
+              status = { label: 'Vence hoje', color: 'text-warning', bg: 'bg-warning-soft', Icon: Flame };
             } else if (isAlerting) {
-              status = { label: `${days}d`, color: 'text-expense', bg: 'bg-expense/15', Icon: AlertTriangle };
+              status = { label: `Em ${days} ${days === 1 ? 'dia' : 'dias'}`, color: 'text-warning', bg: 'bg-warning-soft', Icon: Clock };
             } else {
-              status = { label: `${days}d`, color: 'text-muted-foreground', bg: 'bg-muted/60', Icon: Clock };
+              status = { label: 'Pendente', color: 'text-foreground-secondary', bg: 'bg-muted', Icon: Clock };
             }
             const StatusIcon = status.Icon;
 
@@ -297,13 +297,9 @@ export default function Reminders() {
                 onDelete={() => handleDelete(reminder.id)}
                 className={cn(
                   'glass-card rounded-2xl p-4 relative overflow-hidden',
-                  isAlerting && !paidNow && 'ring-1 ring-expense/25',
                   paidNow && 'opacity-70'
                 )}
               >
-                {isAlerting && !paidNow && (
-                  <span className="pointer-events-none absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-expense to-transparent" />
-                )}
 
                 {/* Linha 1: título + status */}
                 <div className="flex items-start justify-between gap-3 mb-3">
@@ -311,8 +307,8 @@ export default function Reminders() {
                     <h3 className={cn('font-semibold text-[15px] truncate', paidNow && 'line-through text-muted-foreground')}>
                       {reminder.title}
                     </h3>
-                    <p className="text-xs text-muted-foreground truncate mt-0.5">
-                      {categoryLabels[reminder.category]} · vence dia {reminder.dueDay}
+                    <p className={cn('text-[13px] font-semibold truncate mt-0.5', isLate && !paidNow ? 'text-expense' : 'text-foreground-secondary')}>
+                      Vence {String(reminder.dueDay).padStart(2, '0')}/{format(new Date(), 'MM')}
                     </p>
                   </div>
                   <div className={cn('flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-semibold shrink-0', status.bg, status.color)}>
@@ -323,7 +319,7 @@ export default function Reminders() {
 
                 {/* Linha 2: valor + ação */}
                 <div className="flex items-center justify-between pt-3 border-t border-border/50">
-                  <p className={cn('text-base font-bold font-display', paidNow ? 'text-muted-foreground' : 'text-expense')}>
+                  <p className={cn('text-lg font-bold tabular-nums', paidNow ? 'text-muted-foreground' : 'text-foreground')}>
                     R$ {reminder.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </p>
                   {paidNow ? (
@@ -331,31 +327,24 @@ export default function Reminders() {
                       variant="ghost"
                       size="sm"
                       onClick={(e) => { e.stopPropagation(); handleUndoPaid(reminder); }}
-                      className="h-8 px-2 text-xs text-muted-foreground"
-                      title="Desfazer pagamento"
+                      className="h-10 px-3 text-[13px] text-muted-foreground"
+                      aria-label="Desfazer pagamento"
                     >
                       <RotateCcw className="w-3.5 h-3.5 mr-1" />
                       Desfazer
                     </Button>
                   ) : (
                     <Button
-                      variant="ghost"
-                      size="sm"
+                      variant="outline"
                       onClick={(e) => { e.stopPropagation(); openPayModal(reminder); }}
-                      className="h-8 px-3 text-xs text-income hover:text-income hover:bg-income/10"
+                      className="h-10 px-3 text-[13px] font-semibold border border-border bg-surface text-foreground hover:bg-muted"
                     >
-                      <CheckCircle2 className="w-4 h-4 mr-1" />
-                      Paguei
+                      <CheckCircle2 className="w-4 h-4 mr-1.5 text-income" />
+                      Marcar como pago
                     </Button>
                   )}
                 </div>
 
-                {isAlerting && !paidNow && (
-                  <p className="mt-2 text-[11px] text-expense/90 flex items-center gap-1">
-                    <Calendar className="w-3 h-3" />
-                    {days === 0 ? 'Vence hoje' : isLate ? `Venceu há ${Math.abs(days)} dias` : `Vence em ${days} ${days === 1 ? 'dia' : 'dias'}`}
-                  </p>
-                )}
               </SwipeableCard>
             );
           })}

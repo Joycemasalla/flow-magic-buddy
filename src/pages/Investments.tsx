@@ -226,30 +226,29 @@ export default function Investments() {
                     <div
                       className={cn(
                         'flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-semibold shrink-0',
-                        investment.jaInvestido ? 'bg-income/10 text-income' : 'bg-warning/15 text-warning'
+                        investment.jaInvestido ? 'bg-income/10 text-income' : 'bg-warning-soft text-warning'
                       )}
                     >
                       {investment.jaInvestido ? <Check className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-                      {investment.jaInvestido ? 'OK' : 'Pend.'}
+                      {investment.jaInvestido ? 'Investido' : 'Pendente'}
                     </div>
                   </div>
 
                   {/* Linha 2: valor + ação */}
                   <div className="flex items-center justify-between pt-3 border-t border-border/50">
-                    <p className="text-base font-bold font-display">
+                    <p className="text-lg font-bold tabular-nums">
                       R$ {investment.valorInvestido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </p>
                     {!investment.jaInvestido && (
                       <Button
-                        variant="ghost"
-                        size="sm"
+                        variant="outline"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleMarkAsDone(investment);
                         }}
-                        className="h-8 px-3 text-xs text-income hover:text-income hover:bg-income/10"
+                        className="h-10 px-3 text-[13px] font-semibold border border-border bg-surface text-foreground hover:bg-muted"
                       >
-                        <Check className="w-4 h-4 mr-1" /> Feito
+                        <Check className="w-4 h-4 mr-1.5 text-income" /> Marcar como investido
                       </Button>
                     )}
                   </div>

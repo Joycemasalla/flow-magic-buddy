@@ -241,7 +241,7 @@ export default function Loans() {
       ? { label: isGiven ? 'Recebido' : 'Pago', color: 'text-income', bg: 'bg-income/10', Icon: CheckCircle2 }
       : hasPartial
       ? { label: 'Parcial', color: 'text-primary', bg: 'bg-primary/10', Icon: Clock }
-      : { label: 'Pendente', color: 'text-warning', bg: 'bg-warning/10', Icon: Clock };
+      : { label: isGiven ? 'A receber' : 'A pagar', color: 'text-warning', bg: 'bg-warning-soft', Icon: Clock };
     const StatusIcon = status.Icon;
 
     return (
@@ -303,9 +303,8 @@ export default function Loans() {
           <div className="flex items-center justify-between pt-3 border-t border-border/50 gap-2">
             <p
               className={cn(
-                'text-base font-bold font-display',
-                isPending && isGiven && 'text-expense',
-                isPending && !isGiven && 'text-income',
+                'text-lg font-bold tabular-nums',
+                isPending && 'text-foreground',
                 !isPending && 'text-muted-foreground line-through'
               )}
             >
@@ -316,9 +315,9 @@ export default function Loans() {
               <div onClick={(e) => e.stopPropagation()} className="shrink-0">
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 px-3 text-xs text-income hover:text-income hover:bg-income/10">
-                      <CheckCircle2 className="w-4 h-4 mr-1" />
-                      {isGiven ? 'Recebi' : 'Paguei'}
+                    <Button variant="outline" className="h-10 px-3 text-[13px] font-semibold border border-border bg-surface text-foreground hover:bg-muted">
+                      <CheckCircle2 className="w-4 h-4 mr-1.5 text-income" />
+                      {isGiven ? 'Marcar como recebido' : 'Marcar como pago'}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-64 p-3 z-[70]" align="end">
@@ -371,14 +370,14 @@ export default function Loans() {
         >
           <div className="min-w-0">
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">A receber</p>
-            <p className="text-lg sm:text-xl font-bold font-display truncate text-income">
+            <p className="text-lg sm:text-xl font-bold font-display truncate text-foreground tabular-nums">
               R$ {totalReceive.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </p>
             <p className="text-[11px] text-muted-foreground mt-0.5">{toReceive.length} pendente(s)</p>
           </div>
           <div className="min-w-0 text-right">
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">A pagar</p>
-            <p className="text-lg sm:text-xl font-bold font-display truncate text-expense">
+            <p className="text-lg sm:text-xl font-bold font-display truncate text-foreground tabular-nums">
               R$ {totalPay.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </p>
             <p className="text-[11px] text-muted-foreground mt-0.5">{toPay.length} pendente(s)</p>
