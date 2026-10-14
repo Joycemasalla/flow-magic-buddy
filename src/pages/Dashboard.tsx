@@ -23,58 +23,45 @@ import { cn } from '@/lib/utils';
 import { categoryLabels, categoryColors, categoryIcons, Transaction } from '@/types/transaction';
 import * as Icons from 'lucide-react';
 
-function PeriodSelector({ 
-  currentMonth, 
+function PeriodSelector({
+  currentMonth,
   onChangeMonth,
   dateRange,
   onChangeDateRange
-}: { 
-  currentMonth: Date; 
+}: {
+  currentMonth: Date;
   onChangeMonth: (d: Date) => void;
   dateRange: DateRange | undefined;
   onChangeDateRange: (r: DateRange | undefined) => void;
 }) {
+  const label = dateRange?.from
+    ? dateRange.to
+      ? `${format(dateRange.from, 'dd/MM/yy')} – ${format(dateRange.to, 'dd/MM/yy')}`
+      : format(dateRange.from, 'dd/MM/yy')
+    : format(currentMonth, "MMMM yyyy", { locale: ptBR });
   return (
-    <div className="flex flex-col items-center gap-2.5 w-full max-w-[260px] mx-auto">
-      <div className="flex items-center justify-between w-full bg-muted/40 p-1 rounded-2xl border border-border/50">
-        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl shrink-0" onClick={() => { onChangeMonth(subMonths(currentMonth, 1)); onChangeDateRange(undefined); }}>
+    <div className="flex items-center justify-center gap-2 w-full">
+      <div className="flex items-center bg-surface border border-border rounded-xl h-11">
+        <Button variant="ghost" size="icon" aria-label="Mês anterior" className="h-11 w-11 rounded-xl" onClick={() => { onChangeMonth(subMonths(currentMonth, 1)); onChangeDateRange(undefined); }}>
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <div className="flex flex-col items-center justify-center -space-y-0.5">
-          <span className="text-sm font-semibold capitalize tracking-tight">{format(currentMonth, 'MMMM', { locale: ptBR })}</span>
-          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{format(currentMonth, 'yyyy')}</span>
-        </div>
-        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl shrink-0" onClick={() => { onChangeMonth(addMonths(currentMonth, 1)); onChangeDateRange(undefined); }}>
+        <span className="text-sm font-bold capitalize min-w-[132px] text-center tabular-nums">{label}</span>
+        <Button variant="ghost" size="icon" aria-label="Próximo mês" className="h-11 w-11 rounded-xl" onClick={() => { onChangeMonth(addMonths(currentMonth, 1)); onChangeDateRange(undefined); }}>
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
-
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className={cn("w-full h-8 text-xs rounded-xl", dateRange && "border-primary text-primary bg-primary/5")}>
-            <Icons.Calendar className="w-3.5 h-3.5 mr-2" />
-            <span className="flex-1 text-left">
-              {dateRange?.from ? (
-                dateRange.to ? (
-                  `${format(dateRange.from, 'dd/MM/yy')} até ${format(dateRange.to, 'dd/MM/yy')}`
-                ) : (
-                  format(dateRange.from, 'dd/MM/yy')
-                )
-              ) : (
-                "Filtrar por período"
-              )}
-            </span>
-            {dateRange?.from && (
-              <div 
-                className="ml-2 p-1 hover:bg-primary/20 rounded-full" 
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onChangeDateRange(undefined); }}
-              >
-                <Icons.X className="w-3 h-3" />
-              </div>
-            )}
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label="Filtrar por período"
+            className={cn('h-11 w-11 rounded-xl relative', dateRange && 'border-primary text-primary bg-primary-soft')}
+          >
+            <Icons.SlidersHorizontal className="w-4 h-4" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="center">
+        <PopoverContent className="w-auto p-0 z-[70]" align="end">
           <Calendar
             initialFocus
             mode="range"
@@ -84,6 +71,11 @@ function PeriodSelector({
             numberOfMonths={1}
             locale={ptBR}
           />
+          {dateRange?.from && (
+            <div className="p-2 border-t border-border">
+              <Button variant="ghost" className="w-full h-10" onClick={() => onChangeDateRange(undefined)}>Limpar período</Button>
+            </div>
+          )}
         </PopoverContent>
       </Popover>
     </div>
@@ -93,35 +85,43 @@ function PeriodSelector({
 function SpendingHero({ spent, expected, income }: { spent: number, expected: number, income: number }) {
   const totalExpense = spent + expected;
   const progress = income > 0 ? Math.min((spent / income) * 100, 100) : 0;
-  
+  const pct = income > 0 ? Math.round((spent / income) * 100) : 0;
+
   return (
-    <div className="glass-card rounded-3xl p-4 sm:p-6 text-center space-y-4">
-      <div className="space-y-1">
-        <p className="text-xs font-semibold tracking-wider uppercase text-muted-foreground">Gastos do Mês</p>
-        <div className="flex items-baseline justify-center gap-1 flex-wrap">
-          <span className="text-2xl sm:text-4xl font-display font-bold text-expense break-all">
-            R$ {spent.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-          </span>
-        </div>
+    <section className="bg-card border border-border rounded-[20px] p-6 space-y-5">
+      <div>
+        <p className="text-[13px] font-semibold text-muted-foreground">Gastos do mês</p>
+        <p className="text-[40px] leading-none font-extrabold tracking-[-0.03em] mt-2 tabular-nums break-all">
+          R$ {spent.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+        </p>
         {expected > 0 && (
-          <p className="text-xs sm:text-sm text-muted-foreground">
+          <p className="text-[13px] text-muted-foreground mt-2">
             + R$ {expected.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} previstos
           </p>
         )}
       </div>
 
-      <div className="h-3 w-full bg-secondary rounded-full overflow-hidden relative">
-        <div 
-          className={cn("h-full transition-all duration-700", progress > 90 ? 'bg-red-500' : 'bg-expense')}
-          style={{ width: `${progress}%` }}
-        />
+      <div className="space-y-2">
+        <div className="flex justify-between text-xs font-semibold">
+          <span className="text-foreground-secondary">{income > 0 ? `${pct}% da receita usado` : 'Sem receitas no período'}</span>
+          <span className="text-muted-foreground tabular-nums">Restante R$ {Math.max(income - totalExpense, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+        </div>
+        <div className="h-2 w-full bg-muted rounded-full overflow-hidden" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label="Percentual da receita usado">
+          <div className={cn('h-full rounded-full transition-all', progress > 90 ? 'bg-expense' : 'bg-primary')} style={{ width: `${progress}%` }} />
+        </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
-        <span className="truncate">Receitas: R$ {income.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-        <span className="truncate">Restante: R$ {Math.max(income - totalExpense, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+      <div className="grid grid-cols-2 gap-3 pt-1 border-t border-border">
+        <div className="pt-4">
+          <p className="text-xs font-semibold text-muted-foreground">Receitas</p>
+          <p className="text-lg font-bold text-income tabular-nums truncate">R$ {income.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+        </div>
+        <div className="pt-4">
+          <p className="text-xs font-semibold text-muted-foreground">Despesas</p>
+          <p className="text-lg font-bold text-expense tabular-nums truncate">R$ {totalExpense.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -135,14 +135,12 @@ function CategoryBarList({ transactions }: { transactions: Transaction[] }) {
   const sorted = Object.entries(byCategory).sort((a, b) => b[1] - a[1]).slice(0, 5);
   const max = sorted[0]?.[1] || 1;
 
-  if (sorted.length === 0) return null;
+  if (sorted.length < 2) return null;
+  const total = sorted.reduce((a, [, v]) => a + v, 0);
 
   return (
-    <div className="glass-card rounded-2xl p-4 sm:p-5 space-y-4">
-      <h3 className="font-semibold text-sm text-foreground flex items-center gap-2">
-        <Icons.PieChart className="w-4 h-4 text-muted-foreground shrink-0" />
-        Maiores Despesas
-      </h3>
+    <section className="bg-card border border-border rounded-[20px] p-5 space-y-4">
+      <h3 className="text-base font-bold">Maiores despesas</h3>
       <div className="space-y-3">
         {sorted.map(([cat, amount]) => {
           const label = categoryLabels[cat] || cat;
@@ -154,20 +152,25 @@ function CategoryBarList({ transactions }: { transactions: Transaction[] }) {
           return (
             <div key={cat} className="space-y-1">
               <div className="flex items-center justify-between text-xs gap-2">
-                <span className="flex items-center gap-1.5 font-medium min-w-0 truncate">
-                  <Icon className="w-3.5 h-3.5 shrink-0" style={{ color }} />
-                  <span className="truncate">{label}</span>
+                <span className="flex items-center gap-2 min-w-0">
+                  <span className="w-8 h-8 rounded-[10px] flex items-center justify-center shrink-0" style={{ backgroundColor: `${color}1f` }}>
+                    <Icon className="w-4 h-4" style={{ color }} />
+                  </span>
+                  <span className="truncate text-sm font-semibold">{label}</span>
                 </span>
-                <span className="font-semibold shrink-0">R$ {amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                <span className="shrink-0 text-right">
+                  <span className="block text-sm font-bold tabular-nums">R$ {amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                  <span className="block text-[11px] text-muted-foreground font-semibold">{Math.round((amount / total) * 100)}%</span>
+                </span>
               </div>
-              <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
+              <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
                 <div className="h-full rounded-full" style={{ width: `${percent}%`, backgroundColor: color }} />
               </div>
             </div>
           );
         })}
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -252,21 +255,19 @@ function NetWorthStrip() {
   const totalAccounts = accounts.reduce((s, a) => s + (balances[a.id] || 0), 0);
   const totalInvested = investments.filter(i => i.jaInvestido).reduce((s, i) => s + i.valorInvestido, 0);
   const netWorth = totalAccounts + totalInvested;
+  const navigate = useNavigate();
 
   return (
-    <div className="glass-card rounded-2xl p-4 flex items-center justify-between gap-3">
-      <div className="flex items-center gap-3 min-w-0">
-        <div className="p-2 bg-income/10 rounded-xl shrink-0">
-          <Landmark className="w-5 h-5 text-income" />
-        </div>
-        <div className="flex flex-col min-w-0">
-          <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold truncate">Patrimônio Total</span>
-          <span className="text-base sm:text-lg font-bold font-display text-foreground truncate">
-            R$ {netWorth.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-          </span>
-        </div>
-      </div>
-    </div>
+    <button
+      onClick={() => navigate('/contas')}
+      className="w-full bg-card border border-border rounded-2xl px-4 min-h-[60px] flex items-center gap-3 text-left hover:bg-muted"
+    >
+      <span className="w-10 h-10 rounded-xl bg-primary-soft flex items-center justify-center shrink-0">
+        <Landmark className="w-5 h-5 text-primary" />
+      </span>
+      <span className="flex-1 text-sm font-semibold">Patrimônio total</span>
+      <span className="text-[15px] font-bold tabular-nums">R$ {netWorth.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+    </button>
   );
 }
 
@@ -314,15 +315,15 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="space-y-6 w-full min-w-0 pb-28 lg:pb-4">
+    <div className="space-y-5 w-full min-w-0">
       {/* Header */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex-1 min-w-0">
-          <h1 className="text-xl lg:text-2xl font-display font-bold truncate">
+          <h1 className="text-[22px] font-extrabold tracking-tight truncate">
             Olá{(() => {
               const name = user?.user_metadata?.full_name || user?.user_metadata?.name || '';
               return name ? `, ${name.split(' ')[0]}` : '';
-            })()}! 👋
+            })()}
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5 truncate">
             {activeWallet ? activeWallet.name : 'Minha carteira'}
@@ -330,7 +331,7 @@ export default function Dashboard() {
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <ProfileSwitcher />
-          <Button variant="outline" size="sm" onClick={() => setIsReportOpen(true)} className="min-h-[40px] px-3 rounded-2xl">
+          <Button variant="outline" size="icon" aria-label="Exportar relatório" onClick={() => setIsReportOpen(true)} className="h-11 w-11 rounded-xl">
             <Download className="w-4 h-4 sm:mr-2 stroke-[1.5]" />
             <span className="hidden sm:inline text-xs">Exportar</span>
           </Button>
@@ -363,14 +364,11 @@ export default function Dashboard() {
           {/* NetWorth Strip */}
           <NetWorthStrip />
           
-          <div className="glass-card rounded-2xl p-4 sm:p-5 space-y-4">
+          <section className="space-y-3">
             <div className="flex items-center justify-between gap-2">
-              <h3 className="font-semibold text-sm text-foreground flex items-center gap-2 min-w-0">
-                <Icons.ArrowRightLeft className="w-4 h-4 text-muted-foreground shrink-0" />
-                <span className="truncate">Transações do Mês</span>
-              </h3>
-              <Button variant="ghost" size="sm" className="h-8 text-xs shrink-0" onClick={() => navigate('/transacoes/nova')}>
-                <Plus className="w-3.5 h-3.5 mr-1" /> Adicionar
+              <h3 className="text-base font-bold">Transações do mês</h3>
+              <Button variant="link" className="h-11 px-1 text-sm font-semibold" onClick={() => navigate('/transacoes')}>
+                Ver todas
               </Button>
             </div>
             {/* Reuso do TransactionList focado apenas no mês atual */}
@@ -381,7 +379,7 @@ export default function Dashboard() {
               pendingIds={pendingTransactionIds}
               hideTitle
             />
-          </div>
+          </section>
         </div>
       </div>
 
