@@ -1,3 +1,4 @@
+import { format } from 'date-fns';
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Bell, Calendar, AlertTriangle, Clock, CheckCircle2, Flame, RotateCcw } from 'lucide-react';
@@ -179,7 +180,7 @@ export default function Reminders() {
           animate={{ opacity: 1, y: 0 }}
           className="flex-1 min-w-0"
         >
-          <h1 className="text-[26px] font-extrabold tracking-tight">Gastos Mensais</h1>
+          <h1 className="text-[26px] font-extrabold tracking-tight truncate">Gastos mensais</h1>
           <p className="text-sm text-muted-foreground truncate capitalize">{monthLabel}</p>
         </motion.div>
 

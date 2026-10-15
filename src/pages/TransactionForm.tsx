@@ -165,63 +165,49 @@ export default function TransactionForm() {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-lg mx-auto pb-8"
+      className="max-w-lg mx-auto pb-[120px] lg:pb-8"
     >
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="h-10 w-10">
+        <Button variant="ghost" size="icon" aria-label="Voltar" onClick={() => navigate(-1)} className="h-11 w-11">
           <ArrowLeft className="w-5 h-5" />
         </Button>
-        <h1 className="text-xl font-display font-bold">
+        <h1 className="text-[22px] font-extrabold tracking-tight">
           {isEditing ? 'Editar' : 'Nova transação'}
         </h1>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Type Toggle */}
-        <div className="flex gap-2 p-1 bg-muted rounded-xl">
-          <button
-            type="button"
-            onClick={() => setType('expense')}
-            className={cn(
-              'flex-1 flex items-center justify-center gap-2 py-3.5 rounded-lg font-semibold transition-all',
-              type === 'expense'
-                ? 'bg-expense text-white shadow-md'
-                : 'text-muted-foreground'
-            )}
-          >
-            <TrendingDown className="w-5 h-5" />
-            Despesa
-          </button>
-          <button
-            type="button"
-            onClick={() => setType('income')}
-            className={cn(
-              'flex-1 flex items-center justify-center gap-2 py-3.5 rounded-lg font-semibold transition-all',
-              type === 'income'
-                ? 'bg-income text-white shadow-md'
-                : 'text-muted-foreground'
-            )}
-          >
-            <TrendingUp className="w-5 h-5" />
-            Receita
-          </button>
+        <div className="segmented" role="tablist" aria-label="Tipo de transação">
+          {(['expense', 'income'] as const).map((t) => (
+            <button
+              key={t}
+              type="button"
+              role="tab"
+              aria-selected={type === t}
+              onClick={() => setType(t)}
+              className={cn('segmented-item min-h-[44px] flex items-center justify-center gap-2', type === t && 'segmented-item-active')}
+            >
+              {t === 'expense' ? <TrendingDown className="w-4 h-4 text-expense" /> : <TrendingUp className="w-4 h-4 text-income" />}
+              {t === 'expense' ? 'Despesa' : 'Receita'}
+            </button>
+          ))}
         </div>
 
         {/* Amount */}
-        <div className="space-y-2">
-          <Label className="text-sm">Valor</Label>
-          <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl text-muted-foreground font-medium">
-              R$
-            </span>
-            <Input
+        <div className="bg-card border border-border rounded-[20px] p-5">
+          <Label htmlFor="amount" className="text-[13px] font-semibold text-muted-foreground">Valor</Label>
+          <div className="flex items-baseline gap-2 mt-2">
+            <span className="text-xl font-bold text-muted-foreground">R$</span>
+            <input
+              id="amount"
               type="text"
               inputMode="decimal"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0,00"
-              className="pl-12 h-14 text-2xl font-bold"
+              className="flex-1 min-w-0 bg-transparent text-[40px] leading-none font-extrabold tracking-[-0.03em] tabular-nums outline-none placeholder:text-muted-foreground/50"
               autoFocus
             />
           </div>
@@ -229,12 +215,13 @@ export default function TransactionForm() {
 
         {/* Description */}
         <div className="space-y-2">
-          <Label className="text-sm">Descrição</Label>
+          <Label htmlFor="description" className="text-sm font-semibold">Descrição</Label>
           <Input
+            id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Ex: Mercado, Uber..."
-            className="h-12"
+            placeholder="Ex.: mercado, Uber"
+            className="h-12 rounded-xl"
           />
         </div>
 
@@ -249,14 +236,14 @@ export default function TransactionForm() {
                 type="button"
                 onClick={() => setCategory(key as TransactionCategory)}
                 className={cn(
-                  'flex flex-col items-center justify-center gap-1 p-3 rounded-xl transition-all text-center',
+                  'flex flex-col items-center justify-center gap-1.5 h-20 p-2 rounded-xl transition-colors text-center border-2',
                   category === key
-                    ? 'bg-primary/10 border-2 border-primary'
-                    : 'bg-muted/50 border-2 border-transparent'
+                    ? 'bg-primary-soft border-primary'
+                    : 'bg-card border-border'
                 )}
               >
                 <span className="text-xl">{categoryEmojis[key as TransactionCategory] || '📁'}</span>
-                <span className="text-xs font-medium truncate w-full">{label}</span>
+                <span className="text-xs font-semibold truncate w-full">{label}</span>
               </button>
             ))}
 
@@ -265,10 +252,10 @@ export default function TransactionForm() {
               <DialogTrigger asChild>
                 <button
                   type="button"
-                  className="flex flex-col items-center justify-center gap-1 p-3 rounded-xl transition-all text-center bg-muted/30 border-2 border-dashed border-muted-foreground/30 hover:border-primary/50"
+                  className="flex flex-col items-center justify-center gap-1.5 h-20 p-2 rounded-xl text-center bg-card border-2 border-dashed border-border hover:border-primary/50"
                 >
                   <span className="text-xl">➕</span>
-                  <span className="text-xs font-medium truncate w-full">Nova Categoria</span>
+                  <span className="text-xs font-semibold truncate w-full">Nova categoria</span>
                 </button>
               </DialogTrigger>
               <DialogContent>
@@ -320,15 +307,17 @@ export default function TransactionForm() {
           </div>
         )}
 
-        {/* Submit Button */}
-        <Button
-          type="submit"
-          className="w-full h-14 text-lg font-semibold"
-          disabled={isLoading || !amount.trim()}
-        >
-          <Check className="w-5 h-5 mr-2" />
-          {isEditing ? 'Salvar' : 'Adicionar'}
-        </Button>
+        {/* Submit Button — fixo no rodapé */}
+        <div className="fixed inset-x-0 bottom-0 z-50 px-4 pt-6 pb-[calc(16px+env(safe-area-inset-bottom))] bg-gradient-to-t from-background via-background to-transparent lg:static lg:p-0 lg:bg-none">
+          <Button
+            type="submit"
+            className="w-full max-w-lg mx-auto flex h-14 text-base font-bold rounded-2xl"
+            disabled={isLoading || !amount.trim()}
+          >
+            <Check className="w-5 h-5 mr-2" />
+            {isEditing ? 'Salvar alterações' : type === 'expense' ? 'Salvar despesa' : 'Salvar receita'}
+          </Button>
+        </div>
       </form>
     </motion.div>
   );
