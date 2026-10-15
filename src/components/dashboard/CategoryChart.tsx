@@ -1,5 +1,5 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { Transaction, categoryLabels, categoryColors } from '@/types/transaction';
+import { Transaction, categoryLabels, getCategoryColor } from '@/types/transaction';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -29,7 +29,7 @@ export default function CategoryChart({ transactions, compact = false, includeLo
     .map(([category, value]) => ({
       name: categoryLabels[category as keyof typeof categoryLabels] || category,
       value,
-      color: categoryColors[category as keyof typeof categoryColors] || 'hsl(215 20% 65%)',
+      color: getCategoryColor(category),
     }))
     .sort((a, b) => b.value - a.value)
     .slice(0, 5);

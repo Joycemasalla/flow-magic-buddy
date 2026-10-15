@@ -19,7 +19,7 @@ import {
   MoreHorizontal,
   Check,
 } from 'lucide-react';
-import { Transaction, categoryLabels, TransactionCategory } from '@/types/transaction';
+import { Transaction, categoryLabels, TransactionCategory, getCategoryColor, withCategoryAlpha } from '@/types/transaction';
 import { cn } from '@/lib/utils';
 import { PrivacyValue } from '@/components/ui/PrivacyValue';
 import TransactionDetailsModal from './TransactionDetailsModal';
@@ -78,19 +78,16 @@ const SwipeableItem = memo(function SwipeableItem({ transaction, onEdit, onDelet
       <div
         className={cn(
           'w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center flex-shrink-0 transition-all',
-          isSettledLoan && 'bg-income/15',
-          !isSettledLoan && isIncome && 'bg-income/12',
-          !isSettledLoan && !isIncome && 'bg-expense/12'
+          isSettledLoan && 'bg-income/15'
         )}
+        style={!isSettledLoan ? { backgroundColor: withCategoryAlpha(getCategoryColor(transaction.category), 0.14) } : undefined}
       >
         {isSettledLoan ? (
           <Check className="w-5 h-5 sm:w-6 sm:h-6 text-income stroke-[2]" />
         ) : (
           <Icon
-            className={cn(
-              'w-5 h-5 sm:w-6 sm:h-6 stroke-[1.5]',
-              isIncome ? 'text-income' : 'text-expense'
-            )}
+            className="w-5 h-5 sm:w-6 sm:h-6 stroke-[1.5]"
+            style={{ color: getCategoryColor(transaction.category) }}
           />
         )}
       </div>

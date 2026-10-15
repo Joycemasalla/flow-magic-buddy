@@ -81,3 +81,46 @@ export const categoryColors: Record<string, string> = {
   loan: 'hsl(30 90% 55%)',
   other: 'hsl(215 20% 65%)',
 };
+
+const FALLBACK_CATEGORY_COLORS = [
+  'hsl(160 84% 39%)',
+  'hsl(200 84% 50%)',
+  'hsl(38 92% 50%)',
+  'hsl(300 70% 50%)',
+  'hsl(263 70% 50%)',
+  'hsl(180 70% 45%)',
+  'hsl(30 90% 55%)',
+];
+
+/**
+ * Cor fixa de uma categoria — inclusive categorias personalizadas,
+ * que recebem uma cor estável derivada do próprio nome.
+ */
+export function getCategoryColor(category: string): string {
+  const known = categoryColors[category];
+  if (known) return known;
+  let hash = 0;
+  for (let i = 0; i < category.length; i++) {
+    hash = (hash * 31 + category.charCodeAt(i)) >>> 0;
+  }
+  return FALLBACK_CATEGORY_COLORS[hash % FALLBACK_CATEGORY_COLORS.length];
+}
+
+/**
+ * Aplica transparência a uma cor de categoria (hex ou hsl).
+ */
+export function withCategoryAlpha(color: string, alpha: number): string {
+  if (color.startsWith('#')) {
+    const hex = color.slice(1);
+    const full = hex.length === 3 ? hex.split('').map((c) => c + c).join('') : hex;
+    const r = parseInt(full.slice(0, 2), 16);
+    const g = parseInt(full.slice(2, 4), 16);
+    const b = parseInt(full.slice(4, 6), 16);
+    if ([r, g, b].some((v) => Number.isNaN(v))) return color;
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+  if (color.startsWith('hsl(')) {
+    return `${color.replace(/\)$/, '')} / ${alpha})`;
+  }
+  return color;
+}
