@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { X, Wallet, UtensilsCrossed, Car, ShoppingBag, Heart, Gamepad2, Receipt, GraduationCap, TrendingUp, HandCoins, MoreHorizontal, Check, User, Calendar, Tag, Clock } from 'lucide-react';
-import { Transaction, categoryLabels, TransactionCategory } from '@/types/transaction';
+import { Transaction, categoryLabels, TransactionCategory, getCategoryColor, withCategoryAlpha } from '@/types/transaction';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { PrivacyValue } from '@/components/ui/PrivacyValue';
@@ -88,19 +88,16 @@ export default function TransactionDetailsModal({ transaction, onClose }: Transa
                 <div
                   className={cn(
                     'w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0',
-                    isSettledLoan && 'bg-income/20',
-                    !isSettledLoan && isIncome && 'bg-income/10',
-                    !isSettledLoan && !isIncome && 'bg-expense/10'
+                    isSettledLoan && 'bg-income/20'
                   )}
+                  style={!isSettledLoan ? { backgroundColor: withCategoryAlpha(getCategoryColor(transaction.category), 0.14) } : undefined}
                 >
                   {isSettledLoan ? (
                     <Check className="w-7 h-7 text-income" />
                   ) : (
                     <Icon
-                      className={cn(
-                        'w-7 h-7',
-                        isIncome ? 'text-income' : 'text-expense'
-                      )}
+                      className="w-7 h-7"
+                      style={{ color: getCategoryColor(transaction.category) }}
                     />
                   )}
                 </div>

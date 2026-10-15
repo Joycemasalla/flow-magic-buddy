@@ -20,7 +20,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
-import { categoryLabels, categoryColors, categoryIcons, Transaction } from '@/types/transaction';
+import { categoryLabels, getCategoryColor, withCategoryAlpha, categoryIcons, Transaction } from '@/types/transaction';
 import * as Icons from 'lucide-react';
 
 function PeriodSelector({
@@ -144,7 +144,7 @@ function CategoryBarList({ transactions }: { transactions: Transaction[] }) {
       <div className="space-y-3">
         {sorted.map(([cat, amount]) => {
           const label = categoryLabels[cat] || cat;
-          const color = categoryColors[cat] || '#666';
+          const color = getCategoryColor(cat);
           const IconName = categoryIcons[cat] || 'MoreHorizontal';
           const Icon = (Icons as any)[IconName] || Icons.MoreHorizontal;
           const percent = (amount / max) * 100;
@@ -153,7 +153,7 @@ function CategoryBarList({ transactions }: { transactions: Transaction[] }) {
             <div key={cat} className="space-y-1">
               <div className="flex items-center justify-between text-xs gap-2">
                 <span className="flex items-center gap-2 min-w-0">
-                  <span className="w-8 h-8 rounded-[10px] flex items-center justify-center shrink-0" style={{ backgroundColor: `${color}1f` }}>
+                  <span className="w-8 h-8 rounded-[10px] flex items-center justify-center shrink-0" style={{ backgroundColor: withCategoryAlpha(color, 0.14) }}>
                     <Icon className="w-4 h-4" style={{ color }} />
                   </span>
                   <span className="truncate text-sm font-semibold">{label}</span>

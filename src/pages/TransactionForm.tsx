@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Check, TrendingUp, TrendingDown, RefreshCw } from 'lucide-react';
 import { useTransactions } from '@/contexts/TransactionContext';
 import { useToast } from '@/hooks/use-toast';
-import { TransactionCategory, TransactionType, categoryLabels } from '@/types/transaction';
+import { TransactionCategory, TransactionType, categoryLabels, getCategoryColor, withCategoryAlpha } from '@/types/transaction';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -237,10 +237,13 @@ export default function TransactionForm() {
                 onClick={() => setCategory(key as TransactionCategory)}
                 className={cn(
                   'flex flex-col items-center justify-center gap-1.5 h-20 p-2 rounded-xl transition-colors text-center border-2',
-                  category === key
-                    ? 'bg-primary-soft border-primary'
-                    : 'bg-card border-border'
+                  category === key ? 'border-primary' : 'bg-card border-border'
                 )}
+                style={
+                  category === key
+                    ? { backgroundColor: withCategoryAlpha(getCategoryColor(key), 0.14), borderColor: getCategoryColor(key) }
+                    : undefined
+                }
               >
                 <span className="text-xl">{categoryEmojis[key as TransactionCategory] || '📁'}</span>
                 <span className="text-xs font-semibold truncate w-full">{label}</span>
