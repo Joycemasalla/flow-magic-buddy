@@ -362,7 +362,7 @@ export default function Dashboard() {
       <div className="grid gap-6 md:grid-cols-2">
         <div className="space-y-6 min-w-0">
           <AttentionList transactions={monthTransactions} />
-          <CategoryBarList transactions={monthTransactions} />
+          <CategoryBarList transactions={monthTransactions} onSelectCategory={setSelectedCategory} />
         </div>
         
         <div className="space-y-6 min-w-0">
