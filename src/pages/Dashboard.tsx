@@ -286,6 +286,7 @@ export default function Dashboard() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [isReportOpen, setIsReportOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // Filtrar transações pelo mês atual ou pelo período personalizado
   const monthTransactions = useMemo(() => {
