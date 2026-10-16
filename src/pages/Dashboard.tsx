@@ -125,7 +125,7 @@ function SpendingHero({ spent, expected, income }: { spent: number, expected: nu
   );
 }
 
-function CategoryBarList({ transactions }: { transactions: Transaction[] }) {
+function CategoryBarList({ transactions, onSelectCategory }: { transactions: Transaction[], onSelectCategory: (cat: string) => void }) {
   const expenses = transactions.filter(t => t.type === 'expense' && !t.isTransfer);
   const byCategory = expenses.reduce((acc, t) => {
     acc[t.category] = (acc[t.category] || 0) + t.amount;
@@ -150,7 +150,11 @@ function CategoryBarList({ transactions }: { transactions: Transaction[] }) {
           const percent = (amount / max) * 100;
 
           return (
-            <div key={cat} className="space-y-1">
+            <button
+              key={cat}
+              onClick={() => onSelectCategory(cat)}
+              className="w-full space-y-1 text-left rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
               <div className="flex items-center justify-between text-xs gap-2">
                 <span className="flex items-center gap-2 min-w-0">
                   <span className="w-8 h-8 rounded-[10px] flex items-center justify-center shrink-0" style={{ backgroundColor: withCategoryAlpha(color, 0.14) }}>
@@ -166,7 +170,7 @@ function CategoryBarList({ transactions }: { transactions: Transaction[] }) {
               <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
                 <div className="h-full rounded-full" style={{ width: `${percent}%`, backgroundColor: color }} />
               </div>
-            </div>
+            </button>
           );
         })}
       </div>
