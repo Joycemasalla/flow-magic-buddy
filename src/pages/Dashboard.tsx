@@ -5,7 +5,7 @@ import { useTransactions } from '@/contexts/TransactionContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWallet } from '@/contexts/WalletContext';
 import { useAccounts } from '@/contexts/AccountContext';
-import { useBudgets } from '@/contexts/BudgetContext';
+import { PrivacyValue } from '@/components/ui/PrivacyValue';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { isWithinInterval, startOfMonth, endOfMonth, subMonths, addMonths, format, startOfDay, endOfDay } from 'date-fns';
@@ -93,11 +93,11 @@ function SpendingHero({ spent, expected, income }: { spent: number, expected: nu
       <div>
         <p className="text-[13px] font-semibold text-muted-foreground">Gastos do mês</p>
         <p className="text-[40px] leading-none font-extrabold tracking-[-0.03em] mt-2 tabular-nums break-all">
-          R$ {spent.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+          <PrivacyValue value={spent} className="block text-[40px] leading-none font-extrabold tracking-[-0.03em] mt-2 tabular-nums break-all" />
         </p>
         {expected > 0 && (
           <p className="text-[13px] text-muted-foreground mt-2">
-            + R$ {expected.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} previstos
+            <PrivacyValue value={expected} showSign /> previstos
           </p>
         )}
       </div>
@@ -105,7 +105,7 @@ function SpendingHero({ spent, expected, income }: { spent: number, expected: nu
       <div className="space-y-2">
         <div className="flex justify-between text-xs font-semibold">
           <span className="text-foreground-secondary">{income > 0 ? `${pct}% da receita usado` : 'Sem receitas no período'}</span>
-          <span className="text-muted-foreground tabular-nums">Restante R$ {Math.max(income - totalExpense, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+          <span className="text-muted-foreground tabular-nums">Restante <PrivacyValue value={Math.max(income - totalExpense, 0)} /></span>
         </div>
         <div className="h-2 w-full bg-muted rounded-full overflow-hidden" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label="Percentual da receita usado">
           <div className={cn('h-full rounded-full transition-all', progress > 90 ? 'bg-expense' : 'bg-primary')} style={{ width: `${progress}%` }} />
@@ -115,11 +115,11 @@ function SpendingHero({ spent, expected, income }: { spent: number, expected: nu
       <div className="grid grid-cols-2 gap-3 pt-1 border-t border-border">
         <div className="pt-4">
           <p className="text-xs font-semibold text-muted-foreground">Receitas</p>
-          <p className="text-lg font-bold text-income tabular-nums truncate">R$ {income.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+          <p className="text-lg font-bold text-income tabular-nums truncate"><PrivacyValue value={income} /></p>
         </div>
         <div className="pt-4">
           <p className="text-xs font-semibold text-muted-foreground">Despesas</p>
-          <p className="text-lg font-bold text-expense tabular-nums truncate">R$ {totalExpense.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+          <p className="text-lg font-bold text-expense tabular-nums truncate"><PrivacyValue value={totalExpense} /></p>
         </div>
       </div>
     </section>
@@ -164,7 +164,7 @@ function CategoryBarList({ transactions, onSelectCategory }: { transactions: Tra
                   <span className="truncate text-sm font-semibold">{label}</span>
                 </span>
                 <span className="shrink-0 text-right">
-                  <span className="block text-sm font-bold tabular-nums">R$ {amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                  <span className="block text-sm font-bold tabular-nums"><PrivacyValue value={amount} /></span>
                   <span className="block text-[11px] text-muted-foreground font-semibold">{Math.round((amount / total) * 100)}%</span>
                 </span>
               </div>
@@ -179,9 +179,9 @@ function CategoryBarList({ transactions, onSelectCategory }: { transactions: Tra
   );
 }
 
-function AttentionList({ transactions }: { transactions: Transaction[] }) {
+function AttentionList() {
   const { reminders } = useTransactions();
-  const { budgets } = useBudgets();
+  
   
   const now = new Date();
   const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -196,16 +196,7 @@ function AttentionList({ transactions }: { transactions: Transaction[] }) {
     return diff <= 5; // Atrasadas (diff < 0) ou até 5 dias
   }).sort((a, b) => a.dueDay - b.dueDay);
 
-  // Orçamentos estourados (no mês atual)
-  const currentMonthExpenses = transactions.filter(t => t.type === 'expense' && !t.isTransfer);
-  const spentByCategory = currentMonthExpenses.reduce((acc, t) => {
-    acc[t.category] = (acc[t.category] || 0) + t.amount;
-    return acc;
-  }, {} as Record<string, number>);
-
-  const overBudgets = budgets.filter(b => (spentByCategory[b.category] || 0) > b.amount);
-
-  if (urgentReminders.length === 0 && overBudgets.length === 0) return null;
+  if (urgentReminders.length === 0) return null;
 
   return (
     <div className="glass-card rounded-2xl p-4 sm:p-5 space-y-4">
@@ -232,20 +223,6 @@ function AttentionList({ transactions }: { transactions: Transaction[] }) {
                 R$ {r.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </span>
             </div>
-          );
-        })}
-        {overBudgets.map(b => {
-          const spent = spentByCategory[b.category] || 0;
-          return (
-             <div key={`budget-${b.id}`} className="flex justify-between items-center p-2.5 rounded-xl bg-expense/10 border border-expense/20 gap-2">
-               <div className="flex flex-col min-w-0">
-                 <span className="text-sm font-medium text-expense truncate">Orçamento excedido</span>
-                 <span className="text-[11px] text-expense/80 truncate">{categoryLabels[b.category] || b.category}</span>
-               </div>
-               <span className="font-semibold text-sm text-expense shrink-0">
-                 R$ {(spent - b.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} acima
-               </span>
-             </div>
           );
         })}
       </div>
@@ -362,7 +339,7 @@ export default function Dashboard() {
       {/* Seções Adicionais */}
       <div className="grid gap-6 md:grid-cols-2">
         <div className="space-y-6 min-w-0">
-          <AttentionList transactions={monthTransactions} />
+          <AttentionList />
           <CategoryBarList transactions={monthTransactions} onSelectCategory={setSelectedCategory} />
         </div>
         
