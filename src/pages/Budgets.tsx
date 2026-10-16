@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useBudgets } from "@/contexts/BudgetContext";
 import { useTransactions } from "@/contexts/TransactionContext";
-import { categoryLabels, categoryColors, categoryIcons } from "@/types/transaction";
+import { categoryLabels, getCategoryColor, withCategoryAlpha, categoryIcons } from "@/types/transaction";
 import { parseBRL } from "@/lib/finance/money";
 import * as Icons from "lucide-react";
 
@@ -146,13 +146,13 @@ export default function Budgets() {
             const label = categoryLabels[budget.category] || budget.category;
             const IconName = categoryIcons[budget.category] || 'MoreHorizontal';
             const Icon = (Icons as any)[IconName] || Icons.MoreHorizontal;
-            const color = categoryColors[budget.category] || '#666';
+            const color = getCategoryColor(budget.category);
 
             return (
               <div key={budget.id} className="bg-card p-5 rounded-xl border border-border shadow-sm relative group overflow-hidden">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg" style={{ backgroundColor: `${color}20`, color }}>
+                    <div className="p-2 rounded-lg" style={{ backgroundColor: withCategoryAlpha(color, 0.14), color }}>
                       <Icon className="w-5 h-5" />
                     </div>
                     <div>

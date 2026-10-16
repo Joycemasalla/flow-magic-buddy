@@ -2,7 +2,7 @@ import { parseLocalDate } from '@/lib/finance/dates';
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { X, Download, FileImage, FileText, FileSpreadsheet, TrendingUp, TrendingDown, Wallet, Loader2 } from 'lucide-react';
-import { Transaction, categoryLabels, categoryColors } from '@/types/transaction';
+import { Transaction, categoryLabels, getCategoryColor } from '@/types/transaction';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
@@ -346,7 +346,7 @@ export default function ReportModal({
                 <div className="space-y-1">
                   {sortedCategories.map(([category, value]) => {
                     const percentage = stats.expense > 0 ? (value / stats.expense) * 100 : 0;
-                    const color = categoryColors[category as keyof typeof categoryColors] || '#6B7280';
+                    const color = getCategoryColor(category);
                     return (
                       <div key={category} className="flex items-center gap-2">
                         <div 
