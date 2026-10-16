@@ -388,6 +388,18 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Modal de gastos por categoria */}
+      <CategoryExpensesSheet
+        category={selectedCategory}
+        transactions={monthTransactions}
+        periodLabel={dateRange?.from
+          ? dateRange.to
+            ? `${format(dateRange.from, 'dd/MM/yy')} – ${format(dateRange.to, 'dd/MM/yy')}`
+            : format(dateRange.from, 'dd/MM/yy')
+          : format(currentMonth, "MMMM 'de' yyyy", { locale: ptBR })}
+        onClose={() => setSelectedCategory(null)}
+      />
+
       {/* Report Modal */}
       <ReportModal
         isOpen={isReportOpen}
