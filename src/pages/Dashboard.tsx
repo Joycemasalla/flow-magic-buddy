@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { isWithinInterval, startOfMonth, endOfMonth, subMonths, addMonths, format, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { parseLocalDate } from '@/lib/finance/dates';
+import CategoryExpensesSheet from '@/components/dashboard/CategoryExpensesSheet';
 import { calculatePeriodSummary } from '@/lib/finance/rules';
 import TransactionList from '@/components/dashboard/TransactionList';
 import ProfileSwitcher from '@/components/ProfileSwitcher';
