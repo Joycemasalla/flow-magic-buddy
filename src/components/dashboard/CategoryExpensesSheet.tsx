@@ -35,7 +35,7 @@ export default function CategoryExpensesSheet({ category, transactions, periodLa
     <Sheet open={!!category} onOpenChange={(open) => !open && onClose()}>
       <SheetContent side="bottom" className="z-[60] rounded-t-[24px] p-0 max-h-[85vh] flex flex-col">
         <SheetHeader className="p-5 pb-3 border-b border-border text-left">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 pr-8">
             <span
               className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
               style={{ backgroundColor: withCategoryAlpha(color, 0.14) }}
