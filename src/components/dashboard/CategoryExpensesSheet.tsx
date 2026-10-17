@@ -6,6 +6,7 @@ import { parseLocalDate } from '@/lib/finance/dates';
 import { Transaction, categoryLabels, getCategoryColor, withCategoryAlpha, categoryIcons } from '@/types/transaction';
 import * as Icons from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { PrivacyValue } from '@/components/ui/PrivacyValue';
 
 interface CategoryExpensesSheetProps {
   category: string | null;
@@ -49,7 +50,7 @@ export default function CategoryExpensesSheet({ category, transactions, periodLa
             <div className="text-right shrink-0">
               <p className="text-[11px] font-semibold text-muted-foreground">Total</p>
               <p className="text-base font-bold text-expense tabular-nums">
-                R$ {total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                <PrivacyValue value={total} />
               </p>
             </div>
           </div>
@@ -73,7 +74,7 @@ export default function CategoryExpensesSheet({ category, transactions, periodLa
                   </p>
                 </div>
                 <p className={cn('text-sm font-bold text-expense tabular-nums shrink-0')}>
-                  − R$ {t.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  <PrivacyValue value={t.amount} prefix="− R$ " />
                 </p>
               </div>
             ))
