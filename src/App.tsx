@@ -9,7 +9,6 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { WalletProvider } from "@/contexts/WalletContext";
 import { TransactionProvider } from "@/contexts/TransactionContext";
 import { AccountProvider } from "@/contexts/AccountContext";
-import { BudgetProvider } from "@/contexts/BudgetContext";
 import { PrivacyProvider } from "@/contexts/PrivacyContext";
 import AppLayout from "@/components/layout/AppLayout";
 import Dashboard from "@/pages/Dashboard";
@@ -23,7 +22,6 @@ const Reminders = lazy(() => import("@/pages/Reminders"));
 const Loans = lazy(() => import("@/pages/Loans"));
 const Accounts = lazy(() => import("@/pages/Accounts"));
 const JoinWallet = lazy(() => import("@/pages/JoinWallet"));
-const Budgets = lazy(() => import("@/pages/Budgets"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -93,7 +91,6 @@ function AppRoutes() {
           <Route path="/lembretes" element={<Reminders />} />
           <Route path="/emprestimos" element={<Loans />} />
           <Route path="/contas" element={<Accounts />} />
-          <Route path="/orcamentos" element={<Budgets />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
@@ -109,7 +106,6 @@ const App = () => (
           <WalletProvider>
             <TransactionProvider>
               <AccountProvider>
-                <BudgetProvider>
                 <PrivacyProvider>
                   <TooltipProvider>
                     <Toaster />
@@ -117,7 +113,6 @@ const App = () => (
                     <AppRoutes />
                   </TooltipProvider>
                 </PrivacyProvider>
-              </BudgetProvider>
               </AccountProvider>
             </TransactionProvider>
           </WalletProvider>
