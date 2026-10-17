@@ -15,7 +15,6 @@ import {
   EyeOff,
   Wallet,
   MoreHorizontal,
-  PieChart,
   ChevronRight,
   Settings,
 } from 'lucide-react';
@@ -45,14 +44,12 @@ const desktopNav = [
   { path: '/investimentos', icon: TrendingUp, label: 'Investimentos' },
   { path: '/lembretes', icon: Bell, label: 'Gastos mensais' },
   { path: '/emprestimos', icon: HandCoins, label: 'Empréstimos' },
-  { path: '/orcamentos', icon: PieChart, label: 'Orçamentos' },
 ];
 
 const moreItems = [
   { path: '/investimentos', icon: TrendingUp, label: 'Investimentos' },
   { path: '/lembretes', icon: Bell, label: 'Gastos mensais' },
   { path: '/emprestimos', icon: HandCoins, label: 'Empréstimos' },
-  { path: '/orcamentos', icon: PieChart, label: 'Orçamentos' },
 ];
 
 export default function AppLayout() {
